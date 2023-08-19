@@ -1,5 +1,31 @@
 # Changelog
 
+## [4.11.0](https://github.com/openfoodfacts/smooth-app/compare/v4.10.0...v4.11.0) (2023-08-19)
+
+
+### 🚀 Features
+
+* 4423 - specific "Not connected to internet" displayed error ([#4455](https://github.com/openfoodfacts/smooth-app/issues/4455)) ([f79bae6](https://github.com/openfoodfacts/smooth-app/commit/f79bae611fece28e0b2da25f6340b4063fa5fda6))
+* 4533 - new twitter logo and label ([#4539](https://github.com/openfoodfacts/smooth-app/issues/4539)) ([c532180](https://github.com/openfoodfacts/smooth-app/commit/c5321805dc5d368efc9746f3ce0b9344cc3f92b6))
+* 4554 - new links in FAQ ([#4572](https://github.com/openfoodfacts/smooth-app/issues/4572)) ([369f145](https://github.com/openfoodfacts/smooth-app/commit/369f14599c5613c110d1c92897abf0891828002f))
+* Improvements for a11n on preferences ([#4550](https://github.com/openfoodfacts/smooth-app/issues/4550)) ([e265e75](https://github.com/openfoodfacts/smooth-app/commit/e265e75dbd0d8bfbf9fe440a24f3b916898929e5))
+* New Crowdin updates ([#4512](https://github.com/openfoodfacts/smooth-app/issues/4512)) ([1d10cbc](https://github.com/openfoodfacts/smooth-app/commit/1d10cbc00036596e727f19de039dc7799747d9b3))
+* Support non-english languages for Signup errors ([#4474](https://github.com/openfoodfacts/smooth-app/issues/4474)) ([023d8e5](https://github.com/openfoodfacts/smooth-app/commit/023d8e58d28bc1d8c43439df5db90705baac0d6f))
+* translation updates ([#4548](https://github.com/openfoodfacts/smooth-app/issues/4548)) ([ff10b44](https://github.com/openfoodfacts/smooth-app/commit/ff10b44c70ee029d6229c3008bd4495c0a839484))
+
+
+### 🐛 Bug Fixes
+
+* 4466 - icons for list page popup items ([#4515](https://github.com/openfoodfacts/smooth-app/issues/4515)) ([214be11](https://github.com/openfoodfacts/smooth-app/commit/214be117bb581e3c7610c449e68a456300ec9a03))
+* 4549 - correct "forgot password" checks ([#4558](https://github.com/openfoodfacts/smooth-app/issues/4558)) ([524dd04](https://github.com/openfoodfacts/smooth-app/commit/524dd0462091736de452a20003f3619a67da2499))
+* emojification ([#4560](https://github.com/openfoodfacts/smooth-app/issues/4560)) ([58aa82c](https://github.com/openfoodfacts/smooth-app/commit/58aa82cc354ebc3c7c5b44766a62131204146010))
+* for ios ([9dd2e2a](https://github.com/openfoodfacts/smooth-app/commit/9dd2e2a0cb744205d6f640b7924bb40ddc190b35))
+
+
+### 🛠 Miscellaneous
+
+* Upgrade Sentry + add screenshots ([#4566](https://github.com/openfoodfacts/smooth-app/issues/4566)) ([d1a7e9e](https://github.com/openfoodfacts/smooth-app/commit/d1a7e9e3d9f954a15bb8eee7d69927e48e4883ea))
+
 ## [4.9.1](https://github.com/openfoodfacts/smooth-app/compare/v4.9.0...v4.9.1) (2023-08-14)
 
 
