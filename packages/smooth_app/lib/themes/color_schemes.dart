@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_app/helpers/collections_helper.dart';
 
-const Color seed = Color(0xFF99460D);
+const Color seed = Color(0xFF078080);
 
 const ColorScheme lightColorScheme = ColorScheme(
   brightness: Brightness.light,
@@ -12,7 +12,7 @@ const ColorScheme lightColorScheme = ColorScheme(
   onSecondary: Color(0xFF000000),
   error: Color(0xFFEB5757),
   onError: Color(0xFFFFFFFF),
-  background: Color(0xFFFFFFFF),
+  background: COLOR_BACKGROUND_DEFAULT,
   onBackground: Color(0xFF000000),
   surface: Color(0xFF85746C),
   onSurface: Color(0xFFFFFFFF),
@@ -23,11 +23,11 @@ const ColorScheme darkColorScheme = ColorScheme(
   primary: Color(0xFFFFFFFF),
   inversePrimary: Color(0xFFFFFFFF),
   onPrimary: Color(0xFF000000),
-  secondary: Color(0xFFA08D84),
-  onSecondary: Color(0xFFFFFFFF),
-  error: Color(0xFFEB5757),
+  secondary: COLOR_DEFAULT,
+  onSecondary: COLOR_DEFAULT_DARK,
+  error: Color(0xFFF45D48),
   onError: Color(0xFFFFFFFF),
-  background: Color(0xFF201A17),
+  background: COLOR_BACKGROUND_DEFAULT_DARK,
   onBackground: Color(0xFFFFFFFF),
   surface: Color(0xFFEDE0DB),
   onSurface: Color(0xFF000000),
@@ -42,7 +42,7 @@ const ColorScheme trueDarkColorScheme = ColorScheme(
   onSecondary: Color(0xFFE1E1E1),
   error: Color(0xFFEA2B2B),
   onError: Color(0xFFE1E1E1),
-  background: Color(0xFF000000),
+  background: COLOR_BACKGROUND_DEFAULT_AMOLED,
   onBackground: Color(0xFFE1E1E1),
   surface: Color(0xFF000000),
   onSurface: Color(0xFFE1E1E1),
@@ -60,10 +60,15 @@ const Color HIGH_CONTRAST_TEXT_COLOR = Color(0xffffffff);
 const Color Test = Colors.white10;
 
 const String COLOR_DEFAULT_NAME = 'Default';
-const Color COLOR_DEFAULT = Color(0xff85746c);
+const Color COLOR_DEFAULT = Color(0xFF2CB67D);
+const Color COLOR_DEFAULT_DARK = Color(0xFF2CB67D);
+const Color COLOR_DEFAULT_AMOLED = Color(0xFFFF8906);
+const Color COLOR_BACKGROUND_DEFAULT = Color(0xffeff0f3);
+const Color COLOR_BACKGROUND_DEFAULT_DARK = Color(0xFF16161A);
+const Color COLOR_BACKGROUND_DEFAULT_AMOLED = Color(0xFF000000);
 const Color COLOR_BLUE = Colors.blue;
 const Color COLOR_CYAN = Color(0xff0097a7);
-const Color COLOR_GREEN = Color(0xff009b52);
+const Color COLOR_GREEN = Color(0xFFC3F44E);
 const Color COLOR_MAGENTA = Color(0xffff00ff);
 const Color COLOR_ORANGE = Colors.deepOrange;
 const Color COLOR_PINK = Colors.pink;
