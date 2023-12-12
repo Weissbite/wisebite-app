@@ -5,6 +5,8 @@
 </picture>
 <br>
 
+# Wisebite
+
 ## Smooth App: The new Open Food Facts mobile app for Android and iPhone
 
 [![SmoothApp Post-Submit Tests](https://github.com/openfoodfacts/smooth-app/actions/workflows/postsubmit.yml/badge.svg)](https://github.com/openfoodfacts/smooth-app/actions/workflows/postsubmit.yml)
