@@ -98,7 +98,7 @@ dependencies:
     path: ../scanner/zxing
 
 
-  openfoodfacts: 3.1.0
+  openfoodfacts: 3.2.1
   firebase_core: ^2.24.2
   firebase_auth: ^4.15.3
   google_sign_in: ^6.2.1
