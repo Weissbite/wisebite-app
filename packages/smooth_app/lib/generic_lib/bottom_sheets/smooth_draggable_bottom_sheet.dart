@@ -74,6 +74,7 @@ class SmoothDraggableBottomSheetState
                     child: Material(
                       type: MaterialType.transparency,
                       child: ClipRRect(
+                        borderRadius: widget.borderRadius,
                         child: _SmoothDraggableContent(
                           bodyBuilder: widget.bodyBuilder,
                           headerBuilder: widget.headerBuilder,
