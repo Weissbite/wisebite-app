@@ -1,4 +1,4 @@
-name: Google Play release to org.openfoodfacts.scanner
+name: Google Play release to org.wisebite.app
 
 on:
   workflow_call:
@@ -134,7 +134,7 @@ jobs:
         continue-on-error: true
         with:
           file: ./packages/smooth_app/build/app/outputs/flutter-apk/app-release.apk
-          asset_name: openfoodfacts-${{ inputs.FLAVOR }}-${{ inputs.TAG_NAME }}.apk
+          asset_name: wisebite-${{ inputs.FLAVOR }}-${{ inputs.TAG_NAME }}.apk
           tag: ${{ inputs.TAG_NAME }}
           overwrite: true
 
