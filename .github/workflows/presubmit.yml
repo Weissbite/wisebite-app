@@ -1,4 +1,4 @@
-name: SmoothApp Pre-Submit Tests
+name: Wisebite Pre-Submit Tests
 
 on:
   pull_request:
