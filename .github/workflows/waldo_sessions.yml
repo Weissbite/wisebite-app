@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs: 
       repo:
-        description: 'Repo name (eg: openfoodfacts/smooth-app)'
+        description: 'Repo name (eg: Weissbite/wisebite-app)'
         required: true
         type: string
       branch:
