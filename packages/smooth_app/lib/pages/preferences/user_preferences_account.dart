@@ -117,13 +117,20 @@ class UserPreferencesAccount extends AbstractUserPreferences {
     );
   }
 
-  Future<void> _goToLoginPage() async {
-    Navigator.of(context, rootNavigator: true).push<dynamic>(
-      MaterialPageRoute<dynamic>(
-        builder: (BuildContext context) => const LoginPage(),
-      ),
-    );
-  }
+  Future<void> _goToLoginPage() async =>
+      Navigator.of(context, rootNavigator: true)
+          .push<dynamic>(
+        MaterialPageRoute<dynamic>(
+          builder: (BuildContext context) => const LoginPage(),
+        ),
+      )
+          .then((_) async {
+        final bool areMetricsFilled =
+            await UserManagementProvider().areMetricFieldsFilled();
+        if (!areMetricsFilled) {
+          showCompleteProfileDialog(context);
+        }
+      });
 
   @override
   List<UserPreferencesItem> getChildren() {
@@ -135,20 +142,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
           labels: <String>[appLocalizations.sign_in],
           builder: (_) => Center(
             child: ElevatedButton(
-              onPressed: () async {
-                _goToLoginPage();
-
-                final bool areMetricsFilled =
-                    await UserManagementProvider().areMetricFieldsFilled();
-                if (!context.mounted) {
-                  return;
-                }
-
-                if (!areMetricsFilled) {
-                  showCompleteProfileDialog(context);
-                }
-                Navigator.of(context).pop();
-              },
+              onPressed: () async => _goToLoginPage(),
               style: ButtonStyle(
                 minimumSize: MaterialStateProperty.all<Size>(
                   Size(size.width * 0.5, themeData.buttonTheme.height + 10),
@@ -228,14 +222,6 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         context: context,
         localDatabase: localDatabase,
       ),
-      // _getListTile(
-      //   appLocalizations.view_profile,
-      //   () async => LaunchUrlHelper.launchURL(
-      //     'https://openfoodfacts.org/editor/$userId',
-      //     true,
-      //   ),
-      //   Icons.open_in_new,
-      // ),
       _getListTile(
         'Metrics',
         () {
