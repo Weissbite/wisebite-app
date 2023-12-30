@@ -1,107 +1,134 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:openfoodfacts/openfoodfacts.dart';
-import 'package:smooth_app/data_models/login_result.dart';
-import 'package:smooth_app/database/dao_secured_string.dart';
-import 'package:smooth_app/query/product_query.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:smooth_app/data_models/user_data.dart';
+import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
+import 'package:smooth_app/pages/navigator/app_navigator.dart';
+import 'package:smooth_app/services/firebase_firestore_service.dart';
 import 'package:smooth_app/services/smooth_services.dart';
 
 class UserManagementProvider with ChangeNotifier {
-  static const String _USER_ID = 'user_id';
-  static const String _PASSWORD = 'pasword';
+  static User? get user => FirebaseAuth.instance.currentUser;
 
-  /// Checks credentials and conditionally saves them.
-  Future<LoginResult> login(final User user) async {
-    final LoginResult loginResult = await LoginResult.getLoginResult(user);
-    if (loginResult.type != LoginResultType.successful) {
-      return loginResult;
-    }
-    await putUser(loginResult.user!);
-    await credentialsInStorage();
-    return loginResult;
+  void listenToFirebase() {
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      notifyListeners();
+    });
   }
 
-  /// Deletes saved credentials from storage
-  Future<bool> logout() async {
-    OpenFoodAPIConfiguration.globalUser = null;
-    DaoSecuredString.remove(key: _USER_ID);
-    DaoSecuredString.remove(key: _PASSWORD);
-    notifyListeners();
-    final bool contains = await credentialsInStorage();
-    return !contains;
+  // We're going to look for a document inside "user_data" collection with the id of user's UID
+  // if there's no such document, we'll return false and prompt the user for filling the metrics
+  Future<bool> areMetricFieldsFilled() async {
+    if (user == null) return true;
+
+    final FirestoreService<UserData> service = FirestoreService<UserData>(
+      collectionPath: 'user_data',
+      fromFirestore: UserData().fromFirestore,
+    );
+
+    UserData? data = await service.getDocument(documentId: user!.uid);
+    if (data == null) return false;
+
+    return true;
   }
 
-  /// Mounts already stored credentials, called at app startup
-  ///
-  /// We can use optional parameters to mock in tests
-  static Future<void> mountCredentials(
-      {String? userId, String? password}) async {
-    String? effectiveUserId;
-    String? effectivePassword;
-
+  Future<void> signInWithGoogle(BuildContext context) async {
     try {
-      effectiveUserId = userId ?? await DaoSecuredString.get(_USER_ID);
-      effectivePassword = password ?? await DaoSecuredString.get(_PASSWORD);
-    } on PlatformException {
-      /// Decrypting the values can go wrong if, for example, the app was
-      /// manually overwritten from an external apk.
-      DaoSecuredString.remove(key: _USER_ID);
-      DaoSecuredString.remove(key: _PASSWORD);
-      Logs.e('Credentials query failed, you have been logged out');
-    }
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    if (effectiveUserId == null || effectivePassword == null) {
-      return;
-    }
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
 
-    final User user =
-        User(userId: effectiveUserId, password: effectivePassword);
-    OpenFoodAPIConfiguration.globalUser = user;
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
+
+      // Sign In
+      await FirebaseAuth.instance.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      Logs.e(
+        'An error occurred while trying to Sign In. ${e.message}',
+        ex: e,
+      );
+    }
   }
 
-  /// Checks if any credentials exist in storage
-  Future<bool> credentialsInStorage() async {
-    final String? userId = await DaoSecuredString.get(_USER_ID);
-    final String? password = await DaoSecuredString.get(_PASSWORD);
-
-    return userId != null && password != null;
-  }
-
-  /// Saves user to storage
-  Future<void> putUser(User user) async {
-    OpenFoodAPIConfiguration.globalUser = user;
-    await DaoSecuredString.put(
-      key: _USER_ID,
-      value: user.userId,
-    );
-    await DaoSecuredString.put(
-      key: _PASSWORD,
-      value: user.password,
-    );
-    notifyListeners();
-  }
-
-  /// Check if the user is still logged in and the credentials are still valid
-  /// If not, the user is logged out
-  Future<void> checkUserLoginValidity() async {
-    if (!ProductQuery.isLoggedIn()) {
-      return;
-    }
-    final User user = ProductQuery.getUser();
-    final LoginResult loginResult = await LoginResult.getLoginResult(
-      User(
-        userId: user.userId,
-        password: user.password,
-      ),
-    );
-    switch (loginResult.type) {
-      case LoginResultType.successful:
-      case LoginResultType.serverIssue:
-      case LoginResultType.exception:
+  Future<void> signInWithFacebook(BuildContext context) async {
+    try {
+      // Trigger the sign-in flow
+      final LoginResult? loginResult = await FacebookAuth.instance.login();
+      if (loginResult == null) {
+        print(loginResult);
         return;
-      case LoginResultType.unsuccessful:
-        // TODO(m123): Notify the user
-        await logout();
+      }
+
+      // Create a credential from the access token
+      final OAuthCredential facebookAuthCredential =
+          FacebookAuthProvider.credential(loginResult.accessToken!.token);
+
+      // Sign In
+      await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
+    } on FirebaseAuthException catch (e) {
+      Logs.e(
+        'An error occurred while trying to Sign In. ${e.message}',
+        ex: e,
+      );
     }
   }
+
+  Future<void> signInWithApple(BuildContext context) async {
+    // Can't implement this without an Apple Developer Account
+  }
+
+  // SIGN OUT
+  Future<void> signOut(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } on FirebaseAuthException catch (e) {
+      Logs.e(
+        'An error occurred while trying to Sign Out. ${e.message}',
+        ex: e,
+      );
+    }
+  }
+}
+
+void showCompleteProfileDialog(BuildContext context) {
+  showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SmoothAlertDialog(
+          title: 'Complete profile',
+          body: Column(
+            children: <Widget>[
+              Text(
+                  'Complete the creation of your profile and fill out this form for more accurate recommendations.'),
+              const SizedBox(
+                height: 10,
+              ),
+            ],
+          ),
+          positiveAction: SmoothActionButton(
+            text: 'Complete',
+            onPressed: () {
+              AppNavigator.of(context).push(AppRoutes.METRICS);
+              Navigator.of(context, rootNavigator: true).pop('dialog');
+            },
+          ),
+          negativeAction: SmoothActionButton(
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).pop('dialog');
+            },
+            text: 'Close',
+            minWidth: 100,
+          ),
+          actionsAxis: Axis.vertical,
+          actionsOrder: SmoothButtonsBarOrder.auto,
+        );
+      });
 }
