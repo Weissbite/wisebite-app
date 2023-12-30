@@ -123,7 +123,14 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         MaterialPageRoute<dynamic>(
           builder: (BuildContext context) => const LoginPage(),
         ),
-      );
+      )
+          .then((_) async {
+        final bool areMetricsFilled =
+            await UserManagementProvider().areMetricFieldsFilled();
+        if (!areMetricsFilled) {
+          showCompleteProfileDialog(context);
+        }
+      });
 
   @override
   List<UserPreferencesItem> getChildren() {
