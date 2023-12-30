@@ -9,45 +9,45 @@ Android:
 
 Assets cache:
   - changed-files:
-    - packages/smooth_app/assets/cache/
+    - any-glob-to-any-file: packages/smooth_app/assets/cache/**/*
 
 🔁 Background tasks:
   - changed-files:
-    - packages/smooth_app/lib/background/background_task_manager.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/background/background_task_manager.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/offline_tasks_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/offline_tasks_page.dart
 
 📚 Documentation:
   - changed-files:
-    - README.md
+    - any-glob-to-any-file: README.md
   - changed-files:
-    - packages/smooth_app/android/fastlane/README.md
+    - any-glob-to-any-file: packages/smooth_app/android/fastlane/README.md
   - changed-files:
-    - packages/smooth_app/README.md
+    - any-glob-to-any-file: packages/smooth_app/README.md
   - changed-files:
-    - packages/smooth_app/lib/l10n/README.md
+    - any-glob-to-any-file: packages/smooth_app/lib/l10n/README.md
 
 Dependencies:
   - changed-files:
-    - packages/smooth_app/pubspec.yaml
+    - any-glob-to-any-file: packages/smooth_app/pubspec.yaml
   - changed-files:
-    - packages/data_importer/pubspec.yaml
+    - any-glob-to-any-file: packages/data_importer/pubspec.yaml
   - changed-files:
-    - packages/scanner/zxing/pubspec.yaml
+    - any-glob-to-any-file: packages/scanner/zxing/pubspec.yaml
   - changed-files:
-    - packages/scanner/ml_kit/pubspec.yaml
+    - any-glob-to-any-file: packages/scanner/ml_kit/pubspec.yaml
   - changed-files:
-    - packages/scanner/shared/pubspec.yaml
+    - any-glob-to-any-file: packages/scanner/shared/pubspec.yaml
   - changed-files:
-    - packages/app_store/shared/pubspec.yaml
+    - any-glob-to-any-file: packages/app_store/shared/pubspec.yaml
   - changed-files:
-    - packages/app_store/uri_store/pubspec.yaml
+    - any-glob-to-any-file: packages/app_store/uri_store/pubspec.yaml
   - changed-files:
-    - packages/data_importer_shared/pubspec.yaml
+    - any-glob-to-any-file: packages/data_importer_shared/pubspec.yaml
   - changed-files:
-    - packages/app_store/google_play/pubspec.yaml
+    - any-glob-to-any-file: packages/app_store/google_play/pubspec.yaml
   - changed-files:
-    - packages/app_store/apple_app_store/pubspec.yaml
+    - any-glob-to-any-file: packages/app_store/apple_app_store/pubspec.yaml
 
 🍎 iOS:
   - changed-files:
@@ -55,9 +55,9 @@ Dependencies:
 
 ⚡️ Fastlane:
   - changed-files:
-    - packages/smooth_app/ios/Gemfile.lock
+    - any-glob-to-any-file: packages/smooth_app/ios/Gemfile.lock
   - changed-files:
-    - packages/smooth_app/android/Gemfile.lock
+    - any-glob-to-any-file: packages/smooth_app/android/Gemfile.lock
 
 Asset cache:
   - changed-files:
@@ -71,47 +71,47 @@ Web:
   - changed-files:
     - any-glob-to-any-file: packages/smooth_app/test/**/*
   - changed-files:
-    - packages/smooth_app/test/widget_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/widget_test.dart
   - changed-files:
-    - packages/smooth_app/test/basic_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/basic_test.dart
   - changed-files:
-    - packages/scanner/shared/test/shared_test.dart
+    - any-glob-to-any-file: packages/scanner/shared/test/shared_test.dart
   - changed-files:
-    - packages/smooth_app/test/cache/cache_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/cache/cache_test.dart
   - changed-files:
-    - packages/smooth_app/integration_test/app_test.dart
+    - any-glob-to-any-file: packages/smooth_app/integration_test/app_test.dart
   - changed-files:
-    - packages/data_importer/test/data_importer_test.dart
+    - any-glob-to-any-file: packages/data_importer/test/data_importer_test.dart
   - changed-files:
-    - packages/scanner/mlkit/test/scanner_mlkit_test.dart
+    - any-glob-to-any-file: packages/scanner/mlkit/test/scanner_mlkit_test.dart
   - changed-files:
-    - packages/smooth_app/test/plural_translation_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/plural_translation_test.dart
   - changed-files:
-    - packages/smooth_app/test/smooth_ui_library/basic_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/smooth_ui_library/basic_test.dart
   - changed-files:
-    - packages/smooth_app/test/utils/string_extensions_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/utils/string_extensions_test.dart
   - changed-files:
-    - packages/smooth_app/test/dialogs/generic_lib/dialogs_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/dialogs/generic_lib/dialogs_test.dart
   - changed-files:
-    - packages/smooth_app/test/pages/user_preferences_page_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/pages/user_preferences_page_test.dart
   - changed-files:
-    - packages/smooth_app/test/utils/text_input_formatters_tests.dart
+    - any-glob-to-any-file: packages/smooth_app/test/utils/text_input_formatters_tests.dart
   - changed-files:
-    - packages/data_importer_shared/test/data_importer_shared_test.dart
+    - any-glob-to-any-file: packages/data_importer_shared/test/data_importer_shared_test.dart
   - changed-files:
-    - packages/smooth_app/test/tests_utils/mocks.dart
+    - any-glob-to-any-file: packages/smooth_app/test/tests_utils/mocks.dart
   - changed-files:
-    - packages/smooth_app/test/tests_utils/goldens.dart
+    - any-glob-to-any-file: packages/smooth_app/test/tests_utils/goldens.dart
   - changed-files:
-    - packages/smooth_app/test_driver/screenshot_driver.dart
+    - any-glob-to-any-file: packages/smooth_app/test_driver/screenshot_driver.dart
   - changed-files:
-    - packages/smooth_app/test/pages/generic_lib/widgets/smooth_error_card_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/pages/generic_lib/widgets/smooth_error_card_test.dart
   - changed-files:
-    - packages/smooth_app/test/smooth_ui_library/dialogs/smooth_category_picker_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/smooth_ui_library/dialogs/smooth_category_picker_test.dart
   - changed-files:
-    - packages/smooth_app/test/tests_utils/path_provider_mock.dart
+    - any-glob-to-any-file: packages/smooth_app/test/tests_utils/path_provider_mock.dart
   - changed-files:
-    - packages/smooth_app/test/smooth_ui_library/animations/smooth_reveal_animation_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/smooth_ui_library/animations/smooth_reveal_animation_test.dart
 
 Database:
   - changed-files:
@@ -123,15 +123,15 @@ Database:
 
 History:
   - changed-files:
-    - packages/smooth_app/lib/pages/history_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/history_page.dart
 
 ⚙️ Settings:
   - changed-files:
-    - packages/smooth_app/lib/pages/user_preferences_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/user_preferences_page.dart
 
 ⚙️🥗 Food preferences:
   - changed-files:
-    - packages/smooth_app/lib/widgets/attribute_button.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/widgets/attribute_button.dart
 
 🤗 Onboarding:
   - changed-files:
@@ -141,35 +141,35 @@ History:
 
 ✏️ Editing - Nutrition input:
   - changed-files:
-    - packages/smooth_app/lib/pages/product/nutrition_page_loaded.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/nutrition_page_loaded.dart
 
 🤳🥫 Scan:
   - changed-files:
     - any-glob-to-any-file: packages/smooth_app/lib/pages/scan/**/*
   - changed-files:
-    - packages/smooth_app/lib/pages/scan/continuous_scan_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/scan/continuous_scan_page.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/scan/scan_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/scan/scan_page.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/scan/abstract_camera_image_getter.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/scan/abstract_camera_image_getter.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/scan/ml_kit_scan_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/scan/ml_kit_scan_page.dart
 
 🤳🥫 MLKit:
   - changed-files:
-    - packages/smooth_app/lib/pages/scan/ml_kit_scan_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/scan/ml_kit_scan_page.dart
 
 Amazon Appstore:
   - changed-files:
-    - packages/smooth_app/lib/entrypoints/android/main_amazon_appstore.dart,
+    - any-glob-to-any-file: packages/smooth_app/lib/entrypoints/android/main_amazon_appstore.dart,
 
 F-Droid:
   - changed-files:
-    - packages/smooth_app/lib/entrypoints/android/main_fdroid.dart,
+    - any-glob-to-any-file: packages/smooth_app/lib/entrypoints/android/main_fdroid.dart,
 
 Huawei AppGallery:
   - changed-files:
-    - packages/smooth_app/lib/entrypoints/android/main_huawei_appgallery.dart,
+    - any-glob-to-any-file: packages/smooth_app/lib/entrypoints/android/main_huawei_appgallery.dart,
 
 🤳🥫 ZXing:
   - changed-files:
@@ -177,9 +177,9 @@ Huawei AppGallery:
 
 Product addition:
   - changed-files:
-    - packages/smooth_app/lib/pages/product/add_new_product_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/add_new_product_page.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/product/new_product_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/new_product_page.dart
 
 🥫 Product page:
   - changed-files:
@@ -189,61 +189,61 @@ Product addition:
   - changed-files:
     - any-glob-to-any-file: packages/smooth_app/lib/cards/product_cards/knowledge_panels/**/*
   - changed-files:
-    - packages/smooth_app/lib/pages/product/reorderable_knowledge_panel_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/reorderable_knowledge_panel_page.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/product/reordered_knowledge_panel_cards.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/reordered_knowledge_panel_cards.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/product/standard_knowledge_panel_cards.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/standard_knowledge_panel_cards.dart
 
 🤖 Robotoff:
   - changed-files:
-    - packages/smooth_app/lib/database/robotoff_questions_query.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/database/robotoff_questions_query.dart
   - changed-files:
-    - packages/smooth_app/lib/cards/product_cards/question_card.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/cards/product_cards/question_card.dart
 
 Hunger Games:
   - changed-files:
-    - packages/smooth_app/lib/pages/hunger_games/question_answers_options.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/hunger_games/question_answers_options.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/hunger_games/question_card.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/hunger_games/question_card.dart
 
 Summary card:
   - changed-files:
-    - packages/smooth_app/lib/pages/product/summary_card.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/summary_card.dart
 
 📈 Analytics:
   - changed-files:
-    - packages/smooth_app/lib/pages/onboarding/consent_analytics_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/onboarding/consent_analytics_page.dart
   - changed-files:
-    - packages/smooth_app/assets/onboarding/analytics.svg
+    - any-glob-to-any-file: packages/smooth_app/assets/onboarding/analytics.svg
   - changed-files:
-    - packages/smooth_app/lib/helpers/analytics_helper.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/helpers/analytics_helper.dart
 
 Goldens:
   - changed-files:
-    - packages/smooth_app/test/pages/goldens
+    - any-glob-to-any-file: packages/smooth_app/test/pages/goldens
   - changed-files:
-    - packages/smooth_app/test/tests_utils/goldens.dart
+    - any-glob-to-any-file: packages/smooth_app/test/tests_utils/goldens.dart
   - changed-files:
-    - packages/smooth_app/test/pages/goldens/user_preferences_page-dark.png
+    - any-glob-to-any-file: packages/smooth_app/test/pages/goldens/user_preferences_page-dark.png
   - changed-files:
-    - packages/smooth_app/test/pages/goldens/user_preferences_page-light.png
+    - any-glob-to-any-file: packages/smooth_app/test/pages/goldens/user_preferences_page-light.png
   - changed-files:
-    - packages/smooth_app/test/smooth_ui_library/widgets/goldens/smooth_view_finder.png
+    - any-glob-to-any-file: packages/smooth_app/test/smooth_ui_library/widgets/goldens/smooth_view_finder.png
   - changed-files:
-    - packages/smooth_app/test/smooth_ui_library/widgets/goldens/smooth_view_finder-animation.png
+    - any-glob-to-any-file: packages/smooth_app/test/smooth_ui_library/widgets/goldens/smooth_view_finder-animation.png
   - changed-files:
-    - packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Improving-dark.png
+    - any-glob-to-any-file: packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Improving-dark.png
   - changed-files:
-    - packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Translate-dark.png
+    - any-glob-to-any-file: packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Translate-dark.png
   - changed-files:
-    - packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Improving-light.png
+    - any-glob-to-any-file: packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Improving-light.png
   - changed-files:
-    - packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Translate-light.png
+    - any-glob-to-any-file: packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Translate-light.png
   - changed-files:
-    - packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Software development-dark.png
+    - any-glob-to-any-file: packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Software development-dark.png
   - changed-files:
-    - packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Software development-light.png
+    - any-glob-to-any-file: packages/smooth_app/test/dialogs/generic_lib/goldens/user_preferences_page_dialogs_Software development-light.png
 
 GitHub:
   - changed-files:
@@ -251,70 +251,70 @@ GitHub:
 
 👥 User management:
   - changed-files:
-    - packages/smooth_app/lib/pages/user_management/login_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/user_management/login_page.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/user_management/forgot_password_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/user_management/forgot_password_page.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/user_management/sign_up_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/user_management/sign_up_page.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/user_preferences_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/user_preferences_page.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/user_preferences_settings.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/user_preferences_settings.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/user_preferences_food.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/user_preferences_food.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/user_preferences_dev_mode.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/user_preferences_dev_mode.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/user_preferences_attribute_group.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/user_preferences_attribute_group.dart
   - changed-files:
-    - packages/smooth_app/lib/helpers/user_management_helper.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/helpers/user_management_helper.dart
 
 #tag picker:
 
 ✏️ Editing - Category picker:
   - changed-files:
-    - packages/smooth_app/lib/data_models/category_tree_supplier.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/data_models/category_tree_supplier.dart
   - changed-files:
-    - packages/smooth_app/example/smooth_category_picker_example.dart
+    - any-glob-to-any-file: packages/smooth_app/example/smooth_category_picker_example.dart
   - changed-files:
-    - packages/smooth_app/generic_lib/dialogs/smooth_category_picker.dart
+    - any-glob-to-any-file: packages/smooth_app/generic_lib/dialogs/smooth_category_picker.dart
   - changed-files:
-    - packages/smooth_app/test/dialogs/smooth_category_picker_test.dart
+    - any-glob-to-any-file: packages/smooth_app/test/dialogs/smooth_category_picker_test.dart
   - changed-files:
-    - packages/smooth_app/lib/data_models/category_query_model.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/data_models/category_query_model.dart
   - changed-files:
-    - packages/smooth_app/lib/data_models/query_category_tree_supplier.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/data_models/query_category_tree_supplier.dart
   - changed-files:
-    - packages/smooth_app/lib/data_models/smooth_category.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/data_models/smooth_category.dart
 
 Ranking:
   - changed-files:
-    - packages/smooth_app/lib/helpers/product_compatibility_helper.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/helpers/product_compatibility_helper.dart
 
 Generic lib:
   - changed-files:
-    - packages/smooth_app/lib/generic_lib
+    - any-glob-to-any-file: packages/smooth_app/lib/generic_lib
 
 🖼️ Photos - Cropping:
   - changed-files:
-    - packages/smooth_app/lib/pages/image_crop_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/image_crop_page.dart
 
 User lists:
   - changed-files:
-    - packages/smooth_app/lib/pages/product_list_user_dialog_helper.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product_list_user_dialog_helper.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/product/common/product_list_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/common/product_list_page.dart
 
 Product scan carousel:
   - changed-files:
-    - packages/smooth_app/lib/widgets/smooth_product_carousel.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/widgets/smooth_product_carousel.dart
 
 ✏️ Editing - 📦 Packaging input:
   - changed-files:
-    - packages/smooth_app/lib/pages/product/edit_new_packagings.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/edit_new_packagings.dart
   - changed-files:
-    - packages/smooth_app/lib/pages/product/ocr_packaging_helper.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/ocr_packaging_helper.dart
 
 ✏️ Editing - Basic info input:
   - changed-files:
-    - packages/smooth_app/lib/pages/product/add_basic_details_page.dart
+    - any-glob-to-any-file: packages/smooth_app/lib/pages/product/add_basic_details_page.dart
