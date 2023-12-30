@@ -10,6 +10,7 @@ import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/helpers/launch_url_helper.dart';
 import 'package:smooth_app/helpers/user_management_helper.dart';
+import 'package:smooth_app/pages/navigator/app_navigator.dart';
 import 'package:smooth_app/pages/preferences/abstract_user_preferences.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_item.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_list_tile.dart';
@@ -116,14 +117,20 @@ class UserPreferencesAccount extends AbstractUserPreferences {
     );
   }
 
-  Future<void> _goToLoginPage() async => Navigator.of(
-        context,
-        rootNavigator: true,
-      ).push<dynamic>(
+  Future<void> _goToLoginPage() async =>
+      Navigator.of(context, rootNavigator: true)
+          .push<dynamic>(
         MaterialPageRoute<dynamic>(
           builder: (BuildContext context) => const LoginPage(),
         ),
-      );
+      )
+          .then((_) async {
+        final bool areMetricsFilled =
+            await UserManagementProvider().areMetricFieldsFilled();
+        if (!areMetricsFilled) {
+          showCompleteProfileDialog(context);
+        }
+      });
 
   @override
   List<UserPreferencesItem> getChildren() {
@@ -222,6 +229,13 @@ class UserPreferencesAccount extends AbstractUserPreferences {
           true,
         ),
         Icons.open_in_new,
+      ),
+      _getListTile(
+        'Metrics',
+        () {
+          AppNavigator.of(context).push(AppRoutes.METRICS);
+        },
+        Icons.account_circle,
       ),
       _getListTile(
         appLocalizations.sign_out,
