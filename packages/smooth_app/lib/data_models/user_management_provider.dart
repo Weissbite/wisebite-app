@@ -66,6 +66,10 @@ class UserManagementProvider with ChangeNotifier {
     try {
       // Trigger the sign-in flow
       final LoginResult loginResult = await FacebookAuth.instance.login();
+      if (loginResult.accessToken == null) {
+        Logs.d('signInWithFacebook: $loginResult');
+        return;
+      }
 
       // Create a credential from the access token
       final OAuthCredential facebookAuthCredential =

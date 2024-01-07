@@ -7,6 +7,7 @@ import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_app/background/background_task_hunger_games.dart';
+import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/buttons/smooth_large_button_with_icon.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
@@ -304,7 +305,7 @@ class _QuestionPageState extends State<_QuestionPage>
     if (barcode == null || insightId == null) {
       return;
     }
-    if (OpenFoodAPIConfiguration.globalUser == null) {
+    if (UserManagementProvider.user == null) {
       _anonymousAnnotationList.putIfAbsent(insightId, () => insightAnnotation);
     }
     await BackgroundTaskHungerGames.addTask(
