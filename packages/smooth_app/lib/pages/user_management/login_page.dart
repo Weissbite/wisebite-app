@@ -2,21 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
-import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_app/data_models/login_result.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/data_models/user_management_provider.dart';
+import 'package:smooth_app/generic_lib/buttons/service_sign_in_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
-import 'package:smooth_app/generic_lib/widgets/smooth_card.dart';
-import 'package:smooth_app/generic_lib/widgets/smooth_text_form_field.dart';
 import 'package:smooth_app/helpers/analytics_helper.dart';
 import 'package:smooth_app/helpers/app_helper.dart';
 import 'package:smooth_app/helpers/launch_url_helper.dart';
 import 'package:smooth_app/helpers/user_feedback_helper.dart';
-import 'package:smooth_app/pages/user_management/forgot_password_page.dart';
-import 'package:smooth_app/pages/user_management/sign_up_page.dart';
 import 'package:smooth_app/services/smooth_services.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
@@ -37,6 +33,7 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
   final TextEditingController userIdController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
+  // I'll leave this function for when we add email password login.
   Future<void> _login(BuildContext context) async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -50,12 +47,12 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
       _loginResult = null;
     });
 
-    _loginResult = await userManagementProvider.login(
-      User(
-        userId: userIdController.text,
-        password: passwordController.text,
-      ),
-    );
+    // _loginResult = await userManagementProvider.login(
+    //   User(
+    //     userId: userIdController.text,
+    //     password: passwordController.text,
+    //   ),
+    // );
 
     if (_loginResult!.type == LoginResultType.successful) {
       AnalyticsHelper.trackEvent(AnalyticsEvent.loginAction);
@@ -135,6 +132,55 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                       ),
 
                       const SizedBox(
+                        height: LARGE_SPACE * 4,
+                      ),
+
+                      ServiceSignInButton(
+                        onPressed: () async {
+                          await UserManagementProvider()
+                              .signInWithGoogle(context);
+                          Navigator.pop(context);
+                        },
+                        backgroundColor: Colors.white,
+                        iconPath: 'assets/icons/google.svg',
+                        text: 'Sign In with Google',
+                        fontColor: Colors.black,
+                      ),
+
+                      const SizedBox(
+                        height: LARGE_SPACE,
+                      ),
+
+                      ServiceSignInButton(
+                        onPressed: () async {
+                          await UserManagementProvider()
+                              .signInWithFacebook(context);
+                          Navigator.pop(context);
+                        },
+                        backgroundColor: Color.fromARGB(255, 24, 119, 242),
+                        iconPath: 'assets/icons/facebook.svg',
+                        text: 'Sign In with Facebook',
+                        fontColor: Colors.white,
+                      ),
+
+                      // const SizedBox(
+                      //   height: LARGE_SPACE,
+                      // ),
+                      //
+                      // ServiceSignInButton(
+                      //   onPressed: () async {
+                      //     await UserManagementProvider()
+                      //         .signInWithApple(context);
+                      //     Navigator.pop(context);
+                      //   },
+                      //   backgroundColor: Colors.white,
+                      //   iconPath: 'assets/icons/apple.svg',
+                      //   text: 'Sign In with Apple',
+                      //   fontColor: Colors.black,
+                      // ),
+
+                      // We don't currently support email password login, so no need of this code.
+                      /*const SizedBox(
                         height: LARGE_SPACE * 3,
                       ),
 
@@ -334,7 +380,7 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                             ),
                           ),
                         ),
-                      ),
+                      ),*/
                     ],
                   ),
                 ),

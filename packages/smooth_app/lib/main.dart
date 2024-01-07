@@ -39,6 +39,9 @@ import 'package:smooth_app/themes/smooth_theme.dart';
 import 'package:smooth_app/themes/theme_provider.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 void main() {
   debugPrint('--------');
   debugPrint('The app must not be started using the main.dart file');
@@ -124,7 +127,6 @@ Future<bool> _init1() async {
   DartPingIOS.register();
   await SmoothServices().init(GlobalVars.appStore);
   await setupAppNetworkConfig();
-  await UserManagementProvider.mountCredentials();
   _userPreferences = await UserPreferences.getUserPreferences();
   _localDatabase = await LocalDatabase.getLocalDatabase();
   await _continuousScanModel.load(_localDatabase);
@@ -136,7 +138,6 @@ Future<bool> _init1() async {
     ),
     daoString: DaoString(_localDatabase),
   );
-  UserManagementProvider().checkUserLoginValidity();
 
   AnalyticsHelper.linkPreferences(_userPreferences);
 
@@ -181,6 +182,13 @@ class _SmoothAppState extends State<SmoothApp> {
     if (!_screenshots) {
       await _userPreferences.init(_productPreferences);
     }
+
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    _userManagementProvider.listenToFirebase();
+
     return true;
   }
 

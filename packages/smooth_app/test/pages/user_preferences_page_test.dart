@@ -111,10 +111,10 @@ void main() {
     colorProvider = ColorProvider(userPreferences);
     textContrastProvider = TextContrastProvider(userPreferences);
 
-    UserManagementProvider.mountCredentials(
-      userId: 'userId',
-      password: 'password',
-    );
+    // UserManagementProvider.mountCredentials(
+    //   userId: 'userId',
+    //   password: 'password',
+    // );
 
     await tester.pumpWidget(
       MockSmoothApp(

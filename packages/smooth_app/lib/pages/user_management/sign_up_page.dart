@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
-import 'package:provider/provider.dart';
-import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/generic_lib/loading_dialog.dart';
@@ -403,7 +401,7 @@ class _SignUpPageState extends State<SignUpPage> with TraceableClientMixin {
     if (!mounted) {
       return;
     }
-    await context.read<UserManagementProvider>().putUser(user);
+    //await context.read<UserManagementProvider>().putUser(user)
     if (!context.mounted) {
       return;
     }

@@ -8,11 +8,9 @@ import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/buttons/smooth_simple_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
-import 'package:smooth_app/helpers/analytics_helper.dart';
 import 'package:smooth_app/helpers/launch_url_helper.dart';
 import 'package:smooth_app/helpers/user_management_helper.dart';
 import 'package:smooth_app/pages/preferences/abstract_user_preferences.dart';
-import 'package:smooth_app/pages/preferences/account_deletion_webview.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_item.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_list_tile.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_page.dart';
@@ -40,7 +38,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
   @override
   PreferencePageType getPreferencePageType() => PreferencePageType.ACCOUNT;
 
-  String? _getUserId() => OpenFoodAPIConfiguration.globalUser?.userId;
+  String? _getUserId() => UserManagementProvider.user?.displayName;
 
   @override
   String getTitleString() {
@@ -87,7 +85,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
       context.watch<UserManagementProvider>();
     }
 
-    return OpenFoodAPIConfiguration.globalUser != null;
+    return UserManagementProvider.user != null;
   }
 
   @override
@@ -129,7 +127,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
 
   @override
   List<UserPreferencesItem> getChildren() {
-    if (OpenFoodAPIConfiguration.globalUser == null) {
+    if (UserManagementProvider.user == null) {
       // No credentials
       final Size size = MediaQuery.of(context).size;
       return <UserPreferencesItem>[
@@ -164,7 +162,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
 
     final LocalDatabase localDatabase = context.read<LocalDatabase>();
     // Credentials
-    final String userId = OpenFoodAPIConfiguration.globalUser!.userId;
+    final String userId = UserManagementProvider.user!.uid;
     return <UserPreferencesItem>[
       _buildProductQueryTile(
         productQuery: PagedUserProductQuery(
@@ -226,22 +224,11 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         Icons.open_in_new,
       ),
       _getListTile(
-        appLocalizations.account_delete,
-        () async => Navigator.push<void>(
-          context,
-          MaterialPageRoute<void>(
-            builder: (BuildContext context) => AccountDeletionWebview(),
-          ),
-        ),
-        Icons.delete,
-      ),
-      _getListTile(
         appLocalizations.sign_out,
         () async {
           if (await _confirmLogout() == true) {
             if (context.mounted) {
-              await context.read<UserManagementProvider>().logout();
-              AnalyticsHelper.trackEvent(AnalyticsEvent.logoutAction);
+              await UserManagementProvider().signOut(context);
               if (context.mounted) {
                 Navigator.pop(context);
               }
