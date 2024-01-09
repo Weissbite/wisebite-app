@@ -49,7 +49,7 @@ class CongratsWidget extends StatelessWidget {
               ),
               FractionallySizedBox(
                 child: FutureBuilder<bool>(
-                    future: userManagementProvider.credentialsInStorage(),
+                    future: Future<bool>.value(true),
                     builder:
                         (BuildContext context, AsyncSnapshot<bool> snapshot) {
                       if (!snapshot.hasData) {
@@ -110,7 +110,7 @@ class CongratsWidget extends StatelessWidget {
                       builder: (_) => const LoginPage(),
                     ),
                   );
-                  if (OpenFoodAPIConfiguration.globalUser != null) {
+                  if (UserManagementProvider.user != null) {
                     if (!context.mounted) {
                       return;
                     }

@@ -102,7 +102,6 @@ dependencies:
   firebase_auth: ^4.15.3
   google_sign_in: ^6.2.1
   flutter_facebook_auth: ^6.0.3
-  cloud_firestore: ^4.13.6
   # openfoodfacts:
   #   path: ../../../openfoodfacts-dart
 
