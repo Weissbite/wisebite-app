@@ -9,6 +9,7 @@ import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/pages/navigator/app_navigator.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
 import 'package:smooth_app/services/smooth_services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserManagementProvider with ChangeNotifier {
   static User? get user => FirebaseAuth.instance.currentUser;
