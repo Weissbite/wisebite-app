@@ -231,7 +231,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         Icons.open_in_new,
       ),
       _getListTile(
-        'Metrics',
+        appLocalizations.metrics,
         () {
           AppNavigator.of(context).push(AppRoutes.METRICS);
         },

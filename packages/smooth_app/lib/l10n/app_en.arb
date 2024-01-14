@@ -2526,5 +2526,25 @@
     "link_cant_be_opened": "This link can't be opened on your device. Please check that you have a browser installed.",
     "@link_cant_be_opened": {
         "description": "An error may happen if the device doesn't have a browser installed."
-    }
+    },
+    "sign_in_with_google": "Sign In with Google",
+    "sign_in_with_facebook": "Sign In with Facebook",
+    "complete_profile": "Complete Profile",
+    "complete_profile_prompt": "Complete the creation of your profile and fill out this form for more accurate recommendations.",
+    "complete": "Complete",
+    "complete_profile_get_better_recommendations" : "Complete your profile to get better recommendations",
+    "activity_level": "Activity Level",
+    "sedentary_description": "- You do less than 30 minutes a day of intentional exercise and you don't do anything that can be considered moderate or vigorous\n - Daily living activities like walking the dog, shopping, mowing the lawn, taking out the trash, or gardening don't count as intentional exercise\n - You spend most of your day sitting",
+    "lightly_active_description": "- You do intentional exercise every day for at least 30 minutes\nThe baseline for this is walking for 30 minutes at ~6km/h - this is walking at a brisk pace\n- You can also do exercise for a shorter period of time providing the exercise is vigorous. An example of vigorous activity is jogging.\n- You will also usually spend a large part of your day on your feet",
+    "moderetaly_active_description": "- You do intentional exercise every day that is equivalent to briskly walking for at least one hour and 45 minutes - briskly walking is walking at ~6km/h\n- Alternatively, you can do exercise for a shorter period of time providing the exercise is vigorous. An example of vigorous activity is jogging, i.e. you would need to jog for a minimum of 50 minutes to be considered moderately active.\n- You will also probably spend a large part of your day doing something physical - examples include being a mailman or waitress",
+    "very_active_description": "- You do intentional exercise every day that is equivalent to briskly walking for at least four hours and 15 minutes - briskly walking is walking at ~6km/h\n- You can also do exercise for a shorter period of time providing the exercise is vigorous - an example of vigorous activity is jogging - you would need to jog for a minimum of two hours a day to be considered very active.\n- You will also probably spend most of your day doing something physical - examples include carpenters or bike messengers",
+    "metrics": "Metrics",
+    "age": "Age",
+    "please_enter_your_age": "Please enter your age",
+    "height": "Height (cm)",
+    "please_enter_your_height": "Please enter your height",
+    "weight": "Weight (kg)",
+    "please_enter_your_weight": "Please enter your weight",
+    "processing": "Processing...",
+    "submit": "Submit"
 }

@@ -97,7 +97,7 @@ class ProductCompatibilityHeader extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(SMALL_SPACE),
                         child: Text(
-                          'Complete your profile to get better recommendations',
+                          appLocalizations.complete_profile_get_better_recommendations,
                           style: themeData.textTheme.titleMedium?.copyWith(
                             color: helper.getHeaderForegroundColor(isDarkMode),
                           ),
@@ -111,7 +111,7 @@ class ProductCompatibilityHeader extends StatelessWidget {
                     onTap: () =>
                         AppNavigator.of(context).push(AppRoutes.METRICS),
                     child: Tooltip(
-                      message: 'Complete profile',
+                      message: appLocalizations.complete_profile,
                       triggerMode: TooltipTriggerMode.longPress,
                       child: const SizedBox.square(
                         dimension: kMinInteractiveDimension,

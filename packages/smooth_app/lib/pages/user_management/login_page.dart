@@ -143,7 +143,7 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                         },
                         backgroundColor: Colors.white,
                         iconPath: 'assets/icons/google.svg',
-                        text: 'Sign In with Google',
+                        text: appLocalizations.sign_in_with_google,
                         fontColor: Colors.black,
                       ),
 
@@ -159,7 +159,7 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                         },
                         backgroundColor: Color.fromARGB(255, 24, 119, 242),
                         iconPath: 'assets/icons/facebook.svg',
-                        text: 'Sign In with Facebook',
+                        text: appLocalizations.sign_in_with_facebook,
                         fontColor: Colors.white,
                       ),
 

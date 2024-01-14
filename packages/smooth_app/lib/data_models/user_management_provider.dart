@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -7,6 +8,7 @@ import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/pages/navigator/app_navigator.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
 import 'package:smooth_app/services/smooth_services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserManagementProvider with ChangeNotifier {
   static User? get user => FirebaseAuth.instance.currentUser;
@@ -56,6 +58,8 @@ class UserManagementProvider with ChangeNotifier {
         ex: e,
       );
     }
+
+    FirebaseAnalytics.instance.logLogin(loginMethod: 'Google');
   }
 
   Future<void> signInWithFacebook(BuildContext context) async {
@@ -79,6 +83,8 @@ class UserManagementProvider with ChangeNotifier {
         ex: e,
       );
     }
+
+    FirebaseAnalytics.instance.logLogin(loginMethod: 'Facebook');
   }
 
   Future<void> signInWithApple(BuildContext context) async {
@@ -99,22 +105,23 @@ class UserManagementProvider with ChangeNotifier {
 }
 
 void showCompleteProfileDialog(BuildContext context) {
+  final AppLocalizations appLocalizations = AppLocalizations.of(context);
+
   showDialog(
       context: context,
       builder: (BuildContext context) {
         return SmoothAlertDialog(
-          title: 'Complete profile',
+          title: appLocalizations.complete_profile,
           body: Column(
             children: <Widget>[
-              Text(
-                  'Complete the creation of your profile and fill out this form for more accurate recommendations.'),
+              Text(appLocalizations.complete_profile_prompt),
               const SizedBox(
                 height: 10,
               ),
             ],
           ),
           positiveAction: SmoothActionButton(
-            text: 'Complete',
+            text: appLocalizations.complete,
             onPressed: () {
               AppNavigator.of(context).push(AppRoutes.METRICS);
               Navigator.of(context, rootNavigator: true).pop('dialog');

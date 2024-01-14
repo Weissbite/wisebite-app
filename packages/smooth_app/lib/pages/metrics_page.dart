@@ -10,6 +10,7 @@ import 'package:smooth_app/providers/activity_level_provider.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MerticsPageWidget extends StatefulWidget {
   const MerticsPageWidget({Key? key}) : super(key: key);
@@ -86,6 +87,7 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
   @override
   Widget build(BuildContext context) {
     final ThemeData _themeData = Theme.of(context);
+    final AppLocalizations appLocalizations = AppLocalizations.of(context);
 
     return SmoothSharedAnimationController(
       child: SmoothScaffold(
@@ -94,7 +96,7 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
           elevation: 2,
           automaticallyImplyLeading: false,
           leading: const SmoothBackButton(),
-          title: const Text('Metrics'),
+          title: Text(appLocalizations.metrics),
         ),
         body: Form(
           key: _formKey,
@@ -106,12 +108,12 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                 // Age Field
                 TextFormField(
                   controller: _ageController,
-                  decoration: InputDecoration(labelText: 'Age'),
+                  decoration: InputDecoration(labelText: appLocalizations.age),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your age';
+                      return appLocalizations.please_enter_your_age;
                     }
                     return null;
                   },
@@ -120,12 +122,13 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                 // Height Field
                 TextFormField(
                   controller: _heightController,
-                  decoration: InputDecoration(labelText: 'Height (cm)'),
+                  decoration:
+                      InputDecoration(labelText: appLocalizations.height),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your height';
+                      return appLocalizations.please_enter_your_height;
                     }
                     return null;
                   },
@@ -134,12 +137,13 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                 // Weight Field
                 TextFormField(
                   controller: _weightController,
-                  decoration: InputDecoration(labelText: 'Weight (kg)'),
+                  decoration:
+                      InputDecoration(labelText: appLocalizations.weight),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your weight';
+                      return appLocalizations.please_enter_your_weight;
                     }
                     return null;
                   },
@@ -156,12 +160,12 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                       // Validate and Process data
                       if (_formKey.currentState!.validate()) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Processing Data')),
+                          SnackBar(content: Text(appLocalizations.processing)),
                         );
                         _submitForm();
                       }
                     },
-                    child: Text('Submit'),
+                    child: Text(appLocalizations.submit),
                   ),
                 ),
               ],
