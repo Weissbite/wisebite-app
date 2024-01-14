@@ -123,14 +123,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         MaterialPageRoute<dynamic>(
           builder: (BuildContext context) => const LoginPage(),
         ),
-      )
-          .then((_) async {
-        final bool areMetricsFilled =
-            await UserManagementProvider().areMetricFieldsFilled();
-        if (!areMetricsFilled) {
-          showCompleteProfileDialog(context);
-        }
-      });
+      );
 
   @override
   List<UserPreferencesItem> getChildren() {
@@ -142,7 +135,20 @@ class UserPreferencesAccount extends AbstractUserPreferences {
           labels: <String>[appLocalizations.sign_in],
           builder: (_) => Center(
             child: ElevatedButton(
-              onPressed: () async => _goToLoginPage(),
+              onPressed: () async {
+                _goToLoginPage();
+
+                final bool areMetricsFilled =
+                await UserManagementProvider().areMetricFieldsFilled();
+                if (!context.mounted) {
+                  return;
+                }
+
+                if (!areMetricsFilled) {
+                  showCompleteProfileDialog(context);
+                }
+                Navigator.of(context).pop();
+              },
               style: ButtonStyle(
                 minimumSize: MaterialStateProperty.all<Size>(
                   Size(size.width * 0.5, themeData.buttonTheme.height + 10),
@@ -223,7 +229,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         localDatabase: localDatabase,
       ),
       _getListTile(
-        'Metrics',
+        appLocalizations.metrics,
         () {
           AppNavigator.of(context).push(AppRoutes.METRICS);
         },
