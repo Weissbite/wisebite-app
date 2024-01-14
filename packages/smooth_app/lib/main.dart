@@ -30,6 +30,7 @@ import 'package:smooth_app/helpers/network_config.dart';
 import 'package:smooth_app/helpers/permission_helper.dart';
 import 'package:smooth_app/pages/navigator/app_navigator.dart';
 import 'package:smooth_app/pages/onboarding/onboarding_flow_navigator.dart';
+import 'package:smooth_app/providers/activity_level_provider.dart';
 import 'package:smooth_app/query/product_query.dart';
 import 'package:smooth_app/resources/app_animations.dart';
 import 'package:smooth_app/services/smooth_services.dart';
@@ -106,6 +107,7 @@ late UserPreferences _userPreferences;
 late ProductPreferences _productPreferences;
 late LocalDatabase _localDatabase;
 late ThemeProvider _themeProvider;
+late ActivityLevelProvider _activityLevelProvider;
 late ColorProvider _colorProvider;
 late TextContrastProvider _textContrastProvider;
 final ContinuousScanModel _continuousScanModel = ContinuousScanModel();
@@ -142,6 +144,7 @@ Future<bool> _init1() async {
 
   await ProductQuery.initCountry(_userPreferences);
   _themeProvider = ThemeProvider(_userPreferences);
+  _activityLevelProvider = ActivityLevelProvider();
   _colorProvider = ColorProvider(_userPreferences);
   _textContrastProvider = TextContrastProvider(_userPreferences);
   ProductQuery.setQueryType(_userPreferences);
@@ -219,6 +222,7 @@ class _SmoothAppState extends State<SmoothApp> {
             provide<ProductPreferences>(_productPreferences),
             provide<LocalDatabase>(_localDatabase),
             provide<ThemeProvider>(_themeProvider),
+            provide<ActivityLevelProvider>(_activityLevelProvider),
             provide<ColorProvider>(_colorProvider),
             provide<TextContrastProvider>(_textContrastProvider),
             provide<UserManagementProvider>(_userManagementProvider),

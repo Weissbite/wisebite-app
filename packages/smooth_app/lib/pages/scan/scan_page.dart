@@ -8,6 +8,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_app/data_models/continuous_scan_model.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
+import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/generic_lib/widgets/smooth_card.dart';
@@ -43,6 +44,15 @@ class _ScanPageState extends State<ScanPage> {
     if (mounted) {
       _userPreferences = context.watch<UserPreferences>();
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _incrementMainScreenCounter();
+    });
   }
 
   @override
@@ -143,6 +153,24 @@ class _ScanPageState extends State<ScanPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _incrementMainScreenCounter() async {
+    if (UserManagementProvider.user == null) return;
+
+    final bool areMetricsFilled =
+        await UserManagementProvider().areMetricFieldsFilled();
+    if (areMetricsFilled) return;
+
+    int mainScreenCounter = _userPreferences.mainScreenCounter;
+    if (mainScreenCounter == 5) {
+      showCompleteProfileDialog(context);
+    }
+
+    mainScreenCounter++;
+    if (mainScreenCounter > 5) mainScreenCounter = 0;
+
+    _userPreferences.setMainScreenCounter(mainScreenCounter);
   }
 
   /// Only initialize the "beep" player when needed

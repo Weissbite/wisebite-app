@@ -8,6 +8,7 @@ import 'package:smooth_app/data_models/continuous_scan_model.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/data_models/product_preferences.dart';
 import 'package:smooth_app/data_models/up_to_date_mixin.dart';
+import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/helpers/analytics_helper.dart';
@@ -86,6 +87,13 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
   // For some reason, special case for "label" attributes
   final Set<String> _attributesToExcludeIfStatusIsUnknown = <String>{};
   late ProductQuestionsLayout _questionsLayout;
+  bool _isProfileCompleted = true;
+
+  Future<void> _checkIsProfileCompleted() async {
+    _isProfileCompleted =
+        await UserManagementProvider().areMetricFieldsFilled();
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -98,6 +106,7 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
         barcode: barcode,
       );
     }
+    _checkIsProfileCompleted();
   }
 
   @override
@@ -110,6 +119,7 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
           product: upToDateProduct,
           productPreferences: widget._productPreferences,
           isSettingVisible: widget.isSettingVisible,
+          isProfileCompleted: _isProfileCompleted,
         ),
         body: Padding(
           padding: widget.padding ?? SMOOTH_CARD_PADDING,
@@ -144,6 +154,7 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
                   product: upToDateProduct,
                   productPreferences: widget._productPreferences,
                   isSettingVisible: widget.isSettingVisible,
+                  isProfileCompleted: _isProfileCompleted,
                 ),
                 body: Padding(
                   padding: SMOOTH_CARD_PADDING,

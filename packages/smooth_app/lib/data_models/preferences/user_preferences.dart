@@ -84,6 +84,9 @@ class UserPreferences extends ChangeNotifier {
   // Play sound when decoding a barcode
   static const String _TAG_PLAY_CAMERA_SCAN_SOUND = 'camera_scan_sound';
 
+  // Counter for every time the user opened the main screen page
+  static const String _TAG_MAIN_SCREEN_COUNTER = 'main_screen_counter';
+
   /// Vibrations / haptic feedback
   static const String _TAG_HAPTIC_FEEDBACK_IN_APP = 'haptic_feedback_enabled';
 
@@ -290,6 +293,17 @@ class UserPreferences extends ChangeNotifier {
 
   bool get playCameraSound =>
       _sharedPreferences.getBool(_TAG_PLAY_CAMERA_SCAN_SOUND) ?? false;
+
+  Future<void> setMainScreenCounter(int mainScreenCounter) async {
+    await _sharedPreferences.setInt(
+      _TAG_MAIN_SCREEN_COUNTER,
+      mainScreenCounter,
+    );
+    notifyListeners();
+  }
+
+  int get mainScreenCounter =>
+      _sharedPreferences.getInt(_TAG_MAIN_SCREEN_COUNTER) ?? 0;
 
   Future<void> setHapticFeedbackEnabled(bool enabled) async {
     await _sharedPreferences.setBool(_TAG_HAPTIC_FEEDBACK_IN_APP, enabled);

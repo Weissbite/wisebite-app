@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_app/generic_lib/bottom_sheets/smooth_bottom_sheet.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
+import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_item.dart';
 
 /// A dashed line
@@ -182,11 +183,14 @@ class UserPreferencesMultipleChoicesItem<T> extends StatelessWidget {
     this.leading,
     this.leadingBuilder,
     this.descriptions,
+    this.longDescriptions,
     this.dialogHeight,
     Key? key,
   })  : assert(labels.length > 0),
         assert(values.length == labels.length),
         assert(descriptions == null || descriptions.length == labels.length),
+        assert(longDescriptions == null ||
+            longDescriptions.length == labels.length),
         assert(dialogHeight == null || dialogHeight > 0.0),
         super(key: key);
 
@@ -195,6 +199,7 @@ class UserPreferencesMultipleChoicesItem<T> extends StatelessWidget {
   final Iterable<WidgetBuilder>? leadingBuilder;
   final Iterable<String> labels;
   final Iterable<String>? descriptions;
+  final Iterable<String>? longDescriptions;
   final Iterable<T> values;
   final T? currentValue;
   final ValueChanged<T>? onChanged;
@@ -279,6 +284,7 @@ class UserPreferencesMultipleChoicesItem<T> extends StatelessWidget {
                         label: labels.elementAt(position),
                         value: values.elementAt(position),
                         description: descriptions?.elementAt(position),
+                        longDescription: longDescriptions?.elementAt(position),
                         leading: leadingBuilder != null
                             ? Builder(
                                 builder: leadingBuilder!.elementAt(position))
@@ -307,6 +313,7 @@ class UserPreferencesMultipleChoicesItem<T> extends StatelessWidget {
                     label: labels.elementAt(position),
                     value: values.elementAt(position),
                     description: descriptions?.elementAt(position),
+                    longDescription: longDescriptions?.elementAt(position),
                     leading: leadingBuilder != null
                         ? Builder(builder: leadingBuilder!.elementAt(position))
                         : null,
@@ -352,6 +359,7 @@ class _ChoiceItem<T> extends StatelessWidget {
     required this.label,
     required this.selected,
     this.description,
+    this.longDescription,
     this.leading,
     this.hasDivider = true,
   });
@@ -359,6 +367,7 @@ class _ChoiceItem<T> extends StatelessWidget {
   final T value;
   final String label;
   final String? description;
+  final String? longDescription;
   final Widget? leading;
   final bool selected;
   final bool hasDivider;
@@ -386,6 +395,24 @@ class _ChoiceItem<T> extends StatelessWidget {
                   fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
+              trailing: longDescription != null
+                  ? IconButton(
+                      icon: const Icon(Icons.info),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext builder) {
+                              return SmoothAlertDialog(
+                                  body: Text(longDescription!),
+                                  actionsAxis: Axis.vertical,
+                                  positiveAction: SmoothActionButton(
+                                      text: 'OK',
+                                      onPressed: () =>
+                                          Navigator.of(context).pop()));
+                            });
+                      },
+                    )
+                  : null,
               subtitle: description != null ? Text(description!) : null,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: LARGE_SPACE,

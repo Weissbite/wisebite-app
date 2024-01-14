@@ -8,6 +8,7 @@ import 'package:smooth_app/data_models/product_preferences.dart';
 import 'package:smooth_app/helpers/analytics_helper.dart';
 import 'package:smooth_app/helpers/extension_on_text_helper.dart';
 import 'package:smooth_app/pages/carousel_manager.dart';
+import 'package:smooth_app/pages/metrics_page.dart';
 import 'package:smooth_app/pages/navigator/error_page.dart';
 import 'package:smooth_app/pages/navigator/external_page.dart';
 import 'package:smooth_app/pages/onboarding/onboarding_flow_navigator.dart';
@@ -204,6 +205,11 @@ class _SmoothGoRouter {
                 return ExternalPage(path: state.uri.queryParameters['path']!);
               },
             ),
+            GoRoute(
+              path: _InternalAppRoutes.METRICS_PAGE,
+              builder: (BuildContext context, GoRouterState state) =>
+                  const MerticsPageWidget(),
+            ),
           ],
         ),
       ],
@@ -359,6 +365,7 @@ class _InternalAppRoutes {
   static const String PREFERENCES_PAGE = '_preferences';
   static const String SEARCH_PAGE = '_search';
   static const String EXTERNAL_PAGE = '_external';
+  static const String METRICS_PAGE = '_metrics';
 }
 
 class _ExternalRoutes {
@@ -403,6 +410,9 @@ class AppRoutes {
 
   // Search view
   static String get SEARCH => '/${_InternalAppRoutes.SEARCH_PAGE}';
+
+  // Metrics view
+  static String get METRICS => '/${_InternalAppRoutes.METRICS_PAGE}';
 
   // Open an external link (where path is relative to the OFF website)
   static String EXTERNAL(String path) =>
