@@ -8,7 +8,7 @@ on:
 
 jobs:
   update-assets:
-    if: github.repository_owner == 'openfoodfacts'
+    if: github.repository_owner == 'Weissbite'
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +28,7 @@ jobs:
       id: cpr
       uses: peter-evans/create-pull-request@v5
       with:
-        base: develop
+        base: master
         commit-message: Update assets
         committer: GitHub <noreply@github.com>
         author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
