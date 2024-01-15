@@ -16,7 +16,7 @@ enum ActivityLevel {
 class ActivityLevelProvider with ChangeNotifier {
   String current = ACTIVITY_LEVEL_SEDENTARY;
 
-  final Map<ActivityLevel, String> activityLevelToString = {
+  final Map<ActivityLevel, String> activityLevelToString = <ActivityLevel, String>{
     ActivityLevel.Unknown: 'Unknown',
     ActivityLevel.Sedentary: ACTIVITY_LEVEL_SEDENTARY,
     ActivityLevel.LightlyActive: ACTIVITY_LEVEL_LIGHTLY_ACTIVE,
@@ -25,7 +25,7 @@ class ActivityLevelProvider with ChangeNotifier {
   };
 
   ActivityLevel get currentActivityLevel {
-    for (ActivityLevel level in ActivityLevel.values) {
+    for (final ActivityLevel level in ActivityLevel.values) {
       if (activityLevelToString[level] == current) {
         return level;
       }
