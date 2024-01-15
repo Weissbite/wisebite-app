@@ -20,7 +20,9 @@ class UserManagementProvider with ChangeNotifier {
   // We're going to look for a document inside "user_data" collection with the id of user's UID
   // if there's no such document, we'll return false and prompt the user for filling the metrics
   Future<bool> areMetricFieldsFilled() async {
-    if (user == null) return true;
+    if (user == null) {
+      return true;
+    }
 
     final FirestoreService<UserData> service = FirestoreService<UserData>(
       collectionPath: 'user_data',
@@ -28,7 +30,9 @@ class UserManagementProvider with ChangeNotifier {
     );
 
     final UserData? data = await service.getDocument(documentId: user!.uid);
-    if (data == null) return false;
+    if (data == null) {
+      return false;
+    }
 
     return true;
   }
