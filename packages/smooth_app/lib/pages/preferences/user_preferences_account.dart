@@ -117,20 +117,26 @@ class UserPreferencesAccount extends AbstractUserPreferences {
     );
   }
 
-  Future<void> _goToLoginPage() async =>
-      Navigator.of(context, rootNavigator: true)
-          .push<dynamic>(
-        MaterialPageRoute<dynamic>(
-          builder: (BuildContext context) => const LoginPage(),
-        ),
-      )
-          .then((_) async {
-        final bool areMetricsFilled =
-            await UserManagementProvider().areMetricFieldsFilled();
-        if (!areMetricsFilled) {
-          showCompleteProfileDialog(context);
-        }
-      });
+  Future<void> _goToLoginPage() async {
+    Navigator.of(context, rootNavigator: true)
+        .push<dynamic>(
+      MaterialPageRoute<dynamic>(
+        builder: (BuildContext context) => const LoginPage(),
+      ),
+    )
+        .then((_) async {
+      final bool areMetricsFilled =
+          await UserManagementProvider().areMetricFieldsFilled();
+      if (!context.mounted) {
+        return;
+      }
+      Navigator.of(context).pop();
+
+      if (!areMetricsFilled) {
+        showCompleteProfileDialog(context);
+      }
+    });
+  }
 
   @override
   List<UserPreferencesItem> getChildren() {

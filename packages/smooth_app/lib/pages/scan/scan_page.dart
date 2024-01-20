@@ -156,19 +156,26 @@ class _ScanPageState extends State<ScanPage> {
   }
 
   Future<void> _incrementMainScreenCounter() async {
-    if (UserManagementProvider.user == null) return;
+    if (UserManagementProvider.user == null) {
+      return;
+    }
 
     final bool areMetricsFilled =
         await UserManagementProvider().areMetricFieldsFilled();
-    if (areMetricsFilled) return;
+    if (areMetricsFilled) {
+      return;
+    }
 
     int mainScreenCounter = _userPreferences.mainScreenCounter;
-    if (mainScreenCounter == 5) {
+    if (mainScreenCounter == 5 && context.mounted) {
+      Navigator.pop(context);
       showCompleteProfileDialog(context);
     }
 
     mainScreenCounter++;
-    if (mainScreenCounter > 5) mainScreenCounter = 0;
+    if (mainScreenCounter > 5) {
+      mainScreenCounter = 0;
+    }
 
     _userPreferences.setMainScreenCounter(mainScreenCounter);
   }

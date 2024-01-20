@@ -590,7 +590,6 @@
             "threatened_species" : {}
          },
          "agribalyse" : {
-            "agribalyse_food_code" : "25903",
             "agribalyse_proxy_food_code" : "25903",
             "co2_agriculture" : 0.10397607,
             "co2_consumption" : 0.011045523,
@@ -778,6 +777,7 @@
       "ecoscore_grade" : "a",
       "ecoscore_score" : 115,
       "environment_impact_level_tags" : [],
+      "image_nutrition_url" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_en.109.400.jpg",
       "ingredients_analysis_tags" : [
          "en:palm-oil-free",
          "en:vegan",
@@ -1370,6 +1370,34 @@
                {
                   "element_type" : "panel_group",
                   "panel_group_element" : {
+                     "image" : {
+                        "alt" : "A good product for you - Nutrition facts",
+                        "id" : "nutrition_en",
+                        "lc" : "en",
+                        "sizes" : {
+                           "100" : {
+                              "height" : 100,
+                              "url" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_en.109.100.jpg",
+                              "width" : 75
+                           },
+                           "200" : {
+                              "height" : 200,
+                              "url" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_en.109.200.jpg",
+                              "width" : 150
+                           },
+                           "400" : {
+                              "height" : 400,
+                              "url" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_en.109.400.jpg",
+                              "width" : 300
+                           },
+                           "full" : {
+                              "height" : 4032,
+                              "url" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_en.109.full.jpg",
+                              "width" : 3024
+                           }
+                        },
+                        "type" : "nutrition"
+                     },
                      "panel_group_id" : "nutrition",
                      "panel_ids" : [
                         "nutriscore",
@@ -1497,7 +1525,7 @@
                {
                   "element_type" : "text",
                   "text_element" : {
-                     "html" : ": <span>Butternut squash</span> 50%, <span>water</span>, <span>carrots</span> 10%, <span>sweet potato</span>, <span>leeks</span>, <span>potatoes</span>, <span>salt</span>"
+                     "html" : "en: <span>Butternut squash</span> 50%, <span>water</span>, <span>carrots</span> 10%, <span>sweet potato</span>, <span>leeks</span>, <span>potatoes</span>, <span>salt</span>"
                   }
                },
                {
@@ -1854,11 +1882,11 @@
                                  "text" : "Energy"
                               },
                               {
-                                 "text" : "120 kj<br>(29 kcal)"
+                                 "text" : "120 kj<br>(252 kcal)"
                               },
                               {
                                  "evaluation" : "good",
-                                 "text" : "-50%"
+                                 "text" : "-52%"
                               }
                            ]
                         },
@@ -1874,7 +1902,7 @@
                               },
                               {
                                  "evaluation" : "good",
-                                 "text" : "-68%"
+                                 "text" : "-69%"
                               }
                            ]
                         },
@@ -1890,7 +1918,7 @@
                               },
                               {
                                  "evaluation" : "good",
-                                 "text" : "-41%"
+                                 "text" : "-45%"
                               }
                            ]
                         },
@@ -1906,7 +1934,7 @@
                               },
                               {
                                  "evaluation" : "good",
-                                 "text" : "-38%"
+                                 "text" : "-39%"
                               }
                            ]
                         },
@@ -1921,7 +1949,7 @@
                                  "text" : "4 g"
                               },
                               {
-                                 "text" : "-58%"
+                                 "text" : "-60%"
                               }
                            ]
                         },
@@ -1937,7 +1965,7 @@
                               },
                               {
                                  "evaluation" : "good",
-                                 "text" : "+94%"
+                                 "text" : "+89%"
                               }
                            ]
                         },
@@ -1953,7 +1981,7 @@
                               },
                               {
                                  "evaluation" : "good",
-                                 "text" : "-81%"
+                                 "text" : "-82%"
                               }
                            ]
                         },
@@ -1969,7 +1997,7 @@
                               },
                               {
                                  "evaluation" : "bad",
-                                 "text" : "-53%"
+                                 "text" : "-55%"
                               }
                            ]
                         },
@@ -2222,14 +2250,18 @@
       "labels_tags" : [
          "en:fair-trade",
          "en:organic",
+         "en:vegetarian",
          "en:eu-organic",
+         "en:vegan",
          "en:green-dot",
          "en:nutriscore"
       ],
       "labels_tags_fr" : [
          "Commerce équitable",
          "Bio",
+         "Végétarien",
          "Bio européen",
+         "Végétalien",
          "Point Vert",
          "Nutriscore"
       ],
@@ -2248,6 +2280,11 @@
          "carbon-footprint-from-known-ingredients_100g" : 18,
          "carbon-footprint-from-known-ingredients_product" : 18,
          "energy" : 120,
+         "energy-kcal" : 252,
+         "energy-kcal_100g" : 252,
+         "energy-kcal_unit" : "kcal",
+         "energy-kcal_value" : 252,
+         "energy-kcal_value_computed" : 30.5,
          "energy-kj" : 120,
          "energy-kj_100g" : 120,
          "energy-kj_unit" : "kJ",
@@ -2298,6 +2335,33 @@
       "product_name" : "A good product for you",
       "product_quantity" : "100",
       "quantity" : "100 g",
+      "selected_images" : {
+         "ingredients" : {
+            "display" : {
+               "es" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/ingredients_es.113.400.jpg"
+            },
+            "small" : {
+               "es" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/ingredients_es.113.200.jpg"
+            },
+            "thumb" : {
+               "es" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/ingredients_es.113.100.jpg"
+            }
+         },
+         "nutrition" : {
+            "display" : {
+               "en" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_en.109.400.jpg",
+               "es" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_es.115.400.jpg"
+            },
+            "small" : {
+               "en" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_en.109.200.jpg",
+               "es" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_es.115.200.jpg"
+            },
+            "thumb" : {
+               "en" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_en.109.100.jpg",
+               "es" : "https://images.openfoodfacts.org/images/products/093/270/067/481501/nutrition_es.115.100.jpg"
+            }
+         }
+      },
       "states_tags" : [
          "en:to-be-completed",
          "en:nutrition-facts-completed",
@@ -2311,7 +2375,12 @@
          "en:packaging-to-be-completed",
          "en:quantity-completed",
          "en:product-name-completed",
-         "en:photos-to-be-uploaded"
+         "en:photos-to-be-validated",
+         "en:packaging-photo-to-be-selected",
+         "en:nutrition-photo-selected",
+         "en:ingredients-photo-to-be-selected",
+         "en:front-photo-to-be-selected",
+         "en:photos-uploaded"
       ]
    },
    "status" : 1,

@@ -126,7 +126,8 @@ Future<bool> _init1() async {
   DartPingIOS.register();
   await SmoothServices().init(GlobalVars.appStore);
   await setupAppNetworkConfig();
-  await UserManagementProvider.mountCredentials();
+  // TODO(yavor): Used for email/password login.
+  // await UserManagementProvider.mountCredentials();
   _userPreferences = await UserPreferences.getUserPreferences();
   _localDatabase = await LocalDatabase.getLocalDatabase();
   await _continuousScanModel.load(_localDatabase);
@@ -138,7 +139,8 @@ Future<bool> _init1() async {
     ),
     daoString: DaoString(_localDatabase),
   );
-  UserManagementProvider().checkUserLoginValidity();
+  // TODO(yavor): Used for email/password login.
+  // UserManagementProvider().checkUserLoginValidity();
 
   AnalyticsHelper.linkPreferences(_userPreferences);
 

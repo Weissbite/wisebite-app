@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
-import 'package:openfoodfacts/openfoodfacts.dart';
+// import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_app/data_models/login_result.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
-import 'package:smooth_app/data_models/user_management_provider.dart';
+// import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/generic_lib/widgets/smooth_card.dart';
@@ -42,20 +42,20 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
       return;
     }
 
-    final UserManagementProvider userManagementProvider =
-        context.read<UserManagementProvider>();
+    // final UserManagementProvider userManagementProvider =
+    //     context.read<UserManagementProvider>();
 
     setState(() {
       _runningQuery = true;
       _loginResult = null;
     });
 
-    _loginResult = await userManagementProvider.login(
-      User(
-        userId: userIdController.text,
-        password: passwordController.text,
-      ),
-    );
+    // _loginResult = await userManagementProvider.login(
+    //   User(
+    //     userId: userIdController.text,
+    //     password: passwordController.text,
+    //   ),
+    // );
 
     if (_loginResult!.type == LoginResultType.successful) {
       AnalyticsHelper.trackEvent(AnalyticsEvent.loginAction);
@@ -63,11 +63,12 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
         return;
       }
 
-      await showInAppReviewIfNecessary(context);
+      // TODO(yavor): Pop-up dialog for review.
+      // await showInAppReviewIfNecessary(context);
 
-      if (!mounted) {
-        return;
-      }
+      // if (!mounted) {
+      //   return;
+      // }
       Navigator.pop(context);
     } else {
       setState(() => _runningQuery = false);

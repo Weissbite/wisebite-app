@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
@@ -8,10 +9,12 @@ class KnowledgePanelGroupCard extends StatelessWidget {
   const KnowledgePanelGroupCard({
     required this.groupElement,
     required this.product,
+    required this.isClickable,
   });
 
   final KnowledgePanelPanelGroupElement groupElement;
   final Product product;
+  final bool isClickable;
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +38,18 @@ class KnowledgePanelGroupCard extends StatelessWidget {
             KnowledgePanelCard(
               panelId: panelId,
               product: product,
+              isClickable: isClickable,
             )
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('groupElement', groupElement.title));
+    properties.add(DiagnosticsProperty<bool>('clickable', isClickable));
+    properties.add(IterableProperty<String>('panelIds', groupElement.panelIds));
   }
 }

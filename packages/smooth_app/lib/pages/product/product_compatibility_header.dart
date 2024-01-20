@@ -110,10 +110,10 @@ class ProductCompatibilityHeader extends StatelessWidget {
                         const BorderRadius.only(topRight: ROUNDED_RADIUS),
                     onTap: () =>
                         AppNavigator.of(context).push(AppRoutes.METRICS),
-                    child: Tooltip(
+                    child: const Tooltip(
                       message: 'Complete profile',
                       triggerMode: TooltipTriggerMode.longPress,
-                      child: const SizedBox.square(
+                      child: SizedBox.square(
                         dimension: kMinInteractiveDimension,
                         child: Icon(Icons.arrow_forward),
                       ),

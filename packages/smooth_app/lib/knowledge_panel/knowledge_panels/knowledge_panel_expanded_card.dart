@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
@@ -8,11 +9,13 @@ class KnowledgePanelExpandedCard extends StatelessWidget {
     required this.panelId,
     required this.product,
     required this.isInitiallyExpanded,
+    required this.isClickable,
   });
 
   final Product product;
   final String panelId;
   final bool isInitiallyExpanded;
+  final bool isClickable;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +35,7 @@ class KnowledgePanelExpandedCard extends StatelessWidget {
           knowledgePanelElement: element,
           product: product,
           isInitiallyExpanded: isInitiallyExpanded,
+          isClickable: isClickable,
         );
         if (elementWidget != null) {
           elementWidgets.add(
@@ -47,5 +51,15 @@ class KnowledgePanelExpandedCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: elementWidgets,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('panelId', panelId));
+    properties.add(
+      DiagnosticsProperty<bool>('initiallyExpanded', isInitiallyExpanded),
+    );
+    properties.add(DiagnosticsProperty<bool>('clickable', isClickable));
   }
 }

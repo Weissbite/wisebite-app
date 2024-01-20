@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
@@ -12,10 +13,12 @@ class KnowledgePanelCard extends StatelessWidget {
   const KnowledgePanelCard({
     required this.panelId,
     required this.product,
+    required this.isClickable,
   });
 
   final String panelId;
   final Product product;
+  final bool isClickable;
 
   static const String PANEL_NUTRITION_TABLE_ID = 'nutrition_facts_table';
   static const String PANEL_INGREDIENTS_ID = 'ingredients';
@@ -36,6 +39,7 @@ class KnowledgePanelCard extends StatelessWidget {
         panelId: panelId,
         product: product,
         isInitiallyExpanded: false,
+        isClickable: isClickable,
       );
     }
 
@@ -43,23 +47,27 @@ class KnowledgePanelCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: SMALL_SPACE),
       child: InkWell(
         borderRadius: ANGULAR_BORDER_RADIUS,
+        onTap: !isClickable
+            ? null
+            : () async => Navigator.push<Widget>(
+                  context,
+                  MaterialPageRoute<Widget>(
+                    builder: (BuildContext context) => SmoothBrightnessOverride(
+                      brightness:
+                          SmoothBrightnessOverride.of(context)?.brightness,
+                      child: KnowledgePanelPage(
+                        panelId: panelId,
+                        product: product,
+                      ),
+                    ),
+                  ),
+                ),
         child: KnowledgePanelsBuilder.getPanelSummaryWidget(
-          panel,
-          isClickable: true,
-          margin: EdgeInsets.zero,
-        ),
-        onTap: () async => Navigator.push<Widget>(
-          context,
-          MaterialPageRoute<Widget>(
-            builder: (BuildContext context) => SmoothBrightnessOverride(
-              brightness: SmoothBrightnessOverride.of(context)?.brightness,
-              child: KnowledgePanelPage(
-                panelId: panelId,
-                product: product,
-              ),
-            ),
-          ),
-        ),
+              panel,
+              isClickable: isClickable,
+              margin: EdgeInsets.zero,
+            ) ??
+            const SizedBox(),
       ),
     );
   }
@@ -84,5 +92,12 @@ class KnowledgePanelCard extends StatelessWidget {
       }
     }
     return false;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('panelId', panelId));
+    properties.add(DiagnosticsProperty<bool>('clickable', isClickable));
   }
 }

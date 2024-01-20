@@ -9,8 +9,8 @@ import 'package:smooth_app/helpers/product_cards_helper.dart';
 import 'package:smooth_app/pages/product/common/product_buttons.dart';
 import 'package:smooth_app/pages/product/may_exit_page_helper.dart';
 import 'package:smooth_app/pages/text_field_helper.dart';
-import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
+import 'package:smooth_app/widgets/will_pop_scope.dart';
 
 /// Input of a product's less significant details, like website.
 class AddOtherDetailsPage extends StatefulWidget {
@@ -25,7 +25,7 @@ class AddOtherDetailsPage extends StatefulWidget {
 }
 
 class _AddOtherDetailsPageState extends State<AddOtherDetailsPage> {
-  late final TextEditingControllerWithInitialValue _websiteController;
+  late final TextEditingControllerWithHistory _websiteController;
 
   final double _heightSpace = LARGE_SPACE;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -36,7 +36,7 @@ class _AddOtherDetailsPageState extends State<AddOtherDetailsPage> {
     super.initState();
     _product = widget.product;
     _websiteController =
-        TextEditingControllerWithInitialValue(text: _product.website ?? '');
+        TextEditingControllerWithHistory(text: _product.website ?? '');
   }
 
   @override
@@ -54,16 +54,14 @@ class _AddOtherDetailsPageState extends State<AddOtherDetailsPage> {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
-    return WillPopScope(
-      onWillPop: () async => _mayExitPage(saving: false),
+    return WillPopScope2(
+      onWillPop: () async => (await _mayExitPage(saving: false), null),
       child: SmoothScaffold(
         fixKeyboard: true,
-        appBar: SmoothAppBar(
-          centerTitle: false,
-          title:
-              Text(appLocalizations.edit_product_form_item_other_details_title),
-          subTitle: buildProductTitle(widget.product, appLocalizations),
-          ignoreSemanticsForSubtitle: true,
+        appBar: buildEditProductAppBar(
+          context: context,
+          title: appLocalizations.edit_product_form_item_other_details_title,
+          product: widget.product,
         ),
         body: Form(
           key: _formKey,
@@ -75,15 +73,6 @@ class _AddOtherDetailsPageState extends State<AddOtherDetailsPage> {
                   padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
                   child: Column(
                     children: <Widget>[
-                      ExcludeSemantics(
-                        child: Text(
-                          appLocalizations.barcode_barcode(_product.barcode!),
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                        ),
-                      ),
                       SizedBox(height: _heightSpace),
                       SmoothTextFormField(
                         controller: _websiteController,
@@ -111,7 +100,7 @@ class _AddOtherDetailsPageState extends State<AddOtherDetailsPage> {
   }
 
   /// Returns `true` if any value differs with initial state.
-  bool _isEdited() => _websiteController.valueHasChanged;
+  bool _isEdited() => _websiteController.isDifferentFromInitialValue;
 
   /// Exits the page if the [flag] is `true`.
   void _exitPage(final bool flag) {

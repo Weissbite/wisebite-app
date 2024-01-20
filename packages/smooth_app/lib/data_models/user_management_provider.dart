@@ -12,7 +12,7 @@ class UserManagementProvider with ChangeNotifier {
   static User? get user => FirebaseAuth.instance.currentUser;
 
   void listenToFirebase() {
-    FirebaseAuth.instance.authStateChanges().listen((user) {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
       notifyListeners();
     });
   }
@@ -20,15 +20,19 @@ class UserManagementProvider with ChangeNotifier {
   // We're going to look for a document inside "user_data" collection with the id of user's UID
   // if there's no such document, we'll return false and prompt the user for filling the metrics
   Future<bool> areMetricFieldsFilled() async {
-    if (user == null) return true;
+    if (user == null) {
+      return true;
+    }
 
     final FirestoreService<UserData> service = FirestoreService<UserData>(
       collectionPath: 'user_data',
       fromFirestore: UserData().fromFirestore,
     );
 
-    UserData? data = await service.getDocument(documentId: user!.uid);
-    if (data == null) return false;
+    final UserData? data = await service.getDocument(documentId: user!.uid);
+    if (data == null) {
+      return false;
+    }
 
     return true;
   }
@@ -43,7 +47,7 @@ class UserManagementProvider with ChangeNotifier {
           await googleUser?.authentication;
 
       // Create a new credential
-      final credential = GoogleAuthProvider.credential(
+      final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
       );
@@ -61,11 +65,7 @@ class UserManagementProvider with ChangeNotifier {
   Future<void> signInWithFacebook(BuildContext context) async {
     try {
       // Trigger the sign-in flow
-      final LoginResult? loginResult = await FacebookAuth.instance.login();
-      if (loginResult == null) {
-        print(loginResult);
-        return;
-      }
+      final LoginResult loginResult = await FacebookAuth.instance.login();
 
       // Create a credential from the access token
       final OAuthCredential facebookAuthCredential =
@@ -104,11 +104,11 @@ void showCompleteProfileDialog(BuildContext context) {
       builder: (BuildContext context) {
         return SmoothAlertDialog(
           title: 'Complete profile',
-          body: Column(
+          body: const Column(
             children: <Widget>[
               Text(
                   'Complete the creation of your profile and fill out this form for more accurate recommendations.'),
-              const SizedBox(
+              SizedBox(
                 height: 10,
               ),
             ],

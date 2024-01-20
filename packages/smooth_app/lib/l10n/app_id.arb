@@ -24,6 +24,10 @@
     "@next_label": {
         "description": "A label on a button that says 'Next', pressing the button takes the user to the next screen."
     },
+    "previous_label": "Sebelumnya",
+    "@previous_label": {
+        "description": "A label on a button that says 'Previous', pressing the button takes the user to the previous screen."
+    },
     "go_back_to_top": "Kembali ke atas",
     "save": "menyimpan ",
     "save_confirmation": "Apa Anda yakin ingin menyimpan?",
@@ -141,6 +145,7 @@
     "@ecoCardUtility": {
         "description": "Description of what a user can use the Eco data in a product for."
     },
+    "server_error_open_new_issue": "Tidak ada respons server! Anda dapat membuka masalah dengan tautan berikut ini.",
     "@user_management": {},
     "sign_in_text": "Masuk ke akun OpenFoodFacts untuk menyimpan kontribusi Anda",
     "incorrect_credentials": "Nama pengguna atau kata sandi Anda salah.",
@@ -150,11 +155,11 @@
     "@login": {
         "description": "Text field hint: unified name for either username or e-mail address"
     },
-    "login_result_type_server_unreachable": "Network is unreachable",
+    "login_result_type_server_unreachable": "Jaringan tidak terjangkau",
     "@login_result_type_server_unreachable": {
         "description": "Error message when trying to log in without network"
     },
-    "login_result_type_server_issue": "Problem on the server. Please try later.",
+    "login_result_type_server_issue": "Masalah pada server. Silakan coba lagi nanti.",
     "@login_result_type_server_issue": {
         "description": "Error message when trying to log in and the server does not answer correctly"
     },
@@ -348,6 +353,10 @@
     "contribute_develop_dev_mode_subtitle": "Aktifkan Mode DEV",
     "contribute_donate_header": "Berdonasi ke OpenFoodFacts",
     "@contribute_donate_header": {},
+    "contribute_enroll_alpha": "Enroll in internal alpha version",
+    "@contribute_enroll_alpha": {},
+    "contribute_enroll_alpha_warning": "Please acknowledge that with the internal alpha version, complete loss of data is possible, and the app may become unusable at any time !",
+    "@contribute_enroll_alpha_warning": {},
     "contribute_improve_ProductsToBeCompleted": "Produk - produk yang perlu dilengkapi",
     "@contribute_improve_ProductsToBeCompleted": {
         "description": "Button label: Shows a list of products which aren't completed"
@@ -541,6 +550,10 @@
     "@new_product_dialog_title": {
         "description": "Please keep it short, like 50 characters. Title of the dialog when the user searched for an unknown barcode."
     },
+    "new_product_leave_title": "Keluar dari halaman ini?",
+    "@new_product_leave_title": {
+        "description": "Alert dialog title when a user landed on the 'add new product' page, didn't input anything and tried to leave the page."
+    },
     "new_product_leave_message": "Anda tidak memasukan informasi apapun, apakah Anda yakin ingin meninggalkan halaman ini?",
     "@new_product_leave_message": {
         "description": "Alert dialog message when a user landed on the 'add new product' page, didn't input anything and tried to leave the page."
@@ -629,7 +642,7 @@
     "new_product_subtitle_nova": "Dapatkan dengan mengisi kategori makanan dan bahan makanan",
     "new_product_desc_nova_unknown": "Tingkat pemrosesan makanan tidak diketahui",
     "new_product_title_pictures": "Ambil beberapa foto!",
-    "new_product_title_pictures_details": "Please take the following photos and the Open Food Facts engine can work out the rest!",
+    "new_product_title_pictures_details": "Silakan ambil foto-foto berikut ini dan mesin Open Food Facts akan menghitung sisanya!",
     "new_product_title_misc": "Dan beberapa informasi dasar…",
     "new_product_done_msg": "Terima kasih atas kontribusi Anda “{username}”!",
     "@new_product_done_msg": {
@@ -714,6 +727,8 @@
     "nutrition_page_update_done": "Produk diperbarui!",
     "more_photos": "Lebih banyak foto menarik",
     "@more_photos": {},
+    "view_more_photo_button": "Lihat semua foto yang ada untuk produk ini",
+    "@view_more_photo_button": {},
     "no_product_found": "Produk tidak ditemukan",
     "@no_product_found": {},
     "not_found": "tidak ditemukan:",
@@ -779,7 +794,7 @@
     "@country_chooser_label": {
         "description": "Label shown above a selector where the user can select their country (in the preferences)"
     },
-    "onboarding_country_chooser_label": "Please choose a country:",
+    "onboarding_country_chooser_label": "Silakan pilih negara:",
     "@onboarding_country_chooser_label": {
         "description": "The label shown above a selector where the user can select their country (in the onboarding)"
     },
@@ -1370,7 +1385,7 @@
     "@edit_product_form_save": {
         "description": "Product edition - Nutrition facts - Save button"
     },
-    "no_data_available": "No data available",
+    "no_data_available": "Data tidak tersedia",
     "@no_data_available": {
         "description": "When there are no data to display"
     },
@@ -1602,50 +1617,15 @@
     "@dev_preferences_import_history_subtitle": {
         "description": "User dev preferences - Import history - Subtitle"
     },
+    "prices_app_dev_mode_flag": "Shortcut to Prices app on product page",
+    "prices_app_button": "Go to Prices app",
     "dev_preferences_import_history_result_success": "Selesai",
     "@dev_preferences_import_history_result_success": {
         "description": "User dev preferences - Import history - Result successful"
     },
-    "dev_mode_scan_mode_title": "Mode pemindaian",
-    "@dev_mode_scan_mode_title": {
-        "description": "User dev preferences - Scan mode - Title"
-    },
-    "dev_mode_scan_mode_subtitle": "Mode pemindaian saat ini adalah: \"{mode}\"",
-    "@dev_mode_scan_mode_subtitle": {
-        "description": "User dev preferences - Scan mode - Subtitle",
-        "placeholders": {
-            "mode": {
-                "type": "String"
-            }
-        }
-    },
-    "dev_mode_scan_mode_dialog_title": "Mode pemindaian",
-    "@dev_mode_scan_mode_dialog_title": {
-        "description": "User dev preferences - Scan mode - Dialog Title"
-    },
     "dev_mode_hide_ecoscore_title": "Kecualikan Eco-Score",
     "@dev_mode_hide_ecoscore_title": {
         "description": "User dev preferences - Disable Ecoscore - Title"
-    },
-    "dev_mode_scan_camera_only": "Hanya aliran kamera, tanpa pemindaian",
-    "@dev_mode_scan_camera_only": {
-        "description": "Scan mode - Camera only"
-    },
-    "dev_mode_scan_preprocess_full_image": "Aliran kamera dan prapemrosesan gambar penuh, tanpa pemindaian",
-    "@dev_mode_scan_preprocess_full_image": {
-        "description": "Scan mode - Preprocess full image"
-    },
-    "dev_mode_scan_preprocess_half_image": "Aliran kamera dan setengah prapemrosesan gambar, tanpa pemindaian",
-    "@dev_mode_scan_preprocess_half_image": {
-        "description": "Scan mode - Preprocess half image"
-    },
-    "dev_mode_scan_scan_full_image": "Pemindaian gambar penuh",
-    "@dev_mode_scan_scan_full_image": {
-        "description": "Scan mode - Scan full image"
-    },
-    "dev_mode_scan_scan_half_image": "Pemindaian setengah gambar",
-    "@dev_mode_scan_scan_half_image": {
-        "description": "Scan mode - Scan half image"
     },
     "search_history_item_edit_tooltip": "Gunakan kembali dan sunting pencarian ini",
     "@search_history_item_edit_tooltip": {
@@ -1675,7 +1655,7 @@
             }
         }
     },
-    "product_search_loading_message": "Your search of {search} is in progress.\n\nPlease wait a few seconds…",
+    "product_search_loading_message": "Pencarian Anda untuk {search} sedang berlangsung.\n\nMohon tunggu beberapa detik…",
     "@product_search_loading_message": {
         "description": "This message will be displayed when a search is in progress.",
         "search": {
@@ -1889,6 +1869,18 @@
     "add_packaging_photo_button_label": "Ambil foto dari setiap informasi pengemasan/daur ulang",
     "@add_packaging_photo_button_label": {
         "description": "Label for the add PACKAGING photo button"
+    },
+    "add_origin_photo_button_label": "Mengambil foto informasi asal",
+    "@add_origin_photo_button_label": {
+        "description": "Label for the add ORIGIN photo button"
+    },
+    "add_emb_photo_button_label": "Ambil foto informasi kode penelusuran apa pun",
+    "@add_emb_photo_button_label": {
+        "description": "Label for the add EMB photo button"
+    },
+    "add_label_photo_button_label": "Ambil foto informasi label & sertifikasi apa pun",
+    "@add_label_photo_button_label": {
+        "description": "Label for the add LABELS photo button"
     },
     "choose_image_source_title": "Memilih sumber gambar",
     "@choose_image_source_title": {
@@ -2511,6 +2503,10 @@
     "hunger_games_loading_line2": "Kami mengunduh pertanyaannya!",
     "hunger_games_error_label": "Argh! Terjadi kesalahan… dan kami tidak bisa memuat pertanyaan.",
     "hunger_games_error_retry_button": "Mari kita coba lagi!",
+    "reorder_attribute_action": "Susun ulang atribut",
+    "@reorder_attribute_action": {
+        "description": "An action button or a page title about reordering the attributes (e.g. 'is vegan?', 'nutrition facts', ...)"
+    },
     "link_cant_be_opened": "Tautan ini tidak dapat dibuka di perangkat Anda. Pastikan Anda telah menginstal browser.",
     "@link_cant_be_opened": {
         "description": "An error may happen if the device doesn't have a browser installed."

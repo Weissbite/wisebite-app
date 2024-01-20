@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/helpers/product_cards_helper.dart';
@@ -20,6 +21,8 @@ class KnowledgePanelProductCards extends StatelessWidget {
             ))
         .toList(growable: false);
 
+    //print(widgetsWrappedInSmoothCards.elementAt(1));
+
     return Center(
       child: Padding(
         padding: const EdgeInsetsDirectional.only(
@@ -34,5 +37,11 @@ class KnowledgePanelProductCards extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('count', knowledgePanelWidgets.length));
   }
 }

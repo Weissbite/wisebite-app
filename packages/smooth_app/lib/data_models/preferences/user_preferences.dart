@@ -102,6 +102,10 @@ class UserPreferences extends ChangeNotifier {
 
   static const String _TAG_NUMBER_OF_SCANS = 'numberOfScans';
 
+  /// User knowledge panel order
+  static const String _TAG_USER_KNOWLEDGE_PANEL_ORDER =
+      'userKnowledgePanelOrder';
+
   Future<void> init(final ProductPreferences productPreferences) async {
     await _onMigrate();
 
@@ -335,7 +339,7 @@ class UserPreferences extends ChangeNotifier {
 
   String get activeAttributeGroup =>
       _sharedPreferences.getString(_TAG_ACTIVE_ATTRIBUTE_GROUP) ??
-      'nutritional_quality'; // TODO(monsieurtanuki): relatively safe but not nice to put a hard-coded value (even when highly probable)
+      AttributeGroup.ATTRIBUTE_GROUP_NUTRITIONAL_QUALITY;
 
   UserPictureSource get userPictureSource => UserPictureSource.fromString(
         _sharedPreferences.getString(_TAG_USER_PICTURE_SOURCE) ??
@@ -344,6 +348,16 @@ class UserPreferences extends ChangeNotifier {
 
   Future<void> setUserPictureSource(final UserPictureSource source) async {
     await _sharedPreferences.setString(_TAG_USER_PICTURE_SOURCE, source.tag);
+    notifyListeners();
+  }
+
+  List<String> get userKnowledgePanelOrder =>
+      _sharedPreferences.getStringList(_TAG_USER_KNOWLEDGE_PANEL_ORDER) ??
+      <String>[];
+
+  Future<void> setUserKnowledgePanelOrder(final List<String> source) async {
+    await _sharedPreferences.setStringList(
+        _TAG_USER_KNOWLEDGE_PANEL_ORDER, source);
     notifyListeners();
   }
 }

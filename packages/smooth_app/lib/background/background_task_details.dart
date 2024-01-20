@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'package:smooth_app/background/background_task_barcode.dart';
 import 'package:smooth_app/background/operation_type.dart';
 import 'package:smooth_app/database/local_database.dart';
-import 'package:smooth_app/query/product_query.dart';
 
 /// Stamps we can put on [BackgroundTaskDetails].
 ///
@@ -33,13 +32,10 @@ enum BackgroundTaskDetailsStamp {
 
 /// Background task that changes product details (data, but no image upload).
 class BackgroundTaskDetails extends BackgroundTaskBarcode {
-  const BackgroundTaskDetails._({
+  BackgroundTaskDetails._({
     required super.processName,
     required super.uniqueId,
     required super.barcode,
-    required super.languageCode,
-    required super.user,
-    required super.country,
     required super.stamp,
     required this.inputMap,
   });
@@ -111,10 +107,7 @@ class BackgroundTaskDetails extends BackgroundTaskBarcode {
         uniqueId: uniqueId,
         processName: _operationType.processName,
         barcode: minimalistProduct.barcode!,
-        languageCode: ProductQuery.getLanguage().code,
         inputMap: jsonEncode(minimalistProduct.toJson()),
-        user: jsonEncode(ProductQuery.getUser().toJson()),
-        country: ProductQuery.getCountry().offTag,
         stamp: getStamp(minimalistProduct.barcode!, stamp.tag),
       );
 
@@ -159,9 +152,9 @@ class BackgroundTaskDetails extends BackgroundTaskBarcode {
           }
         }
         throw Exception(
-          'Could not save product'
+          'Could not save product - API V3'
           ' - '
-          '${result.errors}${isInvalidUser ? _getIncompleteUserData() : ''}',
+          'status=${result.status} - errors=${result.errors} ${isInvalidUser ? _getIncompleteUserData() : ''}',
         );
       }
       return;
@@ -181,9 +174,9 @@ class BackgroundTaskDetails extends BackgroundTaskBarcode {
         }
       }
       throw Exception(
-        'Could not save product'
+        'Could not save product - API V2'
         ' - '
-        '${status.error}${isInvalidUser ? _getIncompleteUserData() : ''}',
+        'status=${status.status} - errors=${status.error} ${isInvalidUser ? _getIncompleteUserData() : ''}',
       );
     }
   }

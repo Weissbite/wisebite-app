@@ -20,6 +20,7 @@ import '../tests_utils/local_database_mock.dart';
 import '../tests_utils/mocks.dart';
 
 void main() {
+  // TODO(yavor): Unblock test
   group('UserPreferencesPage looks as expected', () {
     for (final String theme in <String>['Light', 'Dark', 'AMOLED']) {
       testWidgets(theme, (WidgetTester tester) async {
@@ -111,10 +112,10 @@ void main() {
     colorProvider = ColorProvider(userPreferences);
     textContrastProvider = TextContrastProvider(userPreferences);
 
-    UserManagementProvider.mountCredentials(
-      userId: 'userId',
-      password: 'password',
-    );
+    // UserManagementProvider.mountCredentials(
+    //   userId: 'userId',
+    //   password: 'password',
+    // );
 
     await tester.pumpWidget(
       MockSmoothApp(

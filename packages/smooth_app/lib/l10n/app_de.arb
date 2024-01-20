@@ -24,6 +24,10 @@
     "@next_label": {
         "description": "A label on a button that says 'Next', pressing the button takes the user to the next screen."
     },
+    "previous_label": "Zurück",
+    "@previous_label": {
+        "description": "A label on a button that says 'Previous', pressing the button takes the user to the previous screen."
+    },
     "go_back_to_top": "Zurück zum Anfang",
     "save": "Speichern",
     "save_confirmation": "Möchten Sie wirklich speichern?",
@@ -141,6 +145,7 @@
     "@ecoCardUtility": {
         "description": "Description of what a user can use the Eco data in a product for."
     },
+    "server_error_open_new_issue": "Keine Serverantwort! Sie können ein Problem unter dem folgenden Link melden.",
     "@user_management": {},
     "sign_in_text": "Melden Sie sich bei Ihrem Open Food Facts-Konto an, um Ihre Beiträge speichern zu können",
     "incorrect_credentials": "Ungültiger Benutzername oder Passwort.",
@@ -348,6 +353,10 @@
     "contribute_develop_dev_mode_subtitle": "Entwicklermodus aktivieren",
     "contribute_donate_header": "Spenden Sie für Open Food Facts",
     "@contribute_donate_header": {},
+    "contribute_enroll_alpha": "Registrieren Sie sich für die interne Alpha-Version",
+    "@contribute_enroll_alpha": {},
+    "contribute_enroll_alpha_warning": "Bitte beachten Sie, dass bei der internen Alpha-Version ein vollständiger Datenverlust möglich ist und die App jederzeit unbrauchbar werden kann!",
+    "@contribute_enroll_alpha_warning": {},
     "contribute_improve_ProductsToBeCompleted": "Noch abzuschließende Produkte",
     "@contribute_improve_ProductsToBeCompleted": {
         "description": "Button label: Shows a list of products which aren't completed"
@@ -541,6 +550,10 @@
     "@new_product_dialog_title": {
         "description": "Please keep it short, like 50 characters. Title of the dialog when the user searched for an unknown barcode."
     },
+    "new_product_leave_title": "Diese Seite schließen?",
+    "@new_product_leave_title": {
+        "description": "Alert dialog title when a user landed on the 'add new product' page, didn't input anything and tried to leave the page."
+    },
     "new_product_leave_message": "Es sieht so aus, als hätten Sie nichts eingegeben. Möchten Sie diese Seite wirklich verlassen?",
     "@new_product_leave_message": {
         "description": "Alert dialog message when a user landed on the 'add new product' page, didn't input anything and tried to leave the page."
@@ -714,6 +727,8 @@
     "nutrition_page_update_done": "Produkt aktualisiert!",
     "more_photos": "Weitere interessante Fotos",
     "@more_photos": {},
+    "view_more_photo_button": "Alle vorhandenen Fotos für dieses Produkt anzeigen",
+    "@view_more_photo_button": {},
     "no_product_found": "Keine Produkte gefunden",
     "@no_product_found": {},
     "not_found": "Nicht gefunden:",
@@ -1602,50 +1617,15 @@
     "@dev_preferences_import_history_subtitle": {
         "description": "User dev preferences - Import history - Subtitle"
     },
+    "prices_app_dev_mode_flag": "Verknüpfung zur Preise-App auf der Produktseite",
+    "prices_app_button": "Zur Preise-App wechseln",
     "dev_preferences_import_history_result_success": "Fertig",
     "@dev_preferences_import_history_result_success": {
         "description": "User dev preferences - Import history - Result successful"
     },
-    "dev_mode_scan_mode_title": "Scanmodus",
-    "@dev_mode_scan_mode_title": {
-        "description": "User dev preferences - Scan mode - Title"
-    },
-    "dev_mode_scan_mode_subtitle": "Aktueller Scanmodus ist: „{mode}“",
-    "@dev_mode_scan_mode_subtitle": {
-        "description": "User dev preferences - Scan mode - Subtitle",
-        "placeholders": {
-            "mode": {
-                "type": "String"
-            }
-        }
-    },
-    "dev_mode_scan_mode_dialog_title": "Scanmodus",
-    "@dev_mode_scan_mode_dialog_title": {
-        "description": "User dev preferences - Scan mode - Dialog Title"
-    },
     "dev_mode_hide_ecoscore_title": "Eco-Score ausschließen",
     "@dev_mode_hide_ecoscore_title": {
         "description": "User dev preferences - Disable Ecoscore - Title"
-    },
-    "dev_mode_scan_camera_only": "Nur Kamerastream, kein Scannen",
-    "@dev_mode_scan_camera_only": {
-        "description": "Scan mode - Camera only"
-    },
-    "dev_mode_scan_preprocess_full_image": "Kamerastream und vollständige Bildvorverarbeitung, kein Scannen",
-    "@dev_mode_scan_preprocess_full_image": {
-        "description": "Scan mode - Preprocess full image"
-    },
-    "dev_mode_scan_preprocess_half_image": "Kamerastream und halbe Bildvorverarbeitung, kein Scannen",
-    "@dev_mode_scan_preprocess_half_image": {
-        "description": "Scan mode - Preprocess half image"
-    },
-    "dev_mode_scan_scan_full_image": "Vollständige Bildsuche",
-    "@dev_mode_scan_scan_full_image": {
-        "description": "Scan mode - Scan full image"
-    },
-    "dev_mode_scan_scan_half_image": "Halbbild-Scannen",
-    "@dev_mode_scan_scan_half_image": {
-        "description": "Scan mode - Scan half image"
     },
     "search_history_item_edit_tooltip": "Diese Suche wiederverwenden und bearbeiten",
     "@search_history_item_edit_tooltip": {
@@ -1675,7 +1655,7 @@
             }
         }
     },
-    "product_search_loading_message": "Your search of {search} is in progress.\n\nPlease wait a few seconds…",
+    "product_search_loading_message": "Ihre Suche nach {search} wird ausgeführt.\n\nBitte einen Moment Geduld …",
     "@product_search_loading_message": {
         "description": "This message will be displayed when a search is in progress.",
         "search": {
@@ -1889,6 +1869,18 @@
     "add_packaging_photo_button_label": "Fotos von Verpackungs-/Recyclinginformationen aufnehmen",
     "@add_packaging_photo_button_label": {
         "description": "Label for the add PACKAGING photo button"
+    },
+    "add_origin_photo_button_label": "Fotos von allen Herkunftsinformationen aufnehmen",
+    "@add_origin_photo_button_label": {
+        "description": "Label for the add ORIGIN photo button"
+    },
+    "add_emb_photo_button_label": "Fotos von allen Rückverfolgbarkeitscode-Informationen aufnehmen",
+    "@add_emb_photo_button_label": {
+        "description": "Label for the add EMB photo button"
+    },
+    "add_label_photo_button_label": "Fotos von allen Etiketten und Zertifizierungsinformationen aufnehmen",
+    "@add_label_photo_button_label": {
+        "description": "Label for the add LABELS photo button"
     },
     "choose_image_source_title": "Bildquelle wählen",
     "@choose_image_source_title": {
@@ -2511,6 +2503,10 @@
     "hunger_games_loading_line2": "Die Fragen werden gerade heruntergeladen!",
     "hunger_games_error_label": "Leider ist ein Problem aufgetreten … und die Fragen konnten nicht geladen werden.",
     "hunger_games_error_retry_button": "Erneut versuchen",
+    "reorder_attribute_action": "Attribute neu anordnen",
+    "@reorder_attribute_action": {
+        "description": "An action button or a page title about reordering the attributes (e.g. 'is vegan?', 'nutrition facts', ...)"
+    },
     "link_cant_be_opened": "Dieser Link kann auf Ihrem Gerät nicht geöffnet werden. Bitte überprüfen Sie, ob ein Browser installiert ist.",
     "@link_cant_be_opened": {
         "description": "An error may happen if the device doesn't have a browser installed."

@@ -24,6 +24,10 @@
     "@next_label": {
         "description": "A label on a button that says 'Next', pressing the button takes the user to the next screen."
     },
+    "previous_label": "Önceki",
+    "@previous_label": {
+        "description": "A label on a button that says 'Previous', pressing the button takes the user to the previous screen."
+    },
     "go_back_to_top": "Başa dön",
     "save": "Kaydet",
     "save_confirmation": "Kaydetmek istediğinizden emin misiniz?",
@@ -141,6 +145,7 @@
     "@ecoCardUtility": {
         "description": "Description of what a user can use the Eco data in a product for."
     },
+    "server_error_open_new_issue": "Sunucu yanıtı yok! Aşağıdaki bağlantıdan konu açabilirsiniz.",
     "@user_management": {},
     "sign_in_text": "Katkılarınızı kaydetmek için Open Food Facts hesabınızda oturum açın",
     "incorrect_credentials": "Hatalı kullanıcı adı veya parola.",
@@ -348,6 +353,10 @@
     "contribute_develop_dev_mode_subtitle": "DEV Modunu Etkinleştirin",
     "contribute_donate_header": "OpenFoodFacts'e bağış yapın",
     "@contribute_donate_header": {},
+    "contribute_enroll_alpha": "Dahili alfa sürümüne kaydolun",
+    "@contribute_enroll_alpha": {},
+    "contribute_enroll_alpha_warning": "Lütfen dahili alfa sürümünde verilerin tamamen kaybedilmesinin mümkün olduğunu ve uygulamanın her an kullanılamaz hale gelebileceğini kabul edin!",
+    "@contribute_enroll_alpha_warning": {},
     "contribute_improve_ProductsToBeCompleted": "Tamamlanacak ürünler",
     "@contribute_improve_ProductsToBeCompleted": {
         "description": "Button label: Shows a list of products which aren't completed"
@@ -541,6 +550,10 @@
     "@new_product_dialog_title": {
         "description": "Please keep it short, like 50 characters. Title of the dialog when the user searched for an unknown barcode."
     },
+    "new_product_leave_title": "Bu sayfadan ayrılınsın mı?",
+    "@new_product_leave_title": {
+        "description": "Alert dialog title when a user landed on the 'add new product' page, didn't input anything and tried to leave the page."
+    },
     "new_product_leave_message": "Hiçbir şey girmemişsiniz gibi görünüyor. Bu sayfadan gerçekten ayrılmak istiyor musunuz?",
     "@new_product_leave_message": {
         "description": "Alert dialog message when a user landed on the 'add new product' page, didn't input anything and tried to leave the page."
@@ -714,6 +727,8 @@
     "nutrition_page_update_done": "Ürün güncellendi!",
     "more_photos": "Daha ilginç fotoğraflar",
     "@more_photos": {},
+    "view_more_photo_button": "Bu ürüne ait mevcut tüm fotoğrafları görüntüle",
+    "@view_more_photo_button": {},
     "no_product_found": "Ürün bulunamadı",
     "@no_product_found": {},
     "not_found": "bulunamadı:",
@@ -1602,50 +1617,15 @@
     "@dev_preferences_import_history_subtitle": {
         "description": "User dev preferences - Import history - Subtitle"
     },
+    "prices_app_dev_mode_flag": "Ürün sayfasındaki Fiyatlar uygulamasının kısayolu",
+    "prices_app_button": "Fiyatlar uygulamasına gidin",
     "dev_preferences_import_history_result_success": "Yapıldı",
     "@dev_preferences_import_history_result_success": {
         "description": "User dev preferences - Import history - Result successful"
     },
-    "dev_mode_scan_mode_title": "Tarama modu",
-    "@dev_mode_scan_mode_title": {
-        "description": "User dev preferences - Scan mode - Title"
-    },
-    "dev_mode_scan_mode_subtitle": "Geçerli tarama modu: \"{mode}\"",
-    "@dev_mode_scan_mode_subtitle": {
-        "description": "User dev preferences - Scan mode - Subtitle",
-        "placeholders": {
-            "mode": {
-                "type": "String"
-            }
-        }
-    },
-    "dev_mode_scan_mode_dialog_title": "Tarama modu",
-    "@dev_mode_scan_mode_dialog_title": {
-        "description": "User dev preferences - Scan mode - Dialog Title"
-    },
     "dev_mode_hide_ecoscore_title": "EcoScore'u hariç tut",
     "@dev_mode_hide_ecoscore_title": {
         "description": "User dev preferences - Disable Ecoscore - Title"
-    },
-    "dev_mode_scan_camera_only": "Yalnızca kamera akışı, tarama yok",
-    "@dev_mode_scan_camera_only": {
-        "description": "Scan mode - Camera only"
-    },
-    "dev_mode_scan_preprocess_full_image": "Kamera akışı ve tam görüntü ön işleme, tarama yok",
-    "@dev_mode_scan_preprocess_full_image": {
-        "description": "Scan mode - Preprocess full image"
-    },
-    "dev_mode_scan_preprocess_half_image": "Kamera akışı ve yarım görüntü ön işleme, tarama yok",
-    "@dev_mode_scan_preprocess_half_image": {
-        "description": "Scan mode - Preprocess half image"
-    },
-    "dev_mode_scan_scan_full_image": "Tam görüntü tarama",
-    "@dev_mode_scan_scan_full_image": {
-        "description": "Scan mode - Scan full image"
-    },
-    "dev_mode_scan_scan_half_image": "Yarım görüntü tarama",
-    "@dev_mode_scan_scan_half_image": {
-        "description": "Scan mode - Scan half image"
     },
     "search_history_item_edit_tooltip": "Bu aramayı yeniden kullan ve düzenle",
     "@search_history_item_edit_tooltip": {
@@ -1889,6 +1869,18 @@
     "add_packaging_photo_button_label": "Herhangi bir ambalaj/geri dönüşüm bilgisinin fotoğrafını çekin",
     "@add_packaging_photo_button_label": {
         "description": "Label for the add PACKAGING photo button"
+    },
+    "add_origin_photo_button_label": "Herhangi bir menşe bilgisinin fotoğrafını çekin",
+    "@add_origin_photo_button_label": {
+        "description": "Label for the add ORIGIN photo button"
+    },
+    "add_emb_photo_button_label": "İzlenebilirlik kodu bilgilerinin fotoğraflarını çekin",
+    "@add_emb_photo_button_label": {
+        "description": "Label for the add EMB photo button"
+    },
+    "add_label_photo_button_label": "Tüm etiket ve sertifika bilgilerinin fotoğrafını çekin",
+    "@add_label_photo_button_label": {
+        "description": "Label for the add LABELS photo button"
     },
     "choose_image_source_title": "Görüntü kaynağını seçin",
     "@choose_image_source_title": {
@@ -2511,6 +2503,10 @@
     "hunger_games_loading_line2": "Soruları indiriyoruz!",
     "hunger_games_error_label": "Ah! Bir şeyler ters gitti… ve soruları yükleyemedik.",
     "hunger_games_error_retry_button": "Tekrar deneyelim!",
+    "reorder_attribute_action": "Öznitelikleri yeniden sırala",
+    "@reorder_attribute_action": {
+        "description": "An action button or a page title about reordering the attributes (e.g. 'is vegan?', 'nutrition facts', ...)"
+    },
     "link_cant_be_opened": "Bu bağlantı cihazınızda açılamıyor. Lütfen tarayıcınızın kurulu olup olmadığını kontrol edin.",
     "@link_cant_be_opened": {
         "description": "An error may happen if the device doesn't have a browser installed."
