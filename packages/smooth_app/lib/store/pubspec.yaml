@@ -1,0 +1,25 @@
+name: store
+description: Shared storage solutions
+version: 0.0.1
+publish_to: "none"
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # flutter_svg: 2.0.9
+  # visibility_detector: 0.4.0+2
+  # provider: 6.1.1
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+
+# dev_dependencies:
+#   flutter_test:
+#     sdk: flutter
+#   flutter_lints: 2.0.3
+#   openfoodfacts_flutter_lints:
+#     git: https://github.com/openfoodfacts/openfoodfacts_flutter_lints.git
+
+flutter:
