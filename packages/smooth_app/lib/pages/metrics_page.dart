@@ -15,7 +15,7 @@ class MerticsPageWidget extends StatefulWidget {
   const MerticsPageWidget({Key? key}) : super(key: key);
 
   @override
-  _MerticsPageWidgetState createState() => _MerticsPageWidgetState();
+  State<MerticsPageWidget> createState() => _MerticsPageWidgetState();
 }
 
 class _MerticsPageWidgetState extends State<MerticsPageWidget> {
@@ -28,8 +28,12 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
 
   @override
   void initState() {
+    _loadData().then((ActivityLevel? activityLevel) {
+      setState(() {
+        activityLevel = activityLevel;
+      });
+    });
     super.initState();
-    _loadData();
   }
 
   Future<void> _submitForm() async {
@@ -56,7 +60,7 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
     );
   }
 
-  Future<void> _loadData() async {
+  Future<ActivityLevel?> _loadData() async {
     final String userId = UserManagementProvider.user!.uid;
     final FirestoreService<UserData> service = FirestoreService<UserData>(
       collectionPath: 'user_data',
@@ -64,14 +68,20 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
     );
 
     final UserData? data = await service.getDocument(documentId: userId);
-    if (data == null) return;
+    if (data == null) {
+      return null;
+    }
 
     _ageController.text = data.age!.toString();
     _weightController.text = data.weight!.toString();
     _heightController.text = data.height!.toString();
-    context.read<ActivityLevelProvider>().setCurrent(data.activityLevel!);
 
-    setState(() {});
+    if (!context.mounted) {
+      return null;
+    }
+    Navigator.of(context).pop();
+
+    return data.activityLevel;
   }
 
   @override
@@ -108,7 +118,9 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                   controller: _ageController,
                   decoration: const InputDecoration(labelText: 'Age'),
                   keyboardType: TextInputType.number,
-                  inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your age';
@@ -122,7 +134,9 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                   controller: _heightController,
                   decoration: const InputDecoration(labelText: 'Height (cm)'),
                   keyboardType: TextInputType.number,
-                  inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your height';
@@ -136,7 +150,9 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                   controller: _weightController,
                   decoration: const InputDecoration(labelText: 'Weight (kg)'),
                   keyboardType: TextInputType.number,
-                  inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your weight';

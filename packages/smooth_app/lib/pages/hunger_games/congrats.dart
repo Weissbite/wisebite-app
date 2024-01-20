@@ -3,9 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
-import 'package:provider/provider.dart';
+// TODO(yavor): Used for email/password login.
+// import 'package:provider/provider.dart';
+// import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:rive/rive.dart';
-import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/generic_lib/buttons/smooth_simple_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
@@ -29,8 +30,9 @@ class CongratsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
-    final UserManagementProvider userManagementProvider =
-        context.watch<UserManagementProvider>();
+    // TODO(yavor): Used for email/password login.
+    // final UserManagementProvider userManagementProvider =
+    //     context.watch<UserManagementProvider>();
 
     return Center(
       child: SmoothCard(
@@ -49,7 +51,9 @@ class CongratsWidget extends StatelessWidget {
               ),
               FractionallySizedBox(
                 child: FutureBuilder<bool>(
-                    future: userManagementProvider.credentialsInStorage(),
+                    // TODO(yavor): Used for email/password login.
+                    // future: userManagementProvider.credentialsInStorage(),
+                    future: Future<bool>(() => false),
                     builder:
                         (BuildContext context, AsyncSnapshot<bool> snapshot) {
                       if (!snapshot.hasData) {

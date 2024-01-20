@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:smooth_app/data_models/firestore_model.dart';
 
 class FirestoreService<T extends FirestoreModel<T>> {
-
   FirestoreService({
     required this.collectionPath,
     required this.fromFirestore,
@@ -16,12 +15,12 @@ class FirestoreService<T extends FirestoreModel<T>> {
 
   /// Gets a document by its ID.
   Future<T?> getDocument({required String documentId}) async {
-    final DocumentReference documentReference =
+    final DocumentReference<T> documentReference =
         _getDocumentWithConverter(documentId: documentId);
-    final DocumentSnapshot documentSnapshot = await documentReference.get();
+    final DocumentSnapshot<T> documentSnapshot = await documentReference.get();
 
     if (documentSnapshot.exists) {
-      return documentSnapshot.data() as T?;
+      return documentSnapshot.data();
     } else {
       return null;
     }
@@ -33,7 +32,7 @@ class FirestoreService<T extends FirestoreModel<T>> {
     required T data,
     bool merge = false,
   }) async {
-    final DocumentReference documentReference =
+    final DocumentReference<T> documentReference =
         _getDocumentWithConverter(documentId: documentId);
 
     await documentReference.set(data, SetOptions(merge: merge));
@@ -46,7 +45,7 @@ class FirestoreService<T extends FirestoreModel<T>> {
         .doc(documentId)
         .withConverter<T>(
           fromFirestore: fromFirestore,
-          toFirestore: (model, _) => model.toFirestore(),
+          toFirestore: (T model, _) => model.toFirestore(),
         );
   }
 }
