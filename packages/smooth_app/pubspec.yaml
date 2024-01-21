@@ -88,8 +88,8 @@ dependencies:
   # but qr_code_scanner which uses the open source ZXing for F-Droid
   camera: 0.10.5+5
 
-  store:
-    path: ./lib/store
+  storage:
+    path: ./lib/storage
   
   scanner_shared:
     path: ../scanner/shared

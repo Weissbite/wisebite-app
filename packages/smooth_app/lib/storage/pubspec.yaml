@@ -1,4 +1,4 @@
-name: store
+name: storage
 description: Shared storage solutions
 version: 0.0.1
 publish_to: "none"

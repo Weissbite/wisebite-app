@@ -542,7 +542,7 @@ packages:
     source: hosted
     version: "0.7.0"
   firebase_auth:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: firebase_auth
       sha256: "279b2773ff61afd9763202cb5582e2b995ee57419d826b9af6517302a59b672f"
@@ -566,7 +566,7 @@ packages:
     source: hosted
     version: "5.8.13"
   firebase_core:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: firebase_core
       sha256: "96607c0e829a581c2a483c658f04e8b159964c3bae2730f73297070bc85d40bb"
@@ -1691,10 +1691,10 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.1"
-  store:
+  storage:
     dependency: "direct main"
     description:
-      path: "lib/store"
+      path: "lib/storage"
       relative: true
     source: path
     version: "0.0.1"
