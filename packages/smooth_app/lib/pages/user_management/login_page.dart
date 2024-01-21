@@ -1,3 +1,4 @@
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -142,8 +143,12 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
 
                       ServiceSignInButton(
                         onPressed: () async {
+                          // TODO(yavor): check if successful login
+                          // final UserCredential? userCreds =
                           await UserManagementProvider()
                               .signInWithGoogle(context);
+
+                          // if (userCreds != null) {}
                           if (!context.mounted) {
                             return;
                           }

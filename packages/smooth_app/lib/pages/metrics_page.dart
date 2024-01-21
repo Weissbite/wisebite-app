@@ -76,10 +76,10 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
     _weightController.text = data.weight!.toString();
     _heightController.text = data.height!.toString();
 
-    if (!context.mounted) {
-      return null;
-    }
-    Navigator.of(context).pop();
+    // if (!context.mounted) {
+    //   return null;
+    // }
+    // Navigator.of(context).pop();
 
     return data.activityLevel;
   }
