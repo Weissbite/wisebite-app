@@ -37,7 +37,10 @@ class UserManagementProvider with ChangeNotifier {
     return true;
   }
 
-  Future<void> signInWithGoogle(BuildContext context) async {
+  Future<UserCredential?> signInWithGoogle(BuildContext context) async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    UserCredential? userCreds;
+
     try {
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
@@ -53,13 +56,15 @@ class UserManagementProvider with ChangeNotifier {
       );
 
       // Sign In
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      userCreds = await auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       Logs.e(
         'An error occurred while trying to Sign In. ${e.message}',
         ex: e,
       );
     }
+
+    return userCreds;
   }
 
   Future<void> signInWithFacebook(BuildContext context) async {
