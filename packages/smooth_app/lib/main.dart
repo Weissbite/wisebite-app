@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:app_store_shared/app_store_shared.dart';
 import 'package:dart_ping_ios/dart_ping_ios.dart';
 import 'package:device_preview/device_preview.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,6 +35,7 @@ import 'package:smooth_app/providers/activity_level_provider.dart';
 import 'package:smooth_app/query/product_query.dart';
 import 'package:smooth_app/resources/app_animations.dart';
 import 'package:smooth_app/services/smooth_services.dart';
+import 'package:smooth_app/storage/firebase_options.dart';
 import 'package:smooth_app/themes/color_provider.dart';
 import 'package:smooth_app/themes/contrast_provider.dart';
 import 'package:smooth_app/themes/smooth_theme.dart';
@@ -186,6 +188,13 @@ class _SmoothAppState extends State<SmoothApp> {
     if (!_screenshots) {
       await _userPreferences.init(_productPreferences);
     }
+
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
+    _userManagementProvider.listenToFirebase();
+
     return true;
   }
 

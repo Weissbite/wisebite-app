@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 
+// TODO(yavor): Used for email/password login.
+// import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
-// TODO(yavor): Used for email/password login.
-// import 'package:provider/provider.dart';
-// import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:rive/rive.dart';
+import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/generic_lib/buttons/smooth_simple_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
@@ -53,7 +53,7 @@ class CongratsWidget extends StatelessWidget {
                 child: FutureBuilder<bool>(
                     // TODO(yavor): Used for email/password login.
                     // future: userManagementProvider.credentialsInStorage(),
-                    future: Future<bool>(() => false),
+                    future: Future<bool>.value(true),
                     builder:
                         (BuildContext context, AsyncSnapshot<bool> snapshot) {
                       if (!snapshot.hasData) {
@@ -114,7 +114,7 @@ class CongratsWidget extends StatelessWidget {
                       builder: (_) => const LoginPage(),
                     ),
                   );
-                  if (OpenFoodAPIConfiguration.globalUser != null) {
+                  if (UserManagementProvider.user != null) {
                     if (!context.mounted) {
                       return;
                     }
