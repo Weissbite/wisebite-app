@@ -5,11 +5,12 @@ import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/pages/carousel_manager.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_dev_mode.dart';
 import 'package:smooth_app/widgets/tab_navigator.dart';
+import 'package:smooth_app/widgets/will_pop_scope.dart';
 
 enum BottomNavigationTab {
-  List,
-  Scan,
   Profile,
+  Scan,
+  List,
 }
 
 /// Here the different tabs in the bottom navigation bar are taken care of,
@@ -25,19 +26,19 @@ class PageManager extends StatefulWidget {
 
 class PageManagerState extends State<PageManager> {
   static const List<BottomNavigationTab> _pageKeys = <BottomNavigationTab>[
-    BottomNavigationTab.List,
-    BottomNavigationTab.Scan,
     BottomNavigationTab.Profile,
+    BottomNavigationTab.Scan,
+    BottomNavigationTab.List,
   ];
 
   final Map<BottomNavigationTab, GlobalKey<NavigatorState>> _navigatorKeys =
       <BottomNavigationTab, GlobalKey<NavigatorState>>{
-    BottomNavigationTab.List: GlobalKey<NavigatorState>(),
-    BottomNavigationTab.Scan: GlobalKey<NavigatorState>(),
     BottomNavigationTab.Profile: GlobalKey<NavigatorState>(),
+    BottomNavigationTab.Scan: GlobalKey<NavigatorState>(),
+    BottomNavigationTab.List: GlobalKey<NavigatorState>(),
   };
 
-  BottomNavigationTab _currentPage = BottomNavigationTab.List;
+  BottomNavigationTab _currentPage = BottomNavigationTab.Scan;
 
   /// To implement a lazy-loading algorithm to only load visible tabs, we
   /// store a list of boolean if a tab have been visible at least one time.
@@ -69,9 +70,9 @@ class PageManagerState extends State<PageManager> {
     }
 
     final List<Widget> tabs = <Widget>[
-      _buildOffstageNavigator(BottomNavigationTab.List),
-      _buildOffstageNavigator(BottomNavigationTab.Scan),
       _buildOffstageNavigator(BottomNavigationTab.Profile),
+      _buildOffstageNavigator(BottomNavigationTab.Scan),
+      _buildOffstageNavigator(BottomNavigationTab.List),
     ];
 
     final UserPreferences userPreferences = context.watch<UserPreferences>();
@@ -90,31 +91,31 @@ class PageManagerState extends State<PageManager> {
       currentIndex: _currentPage.index,
       items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: const Icon(Icons.list),
-          label: appLocalizations.list_navbar_label,
+          icon: const Icon(Icons.account_circle),
+          label: appLocalizations.profile_navbar_label,
         ),
         BottomNavigationBarItem(
           icon: const Icon(Icons.search),
           label: appLocalizations.scan_navbar_label,
         ),
         BottomNavigationBarItem(
-          icon: const Icon(Icons.account_circle),
-          label: appLocalizations.profile_navbar_label,
+          icon: const Icon(Icons.list),
+          label: appLocalizations.list_navbar_label,
         ),
       ],
     );
-    return WillPopScope(
+    return WillPopScope2(
       onWillPop: () async {
         final bool isFirstRouteInCurrentTab =
             !await _navigatorKeys[_currentPage]!.currentState!.maybePop();
         if (isFirstRouteInCurrentTab) {
           if (_currentPage != BottomNavigationTab.Scan) {
             _selectTab(BottomNavigationTab.Scan, 1);
-            return false;
+            return (false, null);
           }
         }
         // let system handle back button if we're on the first route
-        return isFirstRouteInCurrentTab;
+        return (isFirstRouteInCurrentTab, null);
       },
       child: Scaffold(
         body: Stack(children: tabs),

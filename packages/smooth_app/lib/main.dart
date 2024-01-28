@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:app_store_shared/app_store_shared.dart';
 import 'package:dart_ping_ios/dart_ping_ios.dart';
 import 'package:device_preview/device_preview.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,14 +35,12 @@ import 'package:smooth_app/providers/activity_level_provider.dart';
 import 'package:smooth_app/query/product_query.dart';
 import 'package:smooth_app/resources/app_animations.dart';
 import 'package:smooth_app/services/smooth_services.dart';
+import 'package:smooth_app/storage/firebase_options.dart';
 import 'package:smooth_app/themes/color_provider.dart';
 import 'package:smooth_app/themes/contrast_provider.dart';
 import 'package:smooth_app/themes/smooth_theme.dart';
 import 'package:smooth_app/themes/theme_provider.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
-
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
 void main() {
   debugPrint('--------');
@@ -129,6 +128,8 @@ Future<bool> _init1() async {
   DartPingIOS.register();
   await SmoothServices().init(GlobalVars.appStore);
   await setupAppNetworkConfig();
+  // TODO(yavor): Used for email/password login.
+  // await UserManagementProvider.mountCredentials();
   _userPreferences = await UserPreferences.getUserPreferences();
   _localDatabase = await LocalDatabase.getLocalDatabase();
   await _continuousScanModel.load(_localDatabase);
@@ -140,6 +141,8 @@ Future<bool> _init1() async {
     ),
     daoString: DaoString(_localDatabase),
   );
+  // TODO(yavor): Used for email/password login.
+  // UserManagementProvider().checkUserLoginValidity();
 
   AnalyticsHelper.linkPreferences(_userPreferences);
 

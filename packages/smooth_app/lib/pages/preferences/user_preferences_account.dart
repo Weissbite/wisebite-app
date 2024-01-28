@@ -8,7 +8,7 @@ import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/buttons/smooth_simple_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
-import 'package:smooth_app/helpers/launch_url_helper.dart';
+// import 'package:smooth_app/helpers/launch_url_helper.dart';
 import 'package:smooth_app/helpers/user_management_helper.dart';
 import 'package:smooth_app/pages/navigator/app_navigator.dart';
 import 'package:smooth_app/pages/preferences/abstract_user_preferences.dart';
@@ -117,20 +117,13 @@ class UserPreferencesAccount extends AbstractUserPreferences {
     );
   }
 
-  Future<void> _goToLoginPage() async =>
-      Navigator.of(context, rootNavigator: true)
-          .push<dynamic>(
-        MaterialPageRoute<dynamic>(
-          builder: (BuildContext context) => const LoginPage(),
-        ),
-      )
-          .then((_) async {
-        final bool areMetricsFilled =
-            await UserManagementProvider().areMetricFieldsFilled();
-        if (!areMetricsFilled) {
-          showCompleteProfileDialog(context);
-        }
-      });
+  Future<void> _goToLoginPage() async {
+    Navigator.of(context, rootNavigator: true).push<dynamic>(
+      MaterialPageRoute<dynamic>(
+        builder: (BuildContext context) => const LoginPage(),
+      ),
+    );
+  }
 
   @override
   List<UserPreferencesItem> getChildren() {
@@ -142,7 +135,20 @@ class UserPreferencesAccount extends AbstractUserPreferences {
           labels: <String>[appLocalizations.sign_in],
           builder: (_) => Center(
             child: ElevatedButton(
-              onPressed: () async => _goToLoginPage(),
+              onPressed: () async {
+                _goToLoginPage();
+
+                final bool areMetricsFilled =
+                    await UserManagementProvider().areMetricFieldsFilled();
+                if (!context.mounted) {
+                  return;
+                }
+
+                if (!areMetricsFilled) {
+                  showCompleteProfileDialog(context);
+                }
+                Navigator.of(context).pop();
+              },
               style: ButtonStyle(
                 minimumSize: MaterialStateProperty.all<Size>(
                   Size(size.width * 0.5, themeData.buttonTheme.height + 10),
@@ -222,16 +228,16 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         context: context,
         localDatabase: localDatabase,
       ),
+      // _getListTile(
+      //   appLocalizations.view_profile,
+      //   () async => LaunchUrlHelper.launchURL(
+      //     'https://openfoodfacts.org/editor/$userId',
+      //     true,
+      //   ),
+      //   Icons.open_in_new,
+      // ),
       _getListTile(
-        appLocalizations.view_profile,
-        () async => LaunchUrlHelper.launchURL(
-          'https://openfoodfacts.org/editor/$userId',
-          true,
-        ),
-        Icons.open_in_new,
-      ),
-      _getListTile(
-        appLocalizations.metrics,
+        'Metrics',
         () {
           AppNavigator.of(context).push(AppRoutes.METRICS);
         },

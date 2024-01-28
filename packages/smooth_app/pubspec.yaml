@@ -4,7 +4,7 @@ version: 0.0.0+734
 publish_to: "none"
 
 environment:
-  sdk: '>=3.1.0 <4.0.0'
+  sdk: '>=3.2.3 <4.0.0'
 
 dependencies:
   flutter:
@@ -25,8 +25,8 @@ dependencies:
   flutter_secure_storage: 9.0.0
   hive: 2.2.3
   hive_flutter: 1.1.0
-  http: 1.1.0
-  image_picker: 1.0.4
+  http: 1.1.2
+  image_picker: 1.0.7
   iso_countries: 2.2.0
   latlong2: 0.9.0
   matomo_tracker: 4.1.1
@@ -40,7 +40,7 @@ dependencies:
   sqflite: 2.3.0
   url_launcher: 6.1.3
   visibility_detector: 0.4.0+2
-  assorted_layout_widgets: 8.0.5
+  assorted_layout_widgets: 9.0.0
   app_settings: 5.1.1
   diacritic: 0.1.4
   app_store_shared:
@@ -60,8 +60,7 @@ dependencies:
   share_plus: 7.2.1
   fimber: 0.7.0
   shimmer: ^3.0.0
-  lottie: 2.7.0
-  rive: 0.12.3
+  rive: 0.12.4
   sensors_plus: 3.1.0
   webview_flutter: 3.0.4
   flutter_custom_tabs: 1.0.4
@@ -70,6 +69,8 @@ dependencies:
   dart_ping: 9.0.1
   dart_ping_ios: 4.0.2
   flutter_animation_progress_bar: 2.3.1
+  email_validator: 2.1.17
+  sliver_tools: 0.2.12
 
   # According to the build variant, only one "app store" implementation must be added when building a release
   # Call "flutter pub remove xxxx" to remove unused dependencies
@@ -86,6 +87,9 @@ dependencies:
   # mobile scanner powered by ML Kit for the Play Store and Apple App Store,
   # but qr_code_scanner which uses the open source ZXing for F-Droid
   camera: 0.10.5+5
+
+  storage:
+    path: ./lib/storage
   
   scanner_shared:
     path: ../scanner/shared
@@ -97,13 +101,12 @@ dependencies:
     path: ../scanner/zxing
 
 
-  openfoodfacts: 3.1.0
+  openfoodfacts: 3.2.1
   firebase_core: ^2.24.2
   firebase_auth: ^4.15.3
   google_sign_in: ^6.2.1
   flutter_facebook_auth: ^6.0.3
   cloud_firestore: ^4.13.6
-  firebase_analytics: ^10.8.0
   # openfoodfacts:
   #   path: ../../../openfoodfacts-dart
 
@@ -116,7 +119,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   mockito: 5.4.2
-  path_provider_platform_interface: 2.1.1
+  path_provider_platform_interface: 2.1.2
   plugin_platform_interface: 2.1.7
   flutter_lints: 2.0.3
   openfoodfacts_flutter_lints:

@@ -1,4 +1,3 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
@@ -8,13 +7,12 @@ import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/pages/navigator/app_navigator.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
 import 'package:smooth_app/services/smooth_services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserManagementProvider with ChangeNotifier {
   static User? get user => FirebaseAuth.instance.currentUser;
 
   void listenToFirebase() {
-    FirebaseAuth.instance.authStateChanges().listen((user) {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
       notifyListeners();
     });
   }
@@ -22,20 +20,27 @@ class UserManagementProvider with ChangeNotifier {
   // We're going to look for a document inside "user_data" collection with the id of user's UID
   // if there's no such document, we'll return false and prompt the user for filling the metrics
   Future<bool> areMetricFieldsFilled() async {
-    if (user == null) return true;
+    if (user == null) {
+      return true;
+    }
 
     final FirestoreService<UserData> service = FirestoreService<UserData>(
       collectionPath: 'user_data',
       fromFirestore: UserData().fromFirestore,
     );
 
-    UserData? data = await service.getDocument(documentId: user!.uid);
-    if (data == null) return false;
+    final UserData? data = await service.getDocument(documentId: user!.uid);
+    if (data == null) {
+      return false;
+    }
 
     return true;
   }
 
-  Future<void> signInWithGoogle(BuildContext context) async {
+  Future<UserCredential?> signInWithGoogle(BuildContext context) async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    UserCredential? userCreds;
+
     try {
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
@@ -45,13 +50,13 @@ class UserManagementProvider with ChangeNotifier {
           await googleUser?.authentication;
 
       // Create a new credential
-      final credential = GoogleAuthProvider.credential(
+      final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
       );
 
       // Sign In
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      userCreds = await auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       Logs.e(
         'An error occurred while trying to Sign In. ${e.message}',
@@ -59,15 +64,15 @@ class UserManagementProvider with ChangeNotifier {
       );
     }
 
-    FirebaseAnalytics.instance.logLogin(loginMethod: 'Google');
+    return userCreds;
   }
 
   Future<void> signInWithFacebook(BuildContext context) async {
     try {
       // Trigger the sign-in flow
-      final LoginResult? loginResult = await FacebookAuth.instance.login();
-      if (loginResult == null) {
-        print(loginResult);
+      final LoginResult loginResult = await FacebookAuth.instance.login();
+      if (loginResult.accessToken == null) {
+        Logs.d('signInWithFacebook: $loginResult');
         return;
       }
 
@@ -83,8 +88,6 @@ class UserManagementProvider with ChangeNotifier {
         ex: e,
       );
     }
-
-    FirebaseAnalytics.instance.logLogin(loginMethod: 'Facebook');
   }
 
   Future<void> signInWithApple(BuildContext context) async {
@@ -105,23 +108,22 @@ class UserManagementProvider with ChangeNotifier {
 }
 
 void showCompleteProfileDialog(BuildContext context) {
-  final AppLocalizations appLocalizations = AppLocalizations.of(context);
-
   showDialog(
       context: context,
       builder: (BuildContext context) {
         return SmoothAlertDialog(
-          title: appLocalizations.complete_profile,
-          body: Column(
+          title: 'Complete profile',
+          body: const Column(
             children: <Widget>[
-              Text(appLocalizations.complete_profile_prompt),
-              const SizedBox(
+              Text(
+                  'Complete the creation of your profile and fill out this form for more accurate recommendations.'),
+              SizedBox(
                 height: 10,
               ),
             ],
           ),
           positiveAction: SmoothActionButton(
-            text: appLocalizations.complete,
+            text: 'Complete',
             onPressed: () {
               AppNavigator.of(context).push(AppRoutes.METRICS);
               Navigator.of(context, rootNavigator: true).pop('dialog');

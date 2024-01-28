@@ -2,7 +2,7 @@ name: Run release-please
 on:
    push:
      branches:
-       - develop
+       - master
 
 env:
   RUBY_VERSION: 3.2.0
@@ -11,7 +11,7 @@ env:
 jobs:
   release-please:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'openfoodfacts'
+    if: github.repository_owner == 'Weissbite'
     outputs:
       release_created: ${{ steps.release_please.outputs.release_created }}
       major: ${{ steps.release_please.outputs.major }}
@@ -20,12 +20,12 @@ jobs:
       tag_name: ${{ steps.release_please.outputs.tag_name }}
     steps:
       - name: Release-please
-        uses: google-github-actions/release-please-action@v3
+        uses: google-github-actions/release-please-action@v4
         id: release_please
         with:
            token: ${{ secrets.GITHUB_TOKEN }}
            release-type: simple
-           pull-request-title-pattern: "chore${scope}: 🚀 Open Food Facts Mobile app - Release${component} ${version}."
+           pull-request-title-pattern: "chore${scope}: 🚀 Wisebite Mobile app - Release${component} ${version}."
            changelog-types: '[{"type":"feat","section":"🚀 Features","hidden":false},{"type":"fix","section":"🐛 Bug Fixes","hidden":false},{"type":"docs","section":"📖 Documentation","hidden":false},{"type":"ci","section":"🤖 Automation","hidden":false},{"type":"refactor","section":"👷 Refactoring","hidden":false},{"type":"chore","section":"🛠 Miscellaneous","hidden":false},{"type":"l10n","section":"🌍 Translations","hidden":false}]'
 
   create-release:
@@ -102,7 +102,7 @@ jobs:
     concurrency: 
       group: android-release
       cancel-in-progress: false
-    uses: openfoodfacts/smooth-app/.github/workflows/android-release-to-org-openfoodfacts-scanner.yml@develop
+    uses: Weissbite/wisebite/.github/workflows/android-release-to-org-wisebite-app.yml@master
     needs: [release-please, create-release]
     if: ${{ needs.release-please.outputs.release_created }}
     with:
@@ -125,7 +125,7 @@ jobs:
     concurrency: 
       group: iOS-release
       cancel-in-progress: false
-    uses: openfoodfacts/smooth-app/.github/workflows/ios-release-to-org-openfoodfacts-scanner.yml@develop
+    uses: Weissbite/wisebite/.github/workflows/ios-release-to-org-wisebite-app.yml@master
     needs: [release-please, create-release]
     if: ${{ needs.release-please.outputs.release_created }}
     with:
@@ -148,7 +148,7 @@ jobs:
     concurrency: 
       group: android-release-github
       cancel-in-progress: false
-    uses: openfoodfacts/smooth-app/.github/workflows/android-release-to-org-openfoodfacts-scanner.yml@develop
+    uses: Weissbite/wisebite/.github/workflows/android-release-to-org-wisebite-app.yml@master
     needs: [release-please, create-release]
     if: ${{ needs.release-please.outputs.release_created }}
     with:
@@ -172,7 +172,7 @@ jobs:
     concurrency: 
       group: android-release-github-fdroid
       cancel-in-progress: false
-    uses: openfoodfacts/smooth-app/.github/workflows/android-release-to-org-openfoodfacts-scanner.yml@develop
+    uses: Weissbite/wisebite/.github/workflows/android-release-to-org-wisebite-app.yml@master
     needs: [release-please, create-release]
     if: ${{ needs.release-please.outputs.release_created }}
     with:

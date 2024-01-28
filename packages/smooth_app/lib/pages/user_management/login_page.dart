@@ -1,10 +1,13 @@
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
+// import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_app/data_models/login_result.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
+// import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/generic_lib/buttons/service_sign_in_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
@@ -25,6 +28,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
+  // ignore: unused_field
   bool _runningQuery = false;
   LoginResult? _loginResult;
 
@@ -34,13 +38,14 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
   final TextEditingController passwordController = TextEditingController();
 
   // I'll leave this function for when we add email password login.
+  // ignore: unused_element
   Future<void> _login(BuildContext context) async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    final UserManagementProvider userManagementProvider =
-        context.read<UserManagementProvider>();
+    // final UserManagementProvider userManagementProvider =
+    //     context.read<UserManagementProvider>();
 
     setState(() {
       _runningQuery = true;
@@ -60,11 +65,12 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
         return;
       }
 
-      await showInAppReviewIfNecessary(context);
+      // TODO(yavor): Pop-up dialog for review.
+      // await showInAppReviewIfNecessary(context);
 
-      if (!mounted) {
-        return;
-      }
+      // if (!mounted) {
+      //   return;
+      // }
       Navigator.pop(context);
     } else {
       setState(() => _runningQuery = false);
@@ -137,13 +143,20 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
 
                       ServiceSignInButton(
                         onPressed: () async {
+                          // TODO(yavor): check if successful login
+                          // final UserCredential? userCreds =
                           await UserManagementProvider()
                               .signInWithGoogle(context);
+
+                          // if (userCreds != null) {}
+                          if (!context.mounted) {
+                            return;
+                          }
                           Navigator.pop(context);
                         },
                         backgroundColor: Colors.white,
                         iconPath: 'assets/icons/google.svg',
-                        text: appLocalizations.sign_in_with_google,
+                        text: 'Sign In with Google',
                         fontColor: Colors.black,
                       ),
 
@@ -155,11 +168,15 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                         onPressed: () async {
                           await UserManagementProvider()
                               .signInWithFacebook(context);
+                          if (!context.mounted) {
+                            return;
+                          }
                           Navigator.pop(context);
                         },
-                        backgroundColor: Color.fromARGB(255, 24, 119, 242),
+                        backgroundColor:
+                            const Color.fromARGB(255, 24, 119, 242),
                         iconPath: 'assets/icons/facebook.svg',
-                        text: appLocalizations.sign_in_with_facebook,
+                        text: 'Sign In with Facebook',
                         fontColor: Colors.white,
                       ),
 

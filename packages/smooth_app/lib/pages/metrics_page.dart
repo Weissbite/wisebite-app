@@ -10,17 +10,16 @@ import 'package:smooth_app/providers/activity_level_provider.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MerticsPageWidget extends StatefulWidget {
   const MerticsPageWidget({Key? key}) : super(key: key);
 
   @override
-  _MerticsPageWidgetState createState() => _MerticsPageWidgetState();
+  State<MerticsPageWidget> createState() => _MerticsPageWidgetState();
 }
 
 class _MerticsPageWidgetState extends State<MerticsPageWidget> {
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _ageController = TextEditingController();
@@ -29,50 +28,60 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
 
   @override
   void initState() {
+    _loadData().then((ActivityLevel? activityLevel) {
+      setState(() {
+        activityLevel = activityLevel;
+      });
+    });
     super.initState();
-    _loadData();
   }
 
   Future<void> _submitForm() async {
     final ActivityLevel activityLevel =
         context.read<ActivityLevelProvider>().currentActivityLevel;
 
-    final userData = UserData(
+    final UserData userData = UserData(
       age: int.parse(_ageController.text),
       weight: int.parse(_weightController.text),
       height: int.parse(_heightController.text),
       activityLevel: activityLevel,
     );
 
-    final user_id = UserManagementProvider.user!.uid;
+    final String userId = UserManagementProvider.user!.uid;
     final FirestoreService<UserData> service = FirestoreService<UserData>(
       collectionPath: 'user_data',
       fromFirestore: UserData().fromFirestore,
     );
 
     await service.setDocument(
-      documentId: user_id,
+      documentId: userId,
       data: userData,
       merge: true,
     );
   }
 
-  Future<void> _loadData() async {
-    final user_id = UserManagementProvider.user!.uid;
+  Future<ActivityLevel?> _loadData() async {
+    final String userId = UserManagementProvider.user!.uid;
     final FirestoreService<UserData> service = FirestoreService<UserData>(
       collectionPath: 'user_data',
       fromFirestore: UserData().fromFirestore,
     );
 
-    UserData? data = await service.getDocument(documentId: user_id);
-    if (data == null) return;
+    final UserData? data = await service.getDocument(documentId: userId);
+    if (data == null) {
+      return null;
+    }
 
     _ageController.text = data.age!.toString();
     _weightController.text = data.weight!.toString();
     _heightController.text = data.height!.toString();
-    context.read<ActivityLevelProvider>().setCurrent(data.activityLevel!);
 
-    setState(() {});
+    // if (!context.mounted) {
+    //   return null;
+    // }
+    // Navigator.of(context).pop();
+
+    return data.activityLevel;
   }
 
   @override
@@ -86,34 +95,35 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData _themeData = Theme.of(context);
-    final AppLocalizations appLocalizations = AppLocalizations.of(context);
+    final ThemeData themeData = Theme.of(context);
 
     return SmoothSharedAnimationController(
       child: SmoothScaffold(
         appBar: SmoothAppBar(
-          backgroundColor: _themeData.scaffoldBackgroundColor,
+          backgroundColor: themeData.scaffoldBackgroundColor,
           elevation: 2,
           automaticallyImplyLeading: false,
           leading: const SmoothBackButton(),
-          title: Text(appLocalizations.metrics),
+          title: const Text('Metrics'),
         ),
         body: Form(
           key: _formKey,
           child: Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 // Age Field
                 TextFormField(
                   controller: _ageController,
-                  decoration: InputDecoration(labelText: appLocalizations.age),
+                  decoration: const InputDecoration(labelText: 'Age'),
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) {
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return appLocalizations.please_enter_your_age;
+                      return 'Please enter your age';
                     }
                     return null;
                   },
@@ -122,13 +132,14 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                 // Height Field
                 TextFormField(
                   controller: _heightController,
-                  decoration:
-                      InputDecoration(labelText: appLocalizations.height),
+                  decoration: const InputDecoration(labelText: 'Height (cm)'),
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) {
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return appLocalizations.please_enter_your_height;
+                      return 'Please enter your height';
                     }
                     return null;
                   },
@@ -137,13 +148,14 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                 // Weight Field
                 TextFormField(
                   controller: _weightController,
-                  decoration:
-                      InputDecoration(labelText: appLocalizations.weight),
+                  decoration: const InputDecoration(labelText: 'Weight (kg)'),
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (value) {
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return appLocalizations.please_enter_your_weight;
+                      return 'Please enter your weight';
                     }
                     return null;
                   },
@@ -160,12 +172,12 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                       // Validate and Process data
                       if (_formKey.currentState!.validate()) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(appLocalizations.processing)),
+                          const SnackBar(content: Text('Processing Data')),
                         );
                         _submitForm();
                       }
                     },
-                    child: Text(appLocalizations.submit),
+                    child: const Text('Submit'),
                   ),
                 ),
               ],

@@ -24,11 +24,15 @@
     "@next_label": {
         "description": "A label on a button that says 'Next', pressing the button takes the user to the next screen."
     },
+    "previous_label": "Previous",
+    "@previous_label": {
+        "description": "A label on a button that says 'Previous', pressing the button takes the user to the previous screen."
+    },
     "go_back_to_top": "Povratak na vrh",
     "save": "Save",
     "save_confirmation": "Jeste li sigurni da želite sačuvati?",
     "skip": "Preskočite",
-    "cancel": "Cancel",
+    "cancel": "Otkaži",
     "@cancel": {},
     "ignore": "Zanemari",
     "@ignore": {
@@ -141,6 +145,7 @@
     "@ecoCardUtility": {
         "description": "Description of what a user can use the Eco data in a product for."
     },
+    "server_error_open_new_issue": "No server response! You may open an issue with the following link.",
     "@user_management": {},
     "sign_in_text": "Sign in to your Open Food Facts account to save your contributions",
     "incorrect_credentials": "Netačno korisničko ime ili lozinka.",
@@ -272,7 +277,7 @@
     "sign_up_page_provide_valid_email": "Please provide a valid email address.",
     "sign_up_page_server_busy": "We are deeply sorry, we have some technical difficulties to create your account. Please try again later.",
     "@Settings": {},
-    "settingsTitle": "Settings",
+    "settingsTitle": "Postavke",
     "@settingsTitle": {
         "description": "The title of the Settings page"
     },
@@ -348,6 +353,10 @@
     "contribute_develop_dev_mode_subtitle": "Activate the DEV Mode",
     "contribute_donate_header": "Donate to Open Food Facts",
     "@contribute_donate_header": {},
+    "contribute_enroll_alpha": "Enroll in internal alpha version",
+    "@contribute_enroll_alpha": {},
+    "contribute_enroll_alpha_warning": "Please acknowledge that with the internal alpha version, complete loss of data is possible, and the app may become unusable at any time !",
+    "@contribute_enroll_alpha_warning": {},
     "contribute_improve_ProductsToBeCompleted": "Products to be completed",
     "@contribute_improve_ProductsToBeCompleted": {
         "description": "Button label: Shows a list of products which aren't completed"
@@ -480,7 +489,7 @@
     "@scan_history": {
         "description": "Page title: List type: Products in the whole scan history"
     },
-    "search": "Search",
+    "search": "Pretraži",
     "@search": {
         "description": "Hint text of a search text input field"
     },
@@ -540,6 +549,10 @@
     "new_product_dialog_title": "You have just found a new product!",
     "@new_product_dialog_title": {
         "description": "Please keep it short, like 50 characters. Title of the dialog when the user searched for an unknown barcode."
+    },
+    "new_product_leave_title": "Leave this page?",
+    "@new_product_leave_title": {
+        "description": "Alert dialog title when a user landed on the 'add new product' page, didn't input anything and tried to leave the page."
     },
     "new_product_leave_message": "It looks like you didn't input anything. Do you really want to leave this page?",
     "@new_product_leave_message": {
@@ -714,6 +727,8 @@
     "nutrition_page_update_done": "Product updated!",
     "more_photos": "More interesting photos",
     "@more_photos": {},
+    "view_more_photo_button": "View all existing photos for this product",
+    "@view_more_photo_button": {},
     "no_product_found": "No product found",
     "@no_product_found": {},
     "not_found": "not found:",
@@ -1190,7 +1205,7 @@
     "permission_photo_denied_dialog_settings_title": "Permission denied",
     "permission_photo_denied_dialog_settings_message": "As you've previously denied the camera permission, you must allow it manually from the Settings.",
     "permission_photo_denied_dialog_settings_button_open": "Open settings",
-    "permission_photo_denied_dialog_settings_button_cancel": "Cancel",
+    "permission_photo_denied_dialog_settings_button_cancel": "Otkaži",
     "permission_photo_none_found": "No camera detected",
     "@permission_photo_none_found": {
         "description": "Message for the user when no camera was detected, replacing the barcode scanner"
@@ -1212,7 +1227,7 @@
             }
         }
     },
-    "edit_product_form_item_barcode": "Barcode",
+    "edit_product_form_item_barcode": "Barkod",
     "@edit_product_form_item_barcode": {
         "description": "Product edition - Barcode"
     },
@@ -1276,7 +1291,7 @@
     "@edit_product_form_item_origins_hint": {
         "description": "Product edition - Origins - input textfield hint"
     },
-    "edit_product_form_item_origins_type": "country",
+    "edit_product_form_item_origins_type": "zemlja",
     "@edit_product_form_item_origins_type": {
         "description": "Product edition - Origins - input textfield type"
     },
@@ -1296,7 +1311,7 @@
     "@edit_product_form_item_countries_hint": {
         "description": "Product edition - Countries - input textfield hint"
     },
-    "edit_product_form_item_countries_type": "country",
+    "edit_product_form_item_countries_type": "zemlja",
     "@edit_product_form_item_countries_type": {
         "description": "Product edition - Countries - input textfield type"
     },
@@ -1358,7 +1373,7 @@
     "@edit_product_form_item_packaging_title": {
         "description": "Product edition - Packaging - Title"
     },
-    "edit_product_form_item_nutrition_facts_title": "Nutrition facts",
+    "edit_product_form_item_nutrition_facts_title": "Nutritivne činjenice",
     "@edit_product_form_item_nutrition_facts_title": {
         "description": "Product edition - Nutrition facts - Title"
     },
@@ -1579,7 +1594,7 @@
     "@dev_preferences_button_positive": {
         "description": "User dev preferences - Positive button label"
     },
-    "dev_preferences_button_negative": "Cancel",
+    "dev_preferences_button_negative": "Otkaži",
     "@dev_preferences_button_negative": {
         "description": "User dev preferences - Negative button label"
     },
@@ -1602,50 +1617,15 @@
     "@dev_preferences_import_history_subtitle": {
         "description": "User dev preferences - Import history - Subtitle"
     },
+    "prices_app_dev_mode_flag": "Shortcut to Prices app on product page",
+    "prices_app_button": "Go to Prices app",
     "dev_preferences_import_history_result_success": "Done",
     "@dev_preferences_import_history_result_success": {
         "description": "User dev preferences - Import history - Result successful"
     },
-    "dev_mode_scan_mode_title": "Scan Mode",
-    "@dev_mode_scan_mode_title": {
-        "description": "User dev preferences - Scan mode - Title"
-    },
-    "dev_mode_scan_mode_subtitle": "Current scan mode is: \"{mode}\"",
-    "@dev_mode_scan_mode_subtitle": {
-        "description": "User dev preferences - Scan mode - Subtitle",
-        "placeholders": {
-            "mode": {
-                "type": "String"
-            }
-        }
-    },
-    "dev_mode_scan_mode_dialog_title": "Scan Mode",
-    "@dev_mode_scan_mode_dialog_title": {
-        "description": "User dev preferences - Scan mode - Dialog Title"
-    },
     "dev_mode_hide_ecoscore_title": "Exclude Eco-Score",
     "@dev_mode_hide_ecoscore_title": {
         "description": "User dev preferences - Disable Ecoscore - Title"
-    },
-    "dev_mode_scan_camera_only": "Only camera stream, no scanning",
-    "@dev_mode_scan_camera_only": {
-        "description": "Scan mode - Camera only"
-    },
-    "dev_mode_scan_preprocess_full_image": "Camera stream and full image preprocessing, no scanning",
-    "@dev_mode_scan_preprocess_full_image": {
-        "description": "Scan mode - Preprocess full image"
-    },
-    "dev_mode_scan_preprocess_half_image": "Camera stream and half image preprocessing, no scanning",
-    "@dev_mode_scan_preprocess_half_image": {
-        "description": "Scan mode - Preprocess half image"
-    },
-    "dev_mode_scan_scan_full_image": "Full image scanning",
-    "@dev_mode_scan_scan_full_image": {
-        "description": "Scan mode - Scan full image"
-    },
-    "dev_mode_scan_scan_half_image": "Half image scanning",
-    "@dev_mode_scan_scan_half_image": {
-        "description": "Scan mode - Scan half image"
     },
     "search_history_item_edit_tooltip": "Reuse and edit this search",
     "@search_history_item_edit_tooltip": {
@@ -1790,7 +1770,7 @@
     "brand_name": "Brand name",
     "add_basic_details_brand_name_error": "Please enter the brand name",
     "quantity": "Quantity and weight",
-    "barcode": "Barcode",
+    "barcode": "Barkod",
     "barcode_barcode": "Barcode: {barcode}",
     "@barcode_barcode": {
         "description": "Displaying the raw barcode with label",
@@ -1889,6 +1869,18 @@
     "add_packaging_photo_button_label": "Take photos of any packaging/recycling information",
     "@add_packaging_photo_button_label": {
         "description": "Label for the add PACKAGING photo button"
+    },
+    "add_origin_photo_button_label": "Take photos of any origin information",
+    "@add_origin_photo_button_label": {
+        "description": "Label for the add ORIGIN photo button"
+    },
+    "add_emb_photo_button_label": "Take photos of any traceability code information",
+    "@add_emb_photo_button_label": {
+        "description": "Label for the add EMB photo button"
+    },
+    "add_label_photo_button_label": "Take photos of any labels & certifications information",
+    "@add_label_photo_button_label": {
+        "description": "Label for the add LABELS photo button"
     },
     "choose_image_source_title": "Choose image source",
     "@choose_image_source_title": {
@@ -2511,6 +2503,10 @@
     "hunger_games_loading_line2": "We're downloading the questions!",
     "hunger_games_error_label": "Argh! Something went wrong… and we couldn't load the questions.",
     "hunger_games_error_retry_button": "Let's retry!",
+    "reorder_attribute_action": "Reorder the attributes",
+    "@reorder_attribute_action": {
+        "description": "An action button or a page title about reordering the attributes (e.g. 'is vegan?', 'nutrition facts', ...)"
+    },
     "link_cant_be_opened": "This link can't be opened on your device. Please check that you have a browser installed.",
     "@link_cant_be_opened": {
         "description": "An error may happen if the device doesn't have a browser installed."
