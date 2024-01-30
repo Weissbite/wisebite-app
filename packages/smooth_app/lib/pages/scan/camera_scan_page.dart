@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:scanner_shared/scanner_shared.dart';
 import 'package:smooth_app/data_models/continuous_scan_model.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
+import 'package:smooth_app/generic_lib/design_constants.dart' hide EMPTY_WIDGET;
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/generic_lib/widgets/smooth_card.dart';
 import 'package:smooth_app/helpers/analytics_helper.dart';
@@ -18,7 +19,6 @@ import 'package:smooth_app/helpers/haptic_feedback_helper.dart';
 import 'package:smooth_app/helpers/permission_helper.dart';
 import 'package:smooth_app/pages/scan/scan_header.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
-import 'package:smooth_app/generic_lib/design_constants.dart' hide EMPTY_WIDGET;
 
 class _PermissionDeniedCard extends StatelessWidget {
   const _PermissionDeniedCard({Key? key}) : super(key: key);
@@ -277,14 +277,6 @@ class CameraScannerPageState extends State<CameraScannerPage>
 
     if (isNewScan) {
       _userPreferences.incrementScanCount();
-    }
-
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context); // Pops the current route
-    }
-
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context); // Pops the previous route
     }
 
     return isNewScan;

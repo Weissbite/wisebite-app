@@ -147,7 +147,9 @@ class _SearchPageState extends State<SearchPage> {
         label: Text(appLocalizations.scan_navbar_label),
         onPressed: () {
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => ScannerPage()));
+              context,
+              MaterialPageRoute<Widget>(
+                  builder: (BuildContext context) => ScannerPage()));
         },
       ),
     );
