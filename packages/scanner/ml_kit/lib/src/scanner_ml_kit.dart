@@ -240,6 +240,14 @@ class _SmoothBarcodeScannerMLKitState extends State<_SmoothBarcodeScannerMLKit>
                 final String? string = barcode.displayValue;
                 if (string != null) {
                   await widget.onScan(string);
+
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
+
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
                 }
               }
             },

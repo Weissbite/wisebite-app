@@ -54,7 +54,6 @@ class _ScanPageState extends State<ScanPage> {
 
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
     final TextDirection direction = Directionality.of(context);
-    final bool hasACamera = CameraHelper.hasACamera;
 
     return SmoothScaffold(
       brightness:
