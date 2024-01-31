@@ -235,22 +235,20 @@ class _SmoothBarcodeScannerMLKitState extends State<_SmoothBarcodeScannerMLKit>
               Widget? child,
             ) =>
                 EMPTY_WIDGET,
-            onDetect: (final BarcodeCapture capture) async {
-              for (final Barcode barcode in capture.barcodes) {
-                final String? string = barcode.displayValue;
-                if (string != null) {
-                  await widget.onScan(string);
-
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
-
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
-                }
+            onDetect: (final BarcodeCapture capture) =>
+                _onDetect(capture, context, () {
+              if (!mounted) {
+                return;
               }
-            },
+
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              }
+
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              }
+            }),
           ),
           Center(
             child: SmoothBarcodeScannerVisor(
@@ -356,5 +354,19 @@ class _SmoothBarcodeScannerMLKitState extends State<_SmoothBarcodeScannerMLKit>
     _autoStopCameraOperation?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _onDetect(
+    BarcodeCapture capture,
+    BuildContext context,
+    VoidCallback onSuccess,
+  ) async {
+    for (final Barcode barcode in capture.barcodes) {
+      final String? string = barcode.displayValue;
+      if (string != null) {
+        await widget.onScan(string);
+        onSuccess.call();
+      }
+    }
   }
 }
