@@ -97,7 +97,8 @@ class ProductCompatibilityHeader extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(SMALL_SPACE),
                         child: Text(
-                          appLocalizations.complete_profile_get_better_recommendations,
+                          appLocalizations
+                              .complete_profile_get_better_recommendations,
                           style: themeData.textTheme.titleMedium?.copyWith(
                             color: helper.getHeaderForegroundColor(isDarkMode),
                           ),
