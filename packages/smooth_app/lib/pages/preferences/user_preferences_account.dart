@@ -118,8 +118,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
   }
 
   Future<void> _goToLoginPage() async =>
-      Navigator.of(context, rootNavigator: true)
-          .push<dynamic>(
+      Navigator.of(context, rootNavigator: true).push<dynamic>(
         MaterialPageRoute<dynamic>(
           builder: (BuildContext context) => const LoginPage(),
         ),
@@ -139,7 +138,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
                 _goToLoginPage();
 
                 final bool areMetricsFilled =
-                await UserManagementProvider().areMetricFieldsFilled();
+                    await UserManagementProvider().areMetricFieldsFilled();
                 if (!context.mounted) {
                   return;
                 }
