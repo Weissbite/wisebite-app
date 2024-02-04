@@ -260,7 +260,9 @@ class _ProductQueryPageState extends State<ProductQueryPage>
                   );
                 }
                 return ProductListItemSimple(
-                  barcode: _model.displayBarcodes[index],
+                  // TODO ILIYAN Fix this
+                  barcode:
+                      _model.displayBarcodes.entries.first.value[0 /*index*/],
                 );
               },
               itemCount: _getItemCount(),

@@ -29,7 +29,8 @@ class RandomQuestionsQuery extends QuestionsQuery {
       }
     }
     await ProductRefresher().silentFetchAndRefreshList(
-      barcodes: barcodes,
+      // TODO ILIYAN Fix this
+      barcodes: <int, List<String>>{} /*barcodes*/,
       localDatabase: localDatabase,
     );
     return result.questions ?? <RobotoffQuestion>[];

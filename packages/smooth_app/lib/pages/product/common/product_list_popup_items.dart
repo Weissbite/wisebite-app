@@ -141,7 +141,8 @@ class ProductListPopupShare extends ProductListPopupItem {
     required final BuildContext context,
   }) async {
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
-    final List<String> products = productList.getList();
+    final List<String> products = productList.getList().entries.first?.value ??
+        <String>[]; // TODO ILIYAN For now this
     final String url = shareProductList(products).toString();
 
     final RenderBox? box = context.findRenderObject() as RenderBox?;
@@ -173,7 +174,8 @@ class ProductListPopupOpenInWeb extends ProductListPopupItem {
     required final LocalDatabase localDatabase,
     required final BuildContext context,
   }) async {
-    final List<String> products = productList.getList();
+    final List<String> products =
+        productList.getList().entries.first?.value ?? <String>[];
     AnalyticsHelper.trackEvent(AnalyticsEvent.openListWeb);
     await launchUrl(shareProductList(products));
     return null;

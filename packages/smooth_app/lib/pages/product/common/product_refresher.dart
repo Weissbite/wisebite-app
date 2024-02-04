@@ -86,7 +86,7 @@ class ProductRefresher {
 
   /// Returns the standard configuration for several barcodes product query.
   ProductSearchQueryConfiguration getBarcodeListQueryConfiguration(
-    final List<String> barcodes,
+    final Map<int, List<String>> barcodes,
     final OpenFoodFactsLanguage language, {
     final List<ProductField>? fields,
   }) =>
@@ -95,7 +95,8 @@ class ProductRefresher {
         language: language,
         country: ProductQuery.getCountry(),
         parametersList: <Parameter>[
-          BarcodeParameter.list(barcodes),
+          // TODO ILIYAN Fix this. For now using the first key-value pair value
+          BarcodeParameter.list(barcodes.entries.first.value),
           PageSize(size: barcodes.length),
         ],
         version: ProductQuery.productQueryVersion,
@@ -105,7 +106,7 @@ class ProductRefresher {
   ///
   /// Silent version.
   Future<void> silentFetchAndRefreshList({
-    required final List<String> barcodes,
+    required final Map<int, List<String>> barcodes,
     required final LocalDatabase localDatabase,
   }) async =>
       _fetchAndRefreshList(localDatabase, barcodes);
@@ -201,7 +202,7 @@ class ProductRefresher {
   /// Returns the number of products, or null if error.
   Future<int?> _fetchAndRefreshList(
     final LocalDatabase localDatabase,
-    final List<String> barcodes,
+    final Map<int, List<String>> barcodes,
   ) async {
     try {
       final OpenFoodFactsLanguage language = ProductQuery.getLanguage();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/database/dao_product.dart';
@@ -121,7 +122,9 @@ class ProductListItemPopupRank extends ProductListItemPopupItem {
       context,
       MaterialPageRoute<void>(
         builder: (_) => PersonalizedRankingPage(
-          barcodes: selectedBarcodes.toList(),
+          // TODO ILIYAN Fix this
+          barcodes: <int, List<String>>{},
+          // barcodes: selectedBarcodes.toList(),
           title: AppLocalizations.of(context).product_list_your_ranking,
         ),
       ),

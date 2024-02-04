@@ -90,9 +90,13 @@ class _ScanHeaderState extends State<ScanHeader> {
                                   MaterialPageRoute<void>(
                                     builder: (BuildContext context) =>
                                         PersonalizedRankingPage(
-                                      barcodes: model
+                                      // TODO ILIYAN FIX THIS
+                                      barcodes: <int,
+                                          List<
+                                              String>>{} /*model
                                           .getAvailableBarcodes()
-                                          .toList(growable: false),
+                                          .toList(growable: false)*/
+                                      ,
                                       title: ProductQueryPageHelper
                                           .getProductListLabel(
                                         model.productList,

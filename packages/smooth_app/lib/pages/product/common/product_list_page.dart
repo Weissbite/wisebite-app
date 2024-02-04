@@ -105,7 +105,7 @@ class _ProductListPageState extends State<ProductListPage>
       return EMPTY_WIDGET;
     }
 
-    final List<String> products = productList.getList();
+    final Map<int, List<String>> products = productList.getList();
     final bool dismissible;
 
     switch (productList.listType) {
@@ -251,7 +251,8 @@ class _ProductListPageState extends State<ProductListPage>
           ),
         ],
       ),
-      body: products.isEmpty
+      body: products
+              .isEmpty // TODO(iliyan03) : Should check if lists values are empty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(SMALL_SPACE),
@@ -278,25 +279,25 @@ class _ProductListPageState extends State<ProductListPage>
           : WillPopScope2(
               onWillPop: () async => (await _handleUserBacktap(), null),
               child: RefreshIndicator(
-                //if it is in selectmode then refresh indicator is not shown
-                notificationPredicate:
-                    _selectionMode ? (_) => false : (_) => true,
-                onRefresh: () async => _refreshListProducts(
-                  products,
-                  localDatabase,
-                  appLocalizations,
-                ),
-                child: ListView.builder(
-                  itemCount: products.length,
-                  itemBuilder: (BuildContext context, int index) => _buildItem(
-                    dismissible,
-                    products,
-                    index,
-                    localDatabase,
-                    appLocalizations,
-                  ),
-                ),
-              ),
+                  //if it is in selectmode then refresh indicator is not shown
+                  notificationPredicate:
+                      _selectionMode ? (_) => false : (_) => true,
+                  onRefresh: () async => _refreshListProducts(
+                        products,
+                        localDatabase,
+                        appLocalizations,
+                      ),
+                  child: ListView.builder(
+                    itemCount: products.entries.first.value.length,
+                    itemBuilder: (BuildContext context, int index) =>
+                        _buildItem(
+                      dismissible,
+                      products.entries.first.value,
+                      index,
+                      localDatabase,
+                      appLocalizations,
+                    ),
+                  )),
             ),
     );
   }
@@ -413,7 +414,8 @@ class _ProductListPageState extends State<ProductListPage>
                       label: appLocalizations.undo,
                       onPressed: () async {
                         barcodes.insert(index, barcode);
-                        productList.set(barcodes);
+                        // TODO ILIYAN Fix this
+                        productList.set(<int, List<String>>{} /*barcodes*/);
                         if (removedFromSelectedBarcodes) {
                           _selectedBarcodes.add(barcode);
                         }
@@ -435,7 +437,7 @@ class _ProductListPageState extends State<ProductListPage>
 
   /// Calls the "refresh products" part with dialogs on top.
   Future<void> _refreshListProducts(
-    final List<String> products,
+    final Map<int, List<String>> products,
     final LocalDatabase localDatabase,
     final AppLocalizations appLocalizations,
   ) async {
@@ -475,7 +477,7 @@ class _ProductListPageState extends State<ProductListPage>
 
   /// Fetches the products from the API and refreshes the local database
   Future<bool> _reloadProducts(
-    final List<String> barcodes,
+    final Map<int, List<String>> barcodes,
     final LocalDatabase localDatabase,
   ) async {
     try {

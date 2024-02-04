@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 
 enum ProductListType {
@@ -174,9 +175,9 @@ class ProductList {
   /// "Total size" returned by the query.
   int totalSize = 0;
 
-  final List<String> _barcodes = <String>[];
+  final Map<int, List<String>> _barcodes = <int, List<String>>{};
 
-  List<String> get barcodes => _barcodes;
+  Map<int, List<String>> get barcodes => _barcodes;
 
   bool isEmpty() => _barcodes.isEmpty;
 
@@ -185,33 +186,41 @@ class ProductList {
   /// Returns false if not already in the list
   /// Don't forget to update the database afterwards
   bool remove(final String barcode) {
-    if (!_barcodes.contains(barcode)) {
-      return false;
-    }
-    _barcodes.remove(barcode);
+    // TODO(iliyan03): I should make this work with the new map type of storing
+    // if (!_barcodes.contains(barcode)) {
+    //   return false;
+    // }
+    // _barcodes.remove(barcode);
     return true;
   }
 
   /// Sets all products with the same order as the input list
   void setAll(final List<Product> products) {
-    final List<String> barcodes = <String>[];
+    final DateFormat formatter = DateFormat('yymmdd');
+    final int nowAsKey = int.parse(formatter.format(DateTime.now()));
+
+    final Map<int, List<String>> barcodes = <int, List<String>>{
+      nowAsKey: <String>[]
+    };
+
     for (final Product product in products) {
       final String barcode = product.barcode!;
-      barcodes.add(barcode);
+      barcodes[nowAsKey]!.add(barcode);
     }
     set(barcodes);
   }
 
-  void set(final Iterable<String> barcodes) {
+  void set(final Map<int, List<String>> barcodes) {
     _barcodes.clear();
     _barcodes.addAll(barcodes);
   }
 
-  List<String> getList() {
-    final List<String> result = <String>[];
-    final Iterable<String> barcodes =
-        _isReversed() ? _barcodes.reversed : _barcodes;
-    result.addAll(barcodes);
+  Map<int, List<String>> getList() {
+    final Map<int, List<String>> result = _barcodes;
+    // TODO(iliyan03): I'm not sure if I would need this
+    // final Iterable<String> barcodes =
+    //     _isReversed() ? _barcodes.reversed : _barcodes;
+    // result.addAll(barcodes);
     return result;
   }
 
