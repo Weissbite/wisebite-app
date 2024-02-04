@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_item.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_widgets.dart';
 import 'package:smooth_app/providers/activity_level_provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const List<String> ACTIVITY_LEVELS_LABELS = <String>[
   ACTIVITY_LEVEL_SEDENTARY,

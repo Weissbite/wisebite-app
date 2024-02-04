@@ -11,7 +11,6 @@ import 'package:smooth_app/providers/activity_level_provider.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MerticsPageWidget extends StatefulWidget {
   const MerticsPageWidget({Key? key}) : super(key: key);
