@@ -1,6 +1,8 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:smooth_app/data_models/user_data.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
@@ -64,6 +66,8 @@ class UserManagementProvider with ChangeNotifier {
       );
     }
 
+    FirebaseAnalytics.instance.logLogin(loginMethod: 'Google');
+
     return userCreds;
   }
 
@@ -88,6 +92,8 @@ class UserManagementProvider with ChangeNotifier {
         ex: e,
       );
     }
+
+    FirebaseAnalytics.instance.logLogin(loginMethod: 'Facebook');
   }
 
   Future<void> signInWithApple(BuildContext context) async {
@@ -108,22 +114,23 @@ class UserManagementProvider with ChangeNotifier {
 }
 
 void showCompleteProfileDialog(BuildContext context) {
+  final AppLocalizations appLocalizations = AppLocalizations.of(context);
+
   showDialog(
       context: context,
       builder: (BuildContext context) {
         return SmoothAlertDialog(
-          title: 'Complete profile',
-          body: const Column(
+          title: appLocalizations.complete_profile,
+          body: Column(
             children: <Widget>[
-              Text(
-                  'Complete the creation of your profile and fill out this form for more accurate recommendations.'),
-              SizedBox(
+              Text(appLocalizations.complete_profile_prompt),
+              const SizedBox(
                 height: 10,
               ),
             ],
           ),
           positiveAction: SmoothActionButton(
-            text: 'Complete',
+            text: appLocalizations.complete,
             onPressed: () {
               AppNavigator.of(context).push(AppRoutes.METRICS);
               Navigator.of(context, rootNavigator: true).pop('dialog');

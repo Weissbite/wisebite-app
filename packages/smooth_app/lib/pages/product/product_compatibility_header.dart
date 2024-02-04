@@ -97,7 +97,8 @@ class ProductCompatibilityHeader extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(SMALL_SPACE),
                         child: Text(
-                          'Complete your profile to get better recommendations',
+                          appLocalizations
+                              .complete_profile_get_better_recommendations,
                           style: themeData.textTheme.titleMedium?.copyWith(
                             color: helper.getHeaderForegroundColor(isDarkMode),
                           ),
@@ -110,10 +111,10 @@ class ProductCompatibilityHeader extends StatelessWidget {
                         const BorderRadius.only(topRight: ROUNDED_RADIUS),
                     onTap: () =>
                         AppNavigator.of(context).push(AppRoutes.METRICS),
-                    child: const Tooltip(
-                      message: 'Complete profile',
+                    child: Tooltip(
+                      message: appLocalizations.complete_profile,
                       triggerMode: TooltipTriggerMode.longPress,
-                      child: SizedBox.square(
+                      child: const SizedBox.square(
                         dimension: kMinInteractiveDimension,
                         child: Icon(Icons.arrow_forward),
                       ),

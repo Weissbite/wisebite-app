@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_app/data_models/user_data.dart';
 import 'package:smooth_app/data_models/user_management_provider.dart';
@@ -96,6 +97,7 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
+    final AppLocalizations appLocalizations = AppLocalizations.of(context);
 
     return SmoothSharedAnimationController(
       child: SmoothScaffold(
@@ -104,7 +106,7 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
           elevation: 2,
           automaticallyImplyLeading: false,
           leading: const SmoothBackButton(),
-          title: const Text('Metrics'),
+          title: Text(appLocalizations.metrics),
         ),
         body: Form(
           key: _formKey,
@@ -116,14 +118,14 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                 // Age Field
                 TextFormField(
                   controller: _ageController,
-                  decoration: const InputDecoration(labelText: 'Age'),
+                  decoration: InputDecoration(labelText: appLocalizations.age),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly
                   ],
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your age';
+                      return appLocalizations.please_enter_your_age;
                     }
                     return null;
                   },
@@ -132,14 +134,15 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                 // Height Field
                 TextFormField(
                   controller: _heightController,
-                  decoration: const InputDecoration(labelText: 'Height (cm)'),
+                  decoration:
+                      InputDecoration(labelText: appLocalizations.height),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly
                   ],
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your height';
+                      return appLocalizations.please_enter_your_height;
                     }
                     return null;
                   },
@@ -148,14 +151,15 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                 // Weight Field
                 TextFormField(
                   controller: _weightController,
-                  decoration: const InputDecoration(labelText: 'Weight (kg)'),
+                  decoration:
+                      InputDecoration(labelText: appLocalizations.weight),
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly
                   ],
                   validator: (String? value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your weight';
+                      return appLocalizations.please_enter_your_weight;
                     }
                     return null;
                   },
@@ -172,12 +176,12 @@ class _MerticsPageWidgetState extends State<MerticsPageWidget> {
                       // Validate and Process data
                       if (_formKey.currentState!.validate()) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Processing Data')),
+                          SnackBar(content: Text(appLocalizations.processing)),
                         );
                         _submitForm();
                       }
                     },
-                    child: const Text('Submit'),
+                    child: Text(appLocalizations.submit),
                   ),
                 ),
               ],
