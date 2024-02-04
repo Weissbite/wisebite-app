@@ -44,7 +44,7 @@ class SmoothProductCarousel extends StatefulWidget {
 class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
   static const double HORIZONTAL_SPACE_BETWEEN_CARDS = 5.0;
 
-  List<String> barcodes = <String>[];
+  Map<int, List<String>> barcodes = <int, List<String>>{};
   String? _lastConsultedBarcode;
   int? _carrouselMovingTo;
   int _lastIndex = 0;
@@ -63,7 +63,8 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
 
     barcodes = _model.getBarcodes();
 
-    if (barcodes.isEmpty) {
+    // TODO ILIYAN For now we're working only with todays barcodes. Should do this to work with the whole history of scanned barcodes
+    if (barcodes.isEmpty || barcodes.entries.first.value.isEmpty) {
       // Ensure to reset all variables
       _lastConsultedBarcode = null;
       _carrouselMovingTo = null;
@@ -75,34 +76,36 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
     }
 
     _lastConsultedBarcode = _model.latestConsultedBarcode;
-    final int cardsCount = barcodes.length + _searchCardAdjustment;
+    final int cardsCount =
+        barcodes.entries.first.value.length + _searchCardAdjustment;
 
-    if (_model.latestConsultedBarcode != null &&
-        _model.latestConsultedBarcode!.isNotEmpty) {
-      final int indexBarcode = barcodes.indexOf(_model.latestConsultedBarcode!);
-      if (indexBarcode >= 0) {
-        final int indexCarousel = indexBarcode + _searchCardAdjustment;
-        _moveControllerTo(indexCarousel);
-      } else {
-        if (_lastIndex > cardsCount) {
-          _moveControllerTo(cardsCount);
-        } else {
-          _moveControllerTo(_lastIndex);
-        }
-      }
-    } else {
-      _moveControllerTo(0);
-    }
+    // TODO ILIYAN This is something that I would do as part of a UI change.
+    // if (_model.latestConsultedBarcode != null &&
+    //     _model.latestConsultedBarcode!.isNotEmpty) {
+    //   final int indexBarcode = barcodes.indexOf(_model.latestConsultedBarcode!);
+    //   if (indexBarcode >= 0) {
+    //     final int indexCarousel = indexBarcode + _searchCardAdjustment;
+    //     _moveControllerTo(indexCarousel);
+    //   } else {
+    //     if (_lastIndex > cardsCount) {
+    //       _moveControllerTo(cardsCount);
+    //     } else {
+    //       _moveControllerTo(_lastIndex);
+    //     }
+    //   }
+    // } else {
+    //   _moveControllerTo(0);
+    // }
   }
 
   Future<void> _moveControllerTo(int page) async {
     if (_carrouselMovingTo == null && _lastIndex != page) {
-      widget.onPageChangedTo?.call(
-        page,
-        page >= _searchCardAdjustment
-            ? barcodes[page - _searchCardAdjustment]
-            : null,
-      );
+      widget.onPageChangedTo?.call(page, null
+          // TODO ILIYAN This is something that I would do as part of a UI change.
+          // page >= _searchCardAdjustment
+          //     ? barcodes[page - _searchCardAdjustment]
+          //     : null,
+          );
 
       _carrouselMovingTo = page;
       ExternalCarouselManager.read(context).animatePageTo(page);
@@ -117,7 +120,10 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return CarouselSlider.builder(
-          itemCount: barcodes.length + _searchCardAdjustment,
+          itemCount: barcodes.isEmpty
+              ? 0
+              : barcodes.entries.first.value.length +
+                  _searchCardAdjustment, // TODO ILIYAN We're working only with todays barcodes. Should work with the whole history of barcodes
           itemBuilder:
               (BuildContext context, int itemIndex, int itemRealIndex) {
             return SizedBox.expand(
@@ -142,8 +148,9 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
 
               if (index > 0) {
                 if (reason == CarouselPageChangedReason.manual) {
-                  _model.lastConsultedBarcode =
-                      barcodes[index - _searchCardAdjustment];
+                  // TODO ILIYAN This is something that I would do as part of a UI change.
+                  // _model.lastConsultedBarcode =
+                  //     barcodes[index - _searchCardAdjustment];
                   _lastConsultedBarcode = _model.latestConsultedBarcode;
                 }
               } else if (index == 0) {
@@ -167,7 +174,12 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
     if (index >= barcodes.length) {
       return EMPTY_WIDGET;
     }
-    final String barcode = barcodes[index];
+    String barcode = '';
+    if (barcodes.isNotEmpty) {
+      final List<String> todaysBarcodes = barcodes.entries.first.value;
+      barcode = todaysBarcodes.isEmpty ? '' : todaysBarcodes.elementAt(index);
+    }
+
     switch (_model.getBarcodeState(barcode)!) {
       case ScannedProductState.FOUND:
       case ScannedProductState.CACHED:

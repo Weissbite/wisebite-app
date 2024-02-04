@@ -18,7 +18,7 @@ class ProductQueryModel with ChangeNotifier {
 
   late LoadingStatus _loadingStatus;
   String? _loadingError;
-  List<String> displayBarcodes = <String>[];
+  Map<int, List<String>> displayBarcodes = <int, List<String>>{};
 
   bool isEmpty() => displayBarcodes.isEmpty;
 
@@ -68,13 +68,14 @@ class ProductQueryModel with ChangeNotifier {
   }
 
   Future<void> _process(
-    final List<String> barcodes,
+    final Map<int, List<String>> barcodes,
     final bool fromScratch,
   ) async {
     if (fromScratch) {
       await supplier.clearBeyondTopPage();
       displayBarcodes.clear();
     }
+    // TODO(iliyan03): This may be a potential problem
     displayBarcodes.addAll(barcodes);
     _loadingStatus = LoadingStatus.LOADED;
   }

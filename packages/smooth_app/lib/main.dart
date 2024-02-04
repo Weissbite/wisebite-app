@@ -35,7 +35,7 @@ import 'package:smooth_app/providers/activity_level_provider.dart';
 import 'package:smooth_app/query/product_query.dart';
 import 'package:smooth_app/resources/app_animations.dart';
 import 'package:smooth_app/services/smooth_services.dart';
-import 'package:smooth_app/storage/firebase_options.dart';
+import 'package:smooth_app/firebase_options.dart';
 import 'package:smooth_app/themes/color_provider.dart';
 import 'package:smooth_app/themes/contrast_provider.dart';
 import 'package:smooth_app/themes/smooth_theme.dart';

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:smooth_app/data_models/fetched_product.dart';
 import 'package:smooth_app/data_models/product_list.dart';
@@ -29,7 +30,7 @@ class ContinuousScanModel with ChangeNotifier {
 
   final Map<String, ScannedProductState> _states =
       <String, ScannedProductState>{};
-  final List<String> _barcodes = <String>[];
+  final Map<int, List<String>> _barcodes = <int, List<String>>{};
   final ProductList _productList = ProductList.scanSession();
   final ProductList _scanHistory = ProductList.scanHistory();
   final ProductList _history = ProductList.history();
@@ -43,7 +44,7 @@ class ContinuousScanModel with ChangeNotifier {
   ProductList get productList => _productList;
 
   /// List all barcodes scanned (even products being loaded or not found)
-  List<String> getBarcodes() => _barcodes;
+  Map<int, List<String>> getBarcodes() => _barcodes;
 
   /// List only barcodes where the product exists
   Iterable<String> getAvailableBarcodes() => _states
@@ -84,8 +85,15 @@ class ContinuousScanModel with ChangeNotifier {
       _states.clear();
       _latestScannedBarcode = null;
       await refreshProductList();
-      for (final String barcode in _productList.barcodes) {
-        _barcodes.add(barcode);
+
+      final DateFormat formatter = DateFormat('yymmdd');
+      final int nowAsKey = int.parse(formatter.format(DateTime.now()));
+      if (_productList.isEmpty()) {
+        _productList.barcodes[nowAsKey] = <String>[];
+      }
+
+      _barcodes[nowAsKey] = _productList.barcodes[nowAsKey]!;
+      for (final String barcode in _productList.barcodes.entries.first.value) {
         _states[barcode] = ScannedProductState.CACHED;
         _latestScannedBarcode = barcode;
       }
@@ -119,7 +127,8 @@ class ContinuousScanModel with ChangeNotifier {
 
     code = _fixBarcodeIfNecessary(code);
 
-    if (_latestScannedBarcode == code || _barcodes.contains(code)) {
+    if (_latestScannedBarcode == code ||
+        _barcodes.entries.first.value.contains(code)) {
       lastConsultedBarcode = code;
       return false;
     }
@@ -148,8 +157,8 @@ class ContinuousScanModel with ChangeNotifier {
   Future<bool> _addBarcode(final String barcode) async {
     final ScannedProductState? state = getBarcodeState(barcode);
     if (state == null || state == ScannedProductState.NOT_FOUND) {
-      if (!_barcodes.contains(barcode)) {
-        _barcodes.add(barcode);
+      if (!_barcodes.entries.first.value.contains(barcode)) {
+        _barcodes.entries.first.value.add(barcode);
       }
       _setBarcodeState(barcode, ScannedProductState.LOADING);
       _cacheOrLoadBarcode(barcode);
@@ -158,8 +167,8 @@ class ContinuousScanModel with ChangeNotifier {
     }
     if (state == ScannedProductState.FOUND ||
         state == ScannedProductState.CACHED) {
-      _barcodes.remove(barcode);
-      _barcodes.add(barcode);
+      _barcodes.entries.first.value.remove(barcode);
+      _barcodes.entries.first.value.add(barcode);
       _addProduct(barcode, state);
       if (state == ScannedProductState.CACHED) {
         _updateBarcode(barcode);
@@ -278,7 +287,9 @@ class ContinuousScanModel with ChangeNotifier {
       false,
     );
 
-    _barcodes.remove(barcode);
+    _barcodes.forEach((key, value) {
+      value.remove(barcode);
+    });
     _states.remove(barcode);
 
     if (barcode == _latestScannedBarcode) {
