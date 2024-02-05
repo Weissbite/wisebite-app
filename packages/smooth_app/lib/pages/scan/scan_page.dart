@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -9,6 +10,7 @@ import 'package:smooth_app/data_models/continuous_scan_model.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/helpers/haptic_feedback_helper.dart';
+import 'package:smooth_app/pages/scan/camera_scan_page.dart';
 import 'package:smooth_app/widgets/smooth_product_carousel.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
 
@@ -67,9 +69,9 @@ class _ScanPageState extends State<ScanPage> {
             child: Center(
               child: SizedBox(
                 width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.5,
+                height: MediaQuery.of(context).size.height,
                 child: Padding(
-                  padding: const EdgeInsetsDirectional.only(bottom: 10.0),
+                  padding: const EdgeInsetsDirectional.only(bottom: 300),
                   child: SmoothProductCarousel(
                     containSearchCard: true,
                     onPageChangedTo: (int page, String? barcode) async {
@@ -116,6 +118,16 @@ class _ScanPageState extends State<ScanPage> {
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(CupertinoIcons.barcode),
+        label: Text(appLocalizations.scan_navbar_label),
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute<Widget>(
+                  builder: (BuildContext context) => ScannerPage()));
+        },
       ),
     );
   }

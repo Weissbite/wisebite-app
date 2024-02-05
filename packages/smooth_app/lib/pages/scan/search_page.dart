@@ -237,14 +237,15 @@ class _SearchFieldState extends State<SearchField> {
             color: widget.foregroundColor,
           ),
       filled: true,
-      border: const OutlineInputBorder(
+      border: OutlineInputBorder(
         borderRadius: CIRCULAR_BORDER_RADIUS,
-        borderSide: BorderSide.none,
+        borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary, width: 0.5),
       ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: 25.0,
-        vertical: 17.0,
+        horizontal: 35.0,
       ),
+      prefixIcon: const Icon(CupertinoIcons.search),
       hintText: localizations.search,
       suffixIcon:
           widget.showClearButton ? _buildClearButton(localizations) : null,
@@ -269,6 +270,7 @@ class _SearchFieldState extends State<SearchField> {
           child: InputDecorator(
             decoration: inputDecoration,
             child: Text(
+              textAlign: TextAlign.left,
               inputDecoration.hintText!,
               style: Theme.of(context)
                   .textTheme
@@ -282,6 +284,7 @@ class _SearchFieldState extends State<SearchField> {
     } else {
       return TextField(
         textInputAction: TextInputAction.search,
+        textAlign: TextAlign.left,
         controller: _controller,
         focusNode: _focusNode,
         onSubmitted: (String query) => _performSearch(
