@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'package:smooth_app/helpers/analytics_helper.dart';
 import 'package:smooth_app/pages/navigator/app_navigator.dart';
 import 'package:smooth_app/pages/product/common/product_dialog_helper.dart';
 import 'package:smooth_app/pages/product/common/product_query_page_helper.dart';
+import 'package:smooth_app/pages/scan/camera_scan_page.dart';
 import 'package:smooth_app/pages/scan/search_history_view.dart';
 import 'package:smooth_app/query/keywords_product_query.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
@@ -109,6 +111,8 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations appLocalizations = AppLocalizations.of(context);
+
     return SmoothScaffold(
       appBar: SmoothAppBar(toolbarHeight: 0.0),
       body: ChangeNotifierProvider<TextEditingController>(
@@ -137,6 +141,16 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(CupertinoIcons.barcode),
+        label: Text(appLocalizations.scan_navbar_label),
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute<Widget>(
+                  builder: (BuildContext context) => ScannerPage()));
+        },
       ),
     );
   }
@@ -223,14 +237,15 @@ class _SearchFieldState extends State<SearchField> {
             color: widget.foregroundColor,
           ),
       filled: true,
-      border: const OutlineInputBorder(
+      border: OutlineInputBorder(
         borderRadius: CIRCULAR_BORDER_RADIUS,
-        borderSide: BorderSide.none,
+        borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary, width: 0.5),
       ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: 25.0,
-        vertical: 17.0,
+        horizontal: 35.0,
       ),
+      prefixIcon: const Icon(CupertinoIcons.search),
       hintText: localizations.search,
       suffixIcon:
           widget.showClearButton ? _buildClearButton(localizations) : null,
@@ -255,6 +270,7 @@ class _SearchFieldState extends State<SearchField> {
           child: InputDecorator(
             decoration: inputDecoration,
             child: Text(
+              textAlign: TextAlign.left,
               inputDecoration.hintText!,
               style: Theme.of(context)
                   .textTheme
@@ -268,6 +284,7 @@ class _SearchFieldState extends State<SearchField> {
     } else {
       return TextField(
         textInputAction: TextInputAction.search,
+        textAlign: TextAlign.left,
         controller: _controller,
         focusNode: _focusNode,
         onSubmitted: (String query) => _performSearch(

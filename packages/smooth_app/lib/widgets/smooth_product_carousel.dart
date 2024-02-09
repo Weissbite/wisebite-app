@@ -204,9 +204,9 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
   double _computeViewPortFraction() {
     final double screenWidth = MediaQuery.of(context).size.width;
     return (screenWidth -
-            (SmoothBarcodeScannerVisor.CORNER_PADDING * 2) -
-            (SmoothBarcodeScannerVisor.STROKE_WIDTH * 2) +
-            (HORIZONTAL_SPACE_BETWEEN_CARDS * 4)) /
+            (SmoothBarcodeScannerVisor.CORNER_PADDING * 0.5) -
+            (SmoothBarcodeScannerVisor.STROKE_WIDTH * 0.5) +
+            (HORIZONTAL_SPACE_BETWEEN_CARDS * 8)) /
         screenWidth;
   }
 }
@@ -231,6 +231,7 @@ class SearchCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
+          const Expanded(child: _SearchCardContent()),
           SvgPicture.asset(
             Theme.of(context).brightness == Brightness.light
                 ? 'assets/app/release_icon_light_transparent_no_border.svg'
@@ -252,7 +253,6 @@ class SearchCard extends StatelessWidget {
               maxLines: 1,
             ),
           ),
-          const Expanded(child: _SearchCardContent()),
         ],
       ),
     );
@@ -295,7 +295,7 @@ class _SearchCardContentState extends State<_SearchCardContent>
     final bool darkMode = themeData.brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: VERY_SMALL_SPACE),
+      padding: const EdgeInsets.symmetric(vertical: 50.0),
       child: DefaultTextStyle.merge(
         style: const TextStyle(
           fontSize: LARGE_SPACE,
@@ -306,31 +306,32 @@ class _SearchCardContentState extends State<_SearchCardContent>
         maxLines: 5,
         child: Column(
           children: <Widget>[
-            Expanded(
-              child: switch (_content) {
-                _SearchCardContentType.DEFAULT =>
-                  const _SearchCardContentDefault(),
-                _SearchCardContentType.TAG_LINE =>
-                  const _SearchCardContentTagLine(),
-                _SearchCardContentType.REVIEW_APP =>
-                  _SearchCardContentAppReview(
-                    onHideReview: () {
-                      setState(() => _content = _SearchCardContentType.DEFAULT);
-                    },
-                  ),
-              },
+            SearchField(
+              onFocus: () => _openSearchPage(context),
+              readOnly: true,
+              showClearButton: false,
+              backgroundColor: darkMode
+                  ? Colors.white10
+                  : const Color.fromARGB(255, 240, 240, 240)
+                      .withOpacity(SearchCard.OPACITY),
+              foregroundColor: themeData.colorScheme.onSurface
+                  .withOpacity(SearchCard.OPACITY),
             ),
             if (_content != _SearchCardContentType.REVIEW_APP)
-              SearchField(
-                onFocus: () => _openSearchPage(context),
-                readOnly: true,
-                showClearButton: false,
-                backgroundColor: darkMode
-                    ? Colors.white10
-                    : const Color.fromARGB(255, 240, 240, 240)
-                        .withOpacity(SearchCard.OPACITY),
-                foregroundColor: themeData.colorScheme.onSurface
-                    .withOpacity(SearchCard.OPACITY),
+              Expanded(
+                child: switch (_content) {
+                  _SearchCardContentType.DEFAULT =>
+                    const _SearchCardContentDefault(),
+                  _SearchCardContentType.TAG_LINE =>
+                    const _SearchCardContentTagLine(),
+                  _SearchCardContentType.REVIEW_APP =>
+                    _SearchCardContentAppReview(
+                      onHideReview: () {
+                        setState(
+                            () => _content = _SearchCardContentType.DEFAULT);
+                      },
+                    ),
+                },
               ),
           ],
         ),
