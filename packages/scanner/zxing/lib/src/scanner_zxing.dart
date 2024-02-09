@@ -197,7 +197,15 @@ class _SmoothBarcodeScannerZXingState
       (final Barcode scanData) {
         final String? barcode = scanData.code;
         if (barcode != null) {
-          widget.onScan(barcode);
+          widget.onScan(barcode).then((_) {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+          });
         }
       },
     );
