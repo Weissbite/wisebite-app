@@ -164,7 +164,7 @@ class _ProductPageState extends State<ProductPage>
     final LocalDatabase localDatabase = context.read<LocalDatabase>();
     await DaoProductList(localDatabase).push(
       ProductList.history(),
-      barcode,
+      ScannedBarcode(barcode),
     );
     localDatabase.notifyListeners();
   }

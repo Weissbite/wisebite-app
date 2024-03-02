@@ -1,5 +1,6 @@
-import 'package:intl/intl.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
+import 'package:smooth_app/database/dao_product_list.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 
 enum ProductListType {
   /// API search by [SearchTerms] keywords
@@ -175,9 +176,10 @@ class ProductList {
   /// "Total size" returned by the query.
   int totalSize = 0;
 
-  final Map<int, List<String>> _barcodes = <int, List<String>>{};
+  final Map<int, List<ScannedBarcode>> _barcodes =
+      <int, List<ScannedBarcode>>{};
 
-  Map<int, List<String>> get barcodes => _barcodes;
+  Map<int, List<ScannedBarcode>> get barcodes => _barcodes;
 
   bool isEmpty() => _barcodes.isEmpty;
 
@@ -186,60 +188,38 @@ class ProductList {
   /// Returns false if not already in the list
   /// Don't forget to update the database afterwards
   bool remove(final String barcode) {
-    // TODO(iliyan03): I should make this work with the new map type of storing
-    // if (!_barcodes.contains(barcode)) {
-    //   return false;
-    // }
-    // _barcodes.remove(barcode);
-    return true;
+    return barcodeExists(_barcodes, barcode, (
+      ScannedBarcode foundBarcode,
+      List<ScannedBarcode> foundBarcodeList,
+      _,
+    ) {
+      foundBarcodeList.remove(foundBarcode);
+    });
   }
 
   /// Sets all products with the same order as the input list
   void setAll(final List<Product> products) {
-    final DateFormat formatter = DateFormat('yymmdd');
-    final int nowAsKey = int.parse(formatter.format(DateTime.now()));
+    final List<ScannedBarcode> newBarcodes = <ScannedBarcode>[];
+    for (final Product product in products) {
+      newBarcodes.add(ScannedBarcode(product.barcode!));
+    }
 
-    final Map<int, List<String>> barcodes = <int, List<String>>{
-      nowAsKey: <String>[]
+    final Map<int, List<ScannedBarcode>> barcodes = <int, List<ScannedBarcode>>{
+      getTodayDateAsScannedBarcodeKey(): newBarcodes
     };
 
-    for (final Product product in products) {
-      final String barcode = product.barcode!;
-      barcodes[nowAsKey]!.add(barcode);
-    }
     set(barcodes);
   }
 
-  void set(final Map<int, List<String>> barcodes) {
+  void set(final Map<int, List<ScannedBarcode>> barcodes) {
     _barcodes.clear();
     _barcodes.addAll(barcodes);
   }
 
-  Map<int, List<String>> getList() {
-    final Map<int, List<String>> result = _barcodes;
-    // TODO(iliyan03): I'm not sure if I would need this
-    // final Iterable<String> barcodes =
-    //     _isReversed() ? _barcodes.reversed : _barcodes;
-    // result.addAll(barcodes);
+  Map<int, List<ScannedBarcode>> getList() {
+    final Map<int, List<ScannedBarcode>> result = <int, List<ScannedBarcode>>{};
+    result.addAll(_barcodes);
     return result;
-  }
-
-  bool _isReversed() {
-    switch (listType) {
-      case ProductListType.HTTP_SEARCH_KEYWORDS:
-      case ProductListType.HTTP_SEARCH_CATEGORY:
-      case ProductListType.HTTP_USER_CONTRIBUTOR:
-      case ProductListType.HTTP_USER_INFORMER:
-      case ProductListType.HTTP_USER_PHOTOGRAPHER:
-      case ProductListType.HTTP_USER_TO_BE_COMPLETED:
-      case ProductListType.HTTP_ALL_TO_BE_COMPLETED:
-      case ProductListType.USER:
-        return false;
-      case ProductListType.SCAN_SESSION:
-      case ProductListType.SCAN_HISTORY:
-      case ProductListType.HISTORY:
-        return true;
-    }
   }
 
   String getParametersKey() {

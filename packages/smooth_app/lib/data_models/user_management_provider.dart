@@ -90,9 +90,7 @@ class UserManagementProvider with ChangeNotifier {
     }
   }
 
-  Future<void> signInWithApple(BuildContext context) async {
-    // Can't implement this without an Apple Developer Account
-  }
+  Future<void> signInWithApple(BuildContext context) async {}
 
   // SIGN OUT
   Future<void> signOut(BuildContext context) async {
