@@ -23,7 +23,7 @@ class PersonalizedRankingPage extends StatefulWidget {
     required this.title,
   });
 
-  final Map<int, List<String>> barcodes;
+  final List<String> barcodes;
   final String title;
 
   @override
@@ -46,8 +46,7 @@ class _PersonalizedRankingPageState extends State<PersonalizedRankingPage>
   void initState() {
     super.initState();
     _model = PersonalizedRankingModel(
-      // TODO ILIYAN Fix this. For now using the first key-value pair value
-      widget.barcodes.entries.first.value,
+      widget.barcodes,
       context.read<LocalDatabase>(),
     );
   }
@@ -59,7 +58,7 @@ class _PersonalizedRankingPageState extends State<PersonalizedRankingPage>
     final bool? added = await ProductListUserDialogHelper(daoProductList)
         .showUserAddProductsDialog(
       context,
-      widget.barcodes.entries.first.value.toSet(),
+      widget.barcodes.toSet(),
     );
     if (!mounted) {
       return;

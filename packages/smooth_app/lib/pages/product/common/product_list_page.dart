@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,7 @@ import 'package:smooth_app/data_models/up_to_date_product_list_mixin.dart';
 import 'package:smooth_app/database/dao_product.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/local_database.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 import 'package:smooth_app/generic_lib/bottom_sheets/smooth_bottom_sheet.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/duration_constants.dart';
@@ -33,6 +35,12 @@ import 'package:smooth_app/query/product_query.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
 import 'package:smooth_app/widgets/will_pop_scope.dart';
+
+extension _DateOnlyCompare on DateTime {
+  bool isSameDate(DateTime other) {
+    return day == other.day && month == other.month && year == other.year;
+  }
+}
 
 /// Displays the products of a product list, with access to other lists.
 class ProductListPage extends StatefulWidget {
@@ -60,6 +68,7 @@ class _ProductListPageState extends State<ProductListPage>
   void initState() {
     super.initState();
     initUpToDate(widget.productList, context.read<LocalDatabase>());
+    _fetchDataForSelectedDate();
   }
 
   final ProductListPopupItem _rename = ProductListPopupRename();
@@ -70,6 +79,46 @@ class _ProductListPageState extends State<ProductListPage>
   final ProductListItemPopupItem _rankItems = ProductListItemPopupRank();
   final ProductListItemPopupItem _sideBySideItems =
       ProductListItemPopupSideBySide();
+
+  DateTime _selectedDate = DateTime.now();
+  List<ScannedBarcode> selectedDateProducts = <ScannedBarcode>[];
+
+  void _navigateToPreviousDay() {
+    setState(() {
+      _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+    });
+  }
+
+  void _navigateToNextDay() {
+    setState(() {
+      _selectedDate = _selectedDate.add(const Duration(days: 1));
+    });
+  }
+
+  String _getSelectedDayText() {
+    final DateTime now = DateTime.now();
+    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime yesterday = DateTime(now.year, now.month, now.day - 1);
+    final DateTime tomorrow = DateTime(now.year, now.month, now.day + 1);
+
+    if (_selectedDate.isSameDate(today)) {
+      return 'Today';
+    } else if (_selectedDate.isSameDate(yesterday)) {
+      return 'Yesterday';
+    } else if (_selectedDate.isSameDate(tomorrow)) {
+      return 'Tomorrow';
+    } else {
+      return '${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}';
+    }
+  }
+
+  // Simulated data fetching based on selected date
+  void _fetchDataForSelectedDate() {
+    final int selectedDate =
+        int.parse(DateFormat('yyMMdd').format(_selectedDate));
+    selectedDateProducts =
+        productList.getList()[selectedDate] ?? <ScannedBarcode>[];
+  }
 
   //returns bool to handle WillPopScope
   Future<bool> _handleUserBacktap() async {
@@ -94,6 +143,7 @@ class _ProductListPageState extends State<ProductListPage>
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
     final UserPreferences userPreferences = context.watch<UserPreferences>();
     refreshUpToDate();
+    _fetchDataForSelectedDate();
 
     /// If we were on a user list, but it has been deleted, we switch to history
     if (!daoProductList.exist(productList) &&
@@ -105,7 +155,6 @@ class _ProductListPageState extends State<ProductListPage>
       return EMPTY_WIDGET;
     }
 
-    final Map<int, List<String>> products = productList.getList();
     final bool dismissible;
 
     switch (productList.listType) {
@@ -124,182 +173,203 @@ class _ProductListPageState extends State<ProductListPage>
       case ProductListType.HTTP_ALL_TO_BE_COMPLETED:
         dismissible = false;
     }
-    final bool enableClear = products.isNotEmpty;
+    final bool enableClear = selectedDateProducts.isNotEmpty;
     final bool enableRename = productList.listType == ProductListType.USER;
 
     return SmoothScaffold(
-      floatingActionButton: products.isEmpty
-          ? FloatingActionButton.extended(
-              icon: const Icon(CupertinoIcons.barcode),
-              label: Text(appLocalizations.product_list_empty_title),
-              onPressed: () =>
-                  ExternalCarouselManager.read(context).showSearchCard(),
-            )
-          : _selectionMode
-              ? null
-              : FloatingActionButton.extended(
-                  onPressed: () => setState(() => _selectionMode = true),
-                  label: const Text('Multi-select'),
-                  icon: const Icon(Icons.checklist),
-                ),
-      appBar: SmoothAppBar(
-        centerTitle: false,
-        actions: <Widget>[
-          if (widget.allowToSwitchBetweenLists)
-            IconButton(
-              icon: const Icon(CupertinoIcons.square_list),
-              tooltip: appLocalizations.action_change_list,
-              onPressed: () async {
-                final ProductList? selected =
-                    await showSmoothDraggableModalSheet<ProductList>(
-                  context: context,
-                  header: SmoothModalSheetHeader(
-                    title: appLocalizations.product_list_select,
-                    suffix: SmoothModalSheetHeaderButton(
-                      label: appLocalizations.product_list_create,
-                      prefix: const Icon(Icons.add_circle_outline_sharp),
-                      tooltip: appLocalizations.product_list_create_tooltip,
-                      onTap: () async =>
-                          ProductListUserDialogHelper(daoProductList)
-                              .showCreateUserListDialog(context),
+        floatingActionButton: selectedDateProducts.isEmpty
+            ? FloatingActionButton.extended(
+                icon: const Icon(CupertinoIcons.barcode),
+                label: Text(appLocalizations.product_list_empty_title),
+                onPressed: () =>
+                    ExternalCarouselManager.read(context).showSearchCard(),
+              )
+            : _selectionMode
+                ? null
+                : FloatingActionButton.extended(
+                    onPressed: () => setState(() => _selectionMode = true),
+                    label: const Text('Multi-select'),
+                    icon: const Icon(Icons.checklist),
+                  ),
+        appBar: SmoothAppBar(
+          centerTitle: false,
+          actions: <Widget>[
+            if (widget.allowToSwitchBetweenLists)
+              IconButton(
+                icon: const Icon(CupertinoIcons.square_list),
+                tooltip: appLocalizations.action_change_list,
+                onPressed: () async {
+                  final ProductList? selected =
+                      await showSmoothDraggableModalSheet<ProductList>(
+                    context: context,
+                    header: SmoothModalSheetHeader(
+                      title: appLocalizations.product_list_select,
+                      suffix: SmoothModalSheetHeaderButton(
+                        label: appLocalizations.product_list_create,
+                        prefix: const Icon(Icons.add_circle_outline_sharp),
+                        tooltip: appLocalizations.product_list_create_tooltip,
+                        onTap: () async =>
+                            ProductListUserDialogHelper(daoProductList)
+                                .showCreateUserListDialog(context),
+                      ),
                     ),
-                  ),
-                  bodyBuilder: (BuildContext context) => AllProductListModal(
-                    currentList: productList,
-                  ),
-                  initHeight: _computeModalInitHeight(context),
-                );
+                    bodyBuilder: (BuildContext context) => AllProductListModal(
+                      currentList: productList,
+                    ),
+                    initHeight: _computeModalInitHeight(context),
+                  );
 
-                if (selected == null) {
-                  return;
-                }
-                if (context.mounted) {
-                  await daoProductList.get(selected);
+                  if (selected == null) {
+                    return;
+                  }
                   if (context.mounted) {
-                    setState(() => productList = selected);
+                    await daoProductList.get(selected);
+                    if (context.mounted) {
+                      setState(() => productList = selected);
+                    }
+                  }
+                },
+              ),
+            PopupMenuButton<ProductListPopupItem>(
+              onSelected: (final ProductListPopupItem action) async {
+                final ProductList? differentProductList =
+                    await action.doSomething(
+                  productList: productList,
+                  localDatabase: localDatabase,
+                  context: context,
+                );
+                if (differentProductList != null) {
+                  setState(() => productList = differentProductList);
+                }
+              },
+              itemBuilder: (BuildContext context) =>
+                  <PopupMenuEntry<ProductListPopupItem>>[
+                if (enableRename) _rename.getMenuItem(appLocalizations),
+                _share.getMenuItem(appLocalizations),
+                _openInWeb.getMenuItem(appLocalizations),
+                if (enableClear) _clear.getMenuItem(appLocalizations),
+              ],
+            ),
+          ],
+          title: AutoSizeText(
+            ProductQueryPageHelper.getProductListLabel(
+              productList,
+              appLocalizations,
+            ),
+            maxLines: 2,
+          ),
+          actionMode: _selectionMode,
+          onLeaveActionMode: () {
+            setState(() => _selectionMode = false);
+          },
+          actionModeTitle: Text('${_selectedBarcodes.length}'),
+          actionModeActions: <Widget>[
+            PopupMenuButton<ProductListItemPopupItem>(
+              onSelected: (final ProductListItemPopupItem action) async {
+                final bool andThenSetState = await action.doSomething(
+                  productList: productList,
+                  localDatabase: localDatabase,
+                  context: context,
+                  selectedBarcodes: _selectedBarcodes,
+                );
+                if (andThenSetState) {
+                  if (context.mounted) {
+                    setState(() {});
                   }
                 }
               },
-            ),
-          PopupMenuButton<ProductListPopupItem>(
-            onSelected: (final ProductListPopupItem action) async {
-              final ProductList? differentProductList =
-                  await action.doSomething(
-                productList: productList,
-                localDatabase: localDatabase,
-                context: context,
-              );
-              if (differentProductList != null) {
-                setState(() => productList = differentProductList);
-              }
-            },
-            itemBuilder: (BuildContext context) =>
-                <PopupMenuEntry<ProductListPopupItem>>[
-              if (enableRename) _rename.getMenuItem(appLocalizations),
-              _share.getMenuItem(appLocalizations),
-              _openInWeb.getMenuItem(appLocalizations),
-              if (enableClear) _clear.getMenuItem(appLocalizations),
-            ],
-          ),
-        ],
-        title: AutoSizeText(
-          ProductQueryPageHelper.getProductListLabel(
-            productList,
-            appLocalizations,
-          ),
-          maxLines: 2,
-        ),
-        actionMode: _selectionMode,
-        onLeaveActionMode: () {
-          setState(() => _selectionMode = false);
-        },
-        actionModeTitle: Text('${_selectedBarcodes.length}'),
-        actionModeActions: <Widget>[
-          PopupMenuButton<ProductListItemPopupItem>(
-            onSelected: (final ProductListItemPopupItem action) async {
-              final bool andThenSetState = await action.doSomething(
-                productList: productList,
-                localDatabase: localDatabase,
-                context: context,
-                selectedBarcodes: _selectedBarcodes,
-              );
-              if (andThenSetState) {
-                if (context.mounted) {
-                  setState(() {});
-                }
-              }
-            },
-            itemBuilder: (BuildContext context) =>
-                <PopupMenuEntry<ProductListItemPopupItem>>[
-              if (userPreferences.getFlag(UserPreferencesDevMode
-                      .userPreferencesFlagBoostedComparison) ==
-                  true)
-                _sideBySideItems.getMenuItem(
+              itemBuilder: (BuildContext context) =>
+                  <PopupMenuEntry<ProductListItemPopupItem>>[
+                if (userPreferences.getFlag(UserPreferencesDevMode
+                        .userPreferencesFlagBoostedComparison) ==
+                    true)
+                  _sideBySideItems.getMenuItem(
+                    appLocalizations,
+                    _selectedBarcodes.length >= 2 &&
+                        _selectedBarcodes.length <= 3,
+                  ),
+                _rankItems.getMenuItem(
                   appLocalizations,
-                  _selectedBarcodes.length >= 2 &&
-                      _selectedBarcodes.length <= 3,
+                  _selectedBarcodes.length >= 2,
                 ),
-              _rankItems.getMenuItem(
-                appLocalizations,
-                _selectedBarcodes.length >= 2,
-              ),
-              _deleteItems.getMenuItem(
-                appLocalizations,
-                _selectedBarcodes.isNotEmpty,
+                _deleteItems.getMenuItem(
+                  appLocalizations,
+                  _selectedBarcodes.isNotEmpty,
+                ),
+              ],
+            ),
+          ],
+        ),
+        body: SmoothScaffold(
+          appBar: SmoothAppBar(
+            // Button at the start of the AppBar
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_left),
+              onPressed: _navigateToPreviousDay,
+            ),
+            title: Text(
+              _getSelectedDayText(),
+              style:
+                  const TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
+            // Buttons at the end of the AppBar
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.arrow_right),
+                onPressed: _navigateToNextDay,
               ),
             ],
           ),
-        ],
-      ),
-      body: products
-              .isEmpty // TODO(iliyan03) : Should check if lists values are empty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(SMALL_SPACE),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    SvgPicture.asset(
-                      'assets/misc/empty-list.svg',
-                      package: AppHelper.APP_PACKAGE,
-                      width: MediaQuery.of(context).size.width / 2,
+          body: selectedDateProducts.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(SMALL_SPACE),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        SvgPicture.asset(
+                          'assets/misc/empty-list.svg',
+                          package: AppHelper.APP_PACKAGE,
+                          width: MediaQuery.of(context).size.width / 2,
+                        ),
+                        Text(
+                          appLocalizations.product_list_empty_message,
+                          textAlign: TextAlign.center,
+                          style: themeData.textTheme.bodyMedium?.apply(
+                            color: themeData.colorScheme.onBackground,
+                          ),
+                        ),
+                        EMPTY_WIDGET,
+                      ],
                     ),
-                    Text(
-                      appLocalizations.product_list_empty_message,
-                      textAlign: TextAlign.center,
-                      style: themeData.textTheme.bodyMedium?.apply(
-                        color: themeData.colorScheme.onBackground,
-                      ),
-                    ),
-                    EMPTY_WIDGET,
-                  ],
+                  ),
+                )
+              : WillPopScope2(
+                  onWillPop: () async => (await _handleUserBacktap(), null),
+                  child: RefreshIndicator(
+                      //if it is in selectmode then refresh indicator is not shown
+                      notificationPredicate:
+                          _selectionMode ? (_) => false : (_) => true,
+                      onRefresh: () async => _refreshListProducts(
+                            getAllBarcodes(productList.getList()),
+                            localDatabase,
+                            appLocalizations,
+                          ),
+                      child: ListView.builder(
+                        itemCount: selectedDateProducts.length,
+                        itemBuilder: (BuildContext context, int index) =>
+                            _buildItem(
+                          dismissible,
+                          selectedDateProducts.reversed
+                              .toList(), // Reverse the list so that the most recently scanned barcodes are at the top
+                          index,
+                          localDatabase,
+                          appLocalizations,
+                        ),
+                      )),
                 ),
-              ),
-            )
-          : WillPopScope2(
-              onWillPop: () async => (await _handleUserBacktap(), null),
-              child: RefreshIndicator(
-                  //if it is in selectmode then refresh indicator is not shown
-                  notificationPredicate:
-                      _selectionMode ? (_) => false : (_) => true,
-                  onRefresh: () async => _refreshListProducts(
-                        products,
-                        localDatabase,
-                        appLocalizations,
-                      ),
-                  child: ListView.builder(
-                    itemCount: products.entries.first.value.length,
-                    itemBuilder: (BuildContext context, int index) =>
-                        _buildItem(
-                      dismissible,
-                      products.entries.first.value,
-                      index,
-                      localDatabase,
-                      appLocalizations,
-                    ),
-                  )),
-            ),
-    );
+        ));
   }
 
   double _computeModalInitHeight(BuildContext context) {
@@ -314,12 +384,12 @@ class _ProductListPageState extends State<ProductListPage>
 
   Widget _buildItem(
     final bool dismissible,
-    final List<String> barcodes,
+    final List<ScannedBarcode> barcodes,
     final int index,
     final LocalDatabase localDatabase,
     final AppLocalizations appLocalizations,
   ) {
-    final String barcode = barcodes[index];
+    final String barcode = barcodes[index].barcode;
     final bool selected = _selectedBarcodes.contains(barcode);
     void onTap() => setState(
           () {
@@ -413,9 +483,11 @@ class _ProductListPageState extends State<ProductListPage>
                       textColor: PRIMARY_BLUE_COLOR,
                       label: appLocalizations.undo,
                       onPressed: () async {
-                        barcodes.insert(index, barcode);
-                        // TODO ILIYAN Fix this
-                        productList.set(<int, List<String>>{} /*barcodes*/);
+                        barcodes.insert(index, ScannedBarcode(barcode));
+                        productList.set(<int, List<ScannedBarcode>>{
+                          parseDateTimeAsScannedBarcodeKey(_selectedDate):
+                              barcodes
+                        });
                         if (removedFromSelectedBarcodes) {
                           _selectedBarcodes.add(barcode);
                         }
@@ -437,7 +509,7 @@ class _ProductListPageState extends State<ProductListPage>
 
   /// Calls the "refresh products" part with dialogs on top.
   Future<void> _refreshListProducts(
-    final Map<int, List<String>> products,
+    final List<String> products,
     final LocalDatabase localDatabase,
     final AppLocalizations appLocalizations,
   ) async {
@@ -477,7 +549,7 @@ class _ProductListPageState extends State<ProductListPage>
 
   /// Fetches the products from the API and refreshes the local database
   Future<bool> _reloadProducts(
-    final Map<int, List<String>> barcodes,
+    final List<String> barcodes,
     final LocalDatabase localDatabase,
   ) async {
     try {

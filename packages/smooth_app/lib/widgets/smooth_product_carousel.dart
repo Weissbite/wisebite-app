@@ -15,6 +15,8 @@ import 'package:smooth_app/cards/product_cards/smooth_product_card_thanks.dart';
 import 'package:smooth_app/data_models/continuous_scan_model.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/data_models/tagline.dart';
+import 'package:smooth_app/database/dao_product_list.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/helpers/app_helper.dart';
@@ -44,13 +46,18 @@ class SmoothProductCarousel extends StatefulWidget {
 class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
   static const double HORIZONTAL_SPACE_BETWEEN_CARDS = 5.0;
 
-  Map<int, List<String>> barcodes = <int, List<String>>{};
-  String? _lastConsultedBarcode;
+  // Working only with today's scanned barcodes
+  List<ScannedBarcode> barcodes = <ScannedBarcode>[];
+  ScannedBarcode? _lastConsultedBarcode;
   int? _carrouselMovingTo;
   int _lastIndex = 0;
 
   int get _searchCardAdjustment => widget.containSearchCard ? 1 : 0;
   late ContinuousScanModel _model;
+
+  List<ScannedBarcode> _getTodayBarcodes() =>
+      _model.getBarcodes()[getTodayDateAsScannedBarcodeKey()] ??
+      <ScannedBarcode>[];
 
   @override
   void didChangeDependencies() {
@@ -61,10 +68,9 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
       return;
     }
 
-    barcodes = _model.getBarcodes();
+    barcodes = _getTodayBarcodes().reversed.toList();
 
-    // TODO ILIYAN For now we're working only with todays barcodes. Should do this to work with the whole history of scanned barcodes
-    if (barcodes.isEmpty || barcodes.entries.first.value.isEmpty) {
+    if (barcodes.isEmpty) {
       // Ensure to reset all variables
       _lastConsultedBarcode = null;
       _carrouselMovingTo = null;
@@ -76,36 +82,34 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
     }
 
     _lastConsultedBarcode = _model.latestConsultedBarcode;
-    final int cardsCount =
-        barcodes.entries.first.value.length + _searchCardAdjustment;
+    final int cardsCount = barcodes.length + _searchCardAdjustment;
 
-    // TODO ILIYAN This is something that I would do as part of a UI change.
-    // if (_model.latestConsultedBarcode != null &&
-    //     _model.latestConsultedBarcode!.isNotEmpty) {
-    //   final int indexBarcode = barcodes.indexOf(_model.latestConsultedBarcode!);
-    //   if (indexBarcode >= 0) {
-    //     final int indexCarousel = indexBarcode + _searchCardAdjustment;
-    //     _moveControllerTo(indexCarousel);
-    //   } else {
-    //     if (_lastIndex > cardsCount) {
-    //       _moveControllerTo(cardsCount);
-    //     } else {
-    //       _moveControllerTo(_lastIndex);
-    //     }
-    //   }
-    // } else {
-    //   _moveControllerTo(0);
-    // }
+    if (_model.latestConsultedBarcode != null &&
+        _model.latestConsultedBarcode!.barcode.isNotEmpty) {
+      final int indexBarcode = barcodes.indexOf(_model.latestConsultedBarcode!);
+      if (indexBarcode >= 0) {
+        final int indexCarousel = indexBarcode + _searchCardAdjustment;
+        _moveControllerTo(indexCarousel);
+      } else {
+        if (_lastIndex > cardsCount) {
+          _moveControllerTo(cardsCount);
+        } else {
+          _moveControllerTo(_lastIndex);
+        }
+      }
+    } else {
+      _moveControllerTo(0);
+    }
   }
 
   Future<void> _moveControllerTo(int page) async {
     if (_carrouselMovingTo == null && _lastIndex != page) {
-      widget.onPageChangedTo?.call(page, null
-          // TODO ILIYAN This is something that I would do as part of a UI change.
-          // page >= _searchCardAdjustment
-          //     ? barcodes[page - _searchCardAdjustment]
-          //     : null,
-          );
+      widget.onPageChangedTo?.call(
+        page,
+        page >= _searchCardAdjustment
+            ? barcodes[page - _searchCardAdjustment].barcode
+            : null,
+      );
 
       _carrouselMovingTo = page;
       ExternalCarouselManager.read(context).animatePageTo(page);
@@ -115,15 +119,13 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    barcodes = _model.getBarcodes();
+    // Reverse the list so that the most recently scanned barcodes are at the start
+    barcodes = _getTodayBarcodes().reversed.toList();
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return CarouselSlider.builder(
-          itemCount: barcodes.isEmpty
-              ? 0
-              : barcodes.entries.first.value.length +
-                  _searchCardAdjustment, // TODO ILIYAN We're working only with todays barcodes. Should work with the whole history of barcodes
+          itemCount: barcodes.length + _searchCardAdjustment,
           itemBuilder:
               (BuildContext context, int itemIndex, int itemRealIndex) {
             return SizedBox.expand(
@@ -148,9 +150,8 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
 
               if (index > 0) {
                 if (reason == CarouselPageChangedReason.manual) {
-                  // TODO ILIYAN This is something that I would do as part of a UI change.
-                  // _model.lastConsultedBarcode =
-                  //     barcodes[index - _searchCardAdjustment];
+                  _model.lastConsultedBarcode =
+                      barcodes[index - _searchCardAdjustment];
                   _lastConsultedBarcode = _model.latestConsultedBarcode;
                 }
               } else if (index == 0) {
@@ -174,12 +175,8 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
     if (index >= barcodes.length) {
       return EMPTY_WIDGET;
     }
-    String barcode = '';
-    if (barcodes.isNotEmpty) {
-      final List<String> todaysBarcodes = barcodes.entries.first.value;
-      barcode = todaysBarcodes.isEmpty ? '' : todaysBarcodes.elementAt(index);
-    }
 
+    final String barcode = barcodes.elementAt(index).barcode;
     switch (_model.getBarcodeState(barcode)!) {
       case ScannedProductState.FOUND:
       case ScannedProductState.CACHED:

@@ -16,8 +16,8 @@ class UpToDateProductListProvider {
   /// them, because we cannot cache all product lists in memory.
   final UpToDateInterest _interest = UpToDateInterest();
 
-  final Map<String, Map<int, List<String>>> _barcodes =
-      <String, Map<int, List<String>>>{};
+  final Map<String, Map<int, List<ScannedBarcode>>> _barcodes =
+      <String, Map<int, List<ScannedBarcode>>>{};
 
   /// Shows an interest for a product list.
   ///
@@ -41,15 +41,17 @@ class UpToDateProductListProvider {
 
   void setLocalUpToDate(
     final String key,
-    final Map<int, List<String>> barcodes,
+    final Map<int, List<ScannedBarcode>> barcodes,
   ) {
     if (!_interest.containsKey(key)) {
       return;
     }
-    _barcodes[key] = Map<int, List<String>>.from(barcodes); // need to copy
+    _barcodes[key] =
+        Map<int, List<ScannedBarcode>>.from(barcodes); // need to copy
   }
 
   /// Returns the latest barcodes.
-  Map<int, List<String>> getLocalUpToDate(final ProductList productList) =>
-      _barcodes[_getKey(productList)] ?? <int, List<String>>{};
+  Map<int, List<ScannedBarcode>> getLocalUpToDate(
+          final ProductList productList) =>
+      _barcodes[_getKey(productList)] ?? <int, List<ScannedBarcode>>{};
 }
