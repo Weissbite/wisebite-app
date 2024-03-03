@@ -49,7 +49,8 @@ class LocalDatabase extends ChangeNotifier {
   List<String> getAllTaskIds() =>
       DaoStringList(this).getAll(DaoStringList.keyTasks);
 
-  static Future<LocalDatabase> getLocalDatabase() async {
+  static Future<LocalDatabase> getLocalDatabase(
+      [final bool initDaos = true]) async {
     // sql from there
     final String databasesRootPath;
     if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -68,6 +69,10 @@ class LocalDatabase extends ChangeNotifier {
     );
 
     final LocalDatabase localDatabase = LocalDatabase._(database);
+
+    if (!initDaos) {
+      return localDatabase;
+    }
 
     // only hive from there
     await Hive.initFlutter();

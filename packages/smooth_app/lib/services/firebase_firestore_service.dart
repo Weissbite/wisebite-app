@@ -39,7 +39,6 @@ class FirestoreService<T extends FirestoreModel<T>> {
   }
 
   Future<void> deleteDocument({
-    required String collectionPath,
     required String documentId,
   }) async {
     await _firestore.collection(collectionPath).doc(documentId).delete();

@@ -30,7 +30,7 @@ class ScannedBarcode extends FirestoreModel<ScannedBarcode> {
   ) {
     final Map<String, dynamic>? barcode = data.data();
     return ScannedBarcode(
-      barcode!.keys.first,
+      barcode!['barcode'],
       barcode['last_scan_time'],
     );
   }
@@ -38,6 +38,7 @@ class ScannedBarcode extends FirestoreModel<ScannedBarcode> {
   @override
   Map<String, dynamic> toFirestore() {
     return <String, dynamic>{
+      'barcode': _barcode,
       'last_scan_time': _lastScanTime,
     };
   }
@@ -284,7 +285,6 @@ class DaoProductList extends AbstractDao {
           foundBarcodeList.remove(foundBarcode);
           await ProductListFirebaseManager().deleteBarcode(
             productList: productList,
-            scanDay: foundInDay,
             barcode: barcode,
           );
         },
@@ -300,7 +300,6 @@ class DaoProductList extends AbstractDao {
     await _put(getKey(productList), _BarcodeList.now(barcodes));
     await ProductListFirebaseManager().addBarcode(
       productList: productList,
-      scanDay: today,
       barcode: barcode,
     );
   }
@@ -340,7 +339,6 @@ class DaoProductList extends AbstractDao {
         foundBarcodeList.remove(foundBarcode);
         await ProductListFirebaseManager().deleteBarcode(
           productList: productList,
-          scanDay: foundInDay,
           barcode: foundBarcode,
         );
       }
@@ -368,7 +366,6 @@ class DaoProductList extends AbstractDao {
 
       await ProductListFirebaseManager().addBarcode(
         productList: productList,
-        scanDay: getTodayDateAsScannedBarcodeKey(),
         barcode: newBarcode,
       );
     }
@@ -406,7 +403,6 @@ class DaoProductList extends AbstractDao {
 
         await ProductListFirebaseManager().addBarcode(
           productList: productList,
-          scanDay: getTodayDateAsScannedBarcodeKey(),
           barcode: newBarcode,
         );
       } else {
@@ -418,7 +414,6 @@ class DaoProductList extends AbstractDao {
           foundBarcodeList.remove(foundBarcode);
           await ProductListFirebaseManager().deleteBarcode(
             productList: productList,
-            scanDay: foundInDay,
             barcode: foundBarcode,
           );
         });

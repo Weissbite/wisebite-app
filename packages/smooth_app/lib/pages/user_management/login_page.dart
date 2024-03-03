@@ -145,13 +145,13 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                         onPressed: () async {
                           // TODO(yavor): check if successful login
                           // final UserCredential? userCreds =
-                          await UserManagementProvider()
-                              .signInWithGoogle(context);
+                          await UserManagementProvider().signInWithGoogle();
 
                           // if (userCreds != null) {}
                           if (!context.mounted) {
                             return;
                           }
+
                           Navigator.pop(context);
                         },
                         backgroundColor: Colors.white,
@@ -166,8 +166,7 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
 
                       ServiceSignInButton(
                         onPressed: () async {
-                          await UserManagementProvider()
-                              .signInWithFacebook(context);
+                          await UserManagementProvider().signInWithFacebook();
                           if (!context.mounted) {
                             return;
                           }

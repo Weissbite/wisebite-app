@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
@@ -114,8 +113,7 @@ class _ProductListPageState extends State<ProductListPage>
 
   // Simulated data fetching based on selected date
   void _fetchDataForSelectedDate() {
-    final int selectedDate =
-        int.parse(DateFormat('yyMMdd').format(_selectedDate));
+    final int selectedDate = parseDateTimeAsScannedBarcodeKey(_selectedDate);
     selectedDateProducts =
         productList.getList()[selectedDate] ?? <ScannedBarcode>[];
   }

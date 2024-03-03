@@ -23,6 +23,15 @@ List<String> getAllBarcodes(final Map<int, List<ScannedBarcode>> barcodes,
   return allBarcodes;
 }
 
+int getNumberOfAllBarcodes(final Map<int, List<ScannedBarcode>> barcodes) {
+  int numberOfBarcodes = 0;
+  for (final List<ScannedBarcode> i in barcodes.values) {
+    numberOfBarcodes += i.length;
+  }
+
+  return numberOfBarcodes;
+}
+
 // Searches for a barcode inside the given map of scanned barcodes
 // Returns true if the barcode is found inside the given map and false otherwise
 // It can manipulate the found barcode and it's list, if any found

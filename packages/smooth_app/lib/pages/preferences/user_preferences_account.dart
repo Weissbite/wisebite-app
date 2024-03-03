@@ -132,7 +132,6 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         if (!areMetricsFilled) {
           showCompleteProfileDialog(context);
         }
-        Navigator.of(context).pop();
       });
 
   @override
