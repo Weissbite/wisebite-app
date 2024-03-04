@@ -90,8 +90,7 @@ class _ModalProductListItem extends StatelessWidget {
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
 
     final int productsLength = getNumberOfAllBarcodes(productList.barcodes);
-    // TODO(iliyan03): This would be enabled after creating the rename function in firebase firestore db
-    //const bool enableRename = productList.listType == ProductListType.USER;
+    final bool enableRename = productList.listType == ProductListType.USER;
     final bool hasProducts = productsLength > 0;
 
     return UserPreferencesListTile(
@@ -104,11 +103,11 @@ class _ModalProductListItem extends StatelessWidget {
       subtitle: Text(
         appLocalizations.user_list_length(productsLength),
       ),
-      trailing: (hasProducts || productList.isEditable /*|| enableRename*/)
+      trailing: (hasProducts || productList.isEditable || enableRename)
           ? PopupMenuButton<ProductListPopupMenuEntry>(
               itemBuilder: (BuildContext context) {
                 final List<ProductListPopupItem> list = <ProductListPopupItem>[
-                  // if (enableRename) ProductListPopupRename(),
+                  if (enableRename) ProductListPopupRename(),
                   if (hasProducts) ProductListPopupShare(),
                   if (hasProducts) ProductListPopupOpenInWeb(),
                   if (hasProducts) ProductListPopupClear(),

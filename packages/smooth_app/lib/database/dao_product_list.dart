@@ -211,7 +211,10 @@ class DaoProductList extends AbstractDao {
   Future<void> put(final ProductList productList) async =>
       _put(getKey(productList), _BarcodeList.fromProductList(productList));
 
-  Future<bool> delete(final ProductList productList) async {
+  Future<bool> delete(
+    final ProductList productList, {
+    final bool rename = false,
+  }) async {
     final LazyBox<_BarcodeList> box = _getBox();
     final String key = getKey(productList);
     localDatabase.upToDateProductList
@@ -220,10 +223,13 @@ class DaoProductList extends AbstractDao {
       return false;
     }
 
-    await ProductListFirebaseManager().clearProductList(
-      productList: productList,
-      barcodes: productList.barcodes,
-    );
+    // We don't want the product list to get deleted from the Firestore upon renaming
+    if (!rename) {
+      await ProductListFirebaseManager().clearProductList(
+        productList: productList,
+        barcodes: productList.barcodes,
+      );
+    }
 
     await box.delete(key);
     return true;
@@ -432,11 +438,13 @@ class DaoProductList extends AbstractDao {
     final _BarcodeList list = await _get(initialList) ??
         _BarcodeList.now(<int, List<ScannedBarcode>>{});
     await _put(getKey(newList), list);
-    await delete(initialList);
-    // TODO(iliyan03): Should rename the product list inside firebase
-    // Note: It's too expensive to do so much read/write requests, because a new document must be created,
-    // all the subcollections related to the last one should be created at the new one, and the new one must be deleted
-    // It could be made a premium feature
+    await delete(initialList, rename: true);
+
+    await ProductListFirebaseManager().renameProductList(
+      productList: initialList,
+      newName: newName,
+    );
+
     await get(newList);
     return newList;
   }

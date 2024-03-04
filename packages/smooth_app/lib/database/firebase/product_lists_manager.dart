@@ -6,9 +6,10 @@ import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
 
-enum FirebaseFirestoreActions {
+enum _FirebaseFirestoreActions {
   add,
   delete,
+  rename,
 }
 
 // Manages firestore CRUD operations for collection "product_lists"
@@ -91,7 +92,7 @@ class ProductListFirebaseManager {
     await _manageBarcode(
       productList: productList,
       barcode: barcode,
-      action: FirebaseFirestoreActions.add,
+      action: _FirebaseFirestoreActions.add,
     );
   }
 
@@ -102,7 +103,7 @@ class ProductListFirebaseManager {
     await _manageBarcode(
       productList: productList,
       barcode: barcode,
-      action: FirebaseFirestoreActions.delete,
+      action: _FirebaseFirestoreActions.delete,
     );
   }
 
@@ -114,14 +115,8 @@ class ProductListFirebaseManager {
       return;
     }
 
-    final String productListName = _getProductListName(productList);
     final QuerySnapshot<Map<String, dynamic>> productLists =
-        await FirebaseFirestore.instance
-            .collection(_collectionName)
-            .where('userID', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-            .where('name', isEqualTo: productListName)
-            .get();
-
+        await _getProductLists(productList: productList);
     if (productLists.docs.isEmpty) {
       return;
     }
@@ -146,34 +141,42 @@ class ProductListFirebaseManager {
         .delete();
   }
 
+  Future<void> renameProductList({
+    required final ProductList productList,
+    required final String newName,
+  }) async {
+    await _manageBarcode(
+      productList: productList,
+      barcode: ScannedBarcode(''),
+      action: _FirebaseFirestoreActions.rename,
+      newName: newName,
+    );
+  }
+
   Future<void> _manageBarcode({
     required final ProductList productList,
     required final ScannedBarcode barcode,
-    required final FirebaseFirestoreActions action,
+    required final _FirebaseFirestoreActions action,
+    final String newName = '',
   }) async {
     if (FirebaseAuth.instance.currentUser == null) {
       return;
     }
 
-    final String productListName = _getProductListName(productList);
     final QuerySnapshot<Map<String, dynamic>> productLists =
-        await FirebaseFirestore.instance
-            .collection(_collectionName)
-            .where('userID', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-            .where('name', isEqualTo: productListName)
-            .get();
+        await _getProductLists(productList: productList);
 
     if (productLists.docs.isEmpty &&
-        action == FirebaseFirestoreActions.delete) {
+        action == _FirebaseFirestoreActions.delete) {
       return;
     }
 
     switch (action) {
-      case FirebaseFirestoreActions.add:
+      case _FirebaseFirestoreActions.add:
         {
           final String productListDocID = productLists.docs.isEmpty
               ? await _addProductList(
-                  productListName,
+                  _getProductListName(productList),
                   FirebaseAuth.instance.currentUser!.uid,
                 )
               : productLists.docs.first.id;
@@ -195,12 +198,8 @@ class ProductListFirebaseManager {
         }
         break;
 
-      case FirebaseFirestoreActions.delete:
+      case _FirebaseFirestoreActions.delete:
         {
-          if (productLists.docs.isEmpty) {
-            return;
-          }
-
           final FirestoreService<ScannedBarcode> service =
               FirestoreService<ScannedBarcode>(
             collectionPath: _getBarcodesSubCollectionPath(
@@ -211,7 +210,32 @@ class ProductListFirebaseManager {
           await service.deleteDocument(documentId: barcode.barcode);
         }
         break;
+
+      case _FirebaseFirestoreActions.rename:
+        {
+          if (newName.isEmpty) {
+            return;
+          }
+
+          await FirebaseFirestore.instance
+              .collection(_collectionName)
+              .doc(productLists.docs.first.id)
+              .update(<String, String>{'name': newName});
+        }
+        break;
     }
+  }
+
+  // May only be called when a user is signed in
+  Future<QuerySnapshot<Map<String, dynamic>>> _getProductLists({
+    required final ProductList productList,
+  }) async {
+    final String productListName = _getProductListName(productList);
+    return FirebaseFirestore.instance
+        .collection(_collectionName)
+        .where('userID', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where('name', isEqualTo: productListName)
+        .get();
   }
 
   Future<String> _addProductList(
@@ -223,6 +247,7 @@ class ProductListFirebaseManager {
 
     final DocumentReference<Map<String, dynamic>> documentSnapshot =
         await FirebaseFirestore.instance.collection(_collectionName).add(data);
+
     return documentSnapshot.id;
   }
 

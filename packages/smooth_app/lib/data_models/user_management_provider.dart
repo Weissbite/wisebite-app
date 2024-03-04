@@ -124,7 +124,7 @@ class UserManagementProvider with ChangeNotifier {
         await _signInWithApple();
     }
 
-    // TODO(iliyan03): On sign in ask the user if want to store all of the previously scanned products
+    // TODO(iliyan03): On sign we could ask the user if he wants to store all of the previously scanned products
 
     // Fetching the scanned products for the user
     await ProductListFirebaseManager().fetchUserProductLists();
