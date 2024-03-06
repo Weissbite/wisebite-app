@@ -46,9 +46,9 @@ class ProductListFirebaseManager {
       if (productListName == ProductListType.HISTORY.key) {
         productList = ProductList.history();
       } else if (productListName == ProductListType.SCAN_HISTORY.key) {
-        productList = ProductList.history();
-      } else if (productListName == ProductListType.SCAN_SESSION.key) {
         productList = ProductList.scanHistory();
+      } else if (productListName == ProductListType.SCAN_SESSION.key) {
+        productList = ProductList.scanSession();
       } else {
         productList = ProductList.user(productListName);
       }
