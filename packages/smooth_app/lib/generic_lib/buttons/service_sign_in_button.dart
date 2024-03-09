@@ -43,7 +43,7 @@ class ServiceSignInButton extends StatelessWidget {
       icon: SvgPicture.asset(
         iconPath,
         height: theme.buttonTheme.height - 10,
-        package: AppHelper.APP_PACKAGE, // Replace with your actual package name
+        package: AppHelper.APP_PACKAGE,
       ),
       label: Text(
         text,

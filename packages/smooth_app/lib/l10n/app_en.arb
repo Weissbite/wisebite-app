@@ -2530,5 +2530,7 @@
     "weight": "Weight (kg)",
     "please_enter_your_weight": "Please enter your weight",
     "processing": "Processing...",
-    "submit": "Submit"
+    "submit": "Submit",
+    "save_new_products_title": "Save newly scanned products?",
+    "save_new_products_lists": "Do you want to keep your newly scanned products? If you don't save them, they will be overwritten with the currently saved data for your user."
 }

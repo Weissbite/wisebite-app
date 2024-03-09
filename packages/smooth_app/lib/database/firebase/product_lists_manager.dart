@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/database/scanned_barcodes_manager.dart';
+import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
 
 enum _FirebaseFirestoreActions {
@@ -17,24 +20,31 @@ class ProductListFirebaseManager {
   final String _collectionName = 'product_lists';
   final String _barcodesSubCollectionName = 'barcodes';
 
+  bool get _noUser => FirebaseAuth.instance.currentUser == null;
+  String get _userID => FirebaseAuth.instance.currentUser!.uid;
+
   Future<void> fetchUserProductLists() async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+    if (_noUser) {
       return;
     }
 
     final QuerySnapshot<Map<String, dynamic>> productLists =
         await FirebaseFirestore.instance
             .collection(_collectionName)
-            .where('userID', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+            .where('userID', isEqualTo: _userID)
             .get();
-
-    if (productLists.docs.isEmpty) {
-      return;
-    }
 
     final LocalDatabase localDB = await LocalDatabase.getLocalDatabase(false);
     final DaoProductList daoProductList = DaoProductList(localDB);
+
+    if (productLists.docs.isEmpty) {
+      // Clearing all local data from the product lists, so there's no data inconsistency
+      for (final ProductList i in _getAllProductLists(daoProductList)) {
+        daoProductList.clear(i, false);
+      }
+
+      return;
+    }
 
     for (final QueryDocumentSnapshot<Map<String, dynamic>> productListDoc
         in productLists.docs) {
@@ -111,7 +121,7 @@ class ProductListFirebaseManager {
     required final ProductList productList,
     required final Map<int, List<ScannedBarcode>> barcodes,
   }) async {
-    if (FirebaseAuth.instance.currentUser == null) {
+    if (_noUser) {
       return;
     }
 
@@ -153,13 +163,34 @@ class ProductListFirebaseManager {
     );
   }
 
+  Future<void> saveAllProductLists() async {
+    if (_noUser) {
+      return;
+    }
+
+    final LocalDatabase localDB = await LocalDatabase.getLocalDatabase(false);
+    final DaoProductList daoProductList = DaoProductList(localDB);
+
+    final List<ProductList> productLists = _getAllProductLists(daoProductList);
+    for (final ProductList productList in productLists) {
+      await daoProductList.get(productList);
+
+      for (final List<ScannedBarcode> barcodes
+          in productList.getList().values) {
+        for (final ScannedBarcode i in barcodes) {
+          await addBarcode(productList: productList, barcode: i);
+        }
+      }
+    }
+  }
+
   Future<void> _manageBarcode({
     required final ProductList productList,
     required final ScannedBarcode barcode,
     required final _FirebaseFirestoreActions action,
     final String newName = '',
   }) async {
-    if (FirebaseAuth.instance.currentUser == null) {
+    if (_noUser) {
       return;
     }
 
@@ -177,7 +208,7 @@ class ProductListFirebaseManager {
           final String productListDocID = productLists.docs.isEmpty
               ? await _addProductList(
                   _getProductListName(productList),
-                  FirebaseAuth.instance.currentUser!.uid,
+                  _userID,
                 )
               : productLists.docs.first.id;
 
@@ -233,7 +264,7 @@ class ProductListFirebaseManager {
     final String productListName = _getProductListName(productList);
     return FirebaseFirestore.instance
         .collection(_collectionName)
-        .where('userID', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where('userID', isEqualTo: _userID)
         .where('name', isEqualTo: productListName)
         .get();
   }
@@ -260,4 +291,60 @@ class ProductListFirebaseManager {
       productList.listType == ProductListType.USER
           ? productList.parameters
           : productList.listType.key;
+
+  List<ProductList> _getAllProductLists(DaoProductList daoProductList) {
+    final List<String> userLists = daoProductList.getUserLists();
+    final List<ProductList> productLists = <ProductList>[
+      ProductList.scanSession(),
+      ProductList.scanHistory(),
+      ProductList.history(),
+    ];
+
+    for (final String userList in userLists) {
+      productLists.add(ProductList.user(userList));
+    }
+
+    return productLists;
+  }
+}
+
+Future<void> showSaveNewlyScannedProducts(BuildContext context) async {
+  final AppLocalizations appLocalizations = AppLocalizations.of(context);
+
+  return showDialog<void>(
+    context: context,
+    builder: (BuildContext context) {
+      return SmoothAlertDialog(
+        title: appLocalizations.save_new_products_title,
+        body: Column(
+          children: <Widget>[
+            Text(
+              appLocalizations.save_new_products_lists,
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+          ],
+        ),
+        positiveAction: SmoothActionButton(
+          text: appLocalizations.yes,
+          onPressed: () async {
+            await ProductListFirebaseManager().saveAllProductLists();
+            if (context.mounted) {
+              Navigator.of(context, rootNavigator: true).pop('dialog');
+            }
+          },
+        ),
+        negativeAction: SmoothActionButton(
+          onPressed: () {
+            Navigator.of(context, rootNavigator: true).pop('dialog');
+          },
+          text: appLocalizations.no,
+          minWidth: 100,
+        ),
+        actionsAxis: Axis.vertical,
+        actionsOrder: SmoothButtonsBarOrder.auto,
+      );
+    },
+  );
 }

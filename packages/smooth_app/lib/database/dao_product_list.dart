@@ -310,13 +310,16 @@ class DaoProductList extends AbstractDao {
     );
   }
 
-  Future<void> clear(final ProductList productList) async {
+  Future<void> clear(final ProductList productList,
+      [final bool clearInFirebase = true]) async {
     final _BarcodeList newList =
         _BarcodeList.now(<int, List<ScannedBarcode>>{});
-    await ProductListFirebaseManager().clearProductList(
-      productList: productList,
-      barcodes: productList.barcodes,
-    );
+    if (clearInFirebase) {
+      await ProductListFirebaseManager().clearProductList(
+        productList: productList,
+        barcodes: productList.barcodes,
+      );
+    }
     await _put(getKey(productList), newList);
   }
 

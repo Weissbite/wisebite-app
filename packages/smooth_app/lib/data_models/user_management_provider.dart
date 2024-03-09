@@ -46,18 +46,6 @@ class UserManagementProvider with ChangeNotifier {
     return true;
   }
 
-  Future<void> signInWithGoogle() async {
-    await _signIn(SignInProvider.Google);
-  }
-
-  Future<void> signInWithFacebook() async {
-    await _signIn(SignInProvider.Facebook);
-  }
-
-  Future<void> signInWithApple() async {
-    await _signIn(SignInProvider.Apple);
-  }
-
   Future<void> _signInWithGoogle() async {
     final FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -114,7 +102,11 @@ class UserManagementProvider with ChangeNotifier {
 
   Future<void> _signInWithApple() async {}
 
-  Future<void> _signIn(final SignInProvider provider) async {
+  Future<void> signIn({
+    required final SignInProvider provider,
+    required final BuildContext context,
+    required final bool askUserSavingNewProducts,
+  }) async {
     switch (provider) {
       case SignInProvider.Google:
         await _signInWithGoogle();
@@ -124,7 +116,9 @@ class UserManagementProvider with ChangeNotifier {
         await _signInWithApple();
     }
 
-    // TODO(iliyan03): On sign we could ask the user if he wants to store all of the previously scanned products
+    if (askUserSavingNewProducts && user != null && context.mounted) {
+      await showSaveNewlyScannedProducts(context);
+    }
 
     // Fetching the scanned products for the user
     await ProductListFirebaseManager().fetchUserProductLists();

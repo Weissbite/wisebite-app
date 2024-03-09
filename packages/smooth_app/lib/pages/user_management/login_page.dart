@@ -136,41 +136,42 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-
                       const SizedBox(
                         height: LARGE_SPACE * 4,
                       ),
-
                       ServiceSignInButton(
                         onPressed: () async {
                           // TODO(yavor): check if successful login
                           // final UserCredential? userCreds =
-                          await UserManagementProvider().signInWithGoogle();
+                          await UserManagementProvider().signIn(
+                            provider: SignInProvider.Google,
+                            context: context,
+                            askUserSavingNewProducts: true,
+                          );
 
-                          // if (userCreds != null) {}
-                          if (!context.mounted) {
-                            return;
+                          if (context.mounted) {
+                            Navigator.pop(context);
                           }
-
-                          Navigator.pop(context);
                         },
                         backgroundColor: Colors.white,
                         iconPath: 'assets/icons/google.svg',
                         text: appLocalizations.sign_in_with_google,
                         fontColor: Colors.black,
                       ),
-
                       const SizedBox(
                         height: LARGE_SPACE,
                       ),
-
                       ServiceSignInButton(
                         onPressed: () async {
-                          await UserManagementProvider().signInWithFacebook();
-                          if (!context.mounted) {
-                            return;
+                          await UserManagementProvider().signIn(
+                            provider: SignInProvider.Facebook,
+                            context: context,
+                            askUserSavingNewProducts: true,
+                          );
+
+                          if (context.mounted) {
+                            Navigator.pop(context);
                           }
-                          Navigator.pop(context);
                         },
                         backgroundColor:
                             const Color.fromARGB(255, 24, 119, 242),
@@ -178,16 +179,20 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                         text: appLocalizations.sign_in_with_facebook,
                         fontColor: Colors.white,
                       ),
-
                       // const SizedBox(
                       //   height: LARGE_SPACE,
                       // ),
-                      //
                       // ServiceSignInButton(
                       //   onPressed: () async {
-                      //     await UserManagementProvider()
-                      //         .signInWithApple(context);
-                      //     Navigator.pop(context);
+                      //     await UserManagementProvider().signIn(
+                      //       provider: SignInProvider.Apple,
+                      //       context: context,
+                      //       askUserSavingProductLists: true,
+                      //     );
+                      //
+                      //     if(context.mounted){
+                      //       Navigator.pop(context);
+                      //     }
                       //   },
                       //   backgroundColor: Colors.white,
                       //   iconPath: 'assets/icons/apple.svg',
