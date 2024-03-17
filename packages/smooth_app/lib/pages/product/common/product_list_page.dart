@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -80,6 +81,8 @@ class _ProductListPageState extends State<ProductListPage>
       ProductListItemPopupSideBySide();
 
   DateTime _selectedDate = DateTime.now();
+  String _selectedDateFormatted =
+      DateFormat('EEE, MMM d, yyyy').format(DateTime.now());
   List<ScannedBarcode> selectedDateProducts = <ScannedBarcode>[];
 
   void _navigateToPreviousDay() {
@@ -107,7 +110,7 @@ class _ProductListPageState extends State<ProductListPage>
     } else if (_selectedDate.isSameDate(tomorrow)) {
       return 'Tomorrow';
     } else {
-      return '${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}';
+      return _selectedDateFormatted;
     }
   }
 
@@ -305,11 +308,70 @@ class _ProductListPageState extends State<ProductListPage>
               icon: const Icon(Icons.arrow_left),
               onPressed: _navigateToPreviousDay,
             ),
-            title: Text(
-              _getSelectedDayText(),
-              style:
-                  const TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-            ),
+            title: ElevatedButton(
+                child: Text(
+                  _getSelectedDayText(),
+                  style: const TextStyle(fontSize: 18.0),
+                ),
+                onPressed: () async {
+                  final DateTime now = DateTime.now();
+                  final ThemeData themeData = Theme.of(context);
+
+                  await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      // TODO(yavor): First date must be User registration date.
+                      firstDate: DateTime(now.year - 1, now.month, now.day),
+                      lastDate: DateTime(now.year, now.month, now.day),
+                      builder: (BuildContext context, Widget? child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: ColorScheme.light(
+                              primary: themeData.colorScheme
+                                  .surface, // header background color
+                              onPrimary: themeData
+                                  .colorScheme.onSurface, // header text color
+                              onSurface: themeData
+                                  .primaryColor, // calendar dates color
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      }).then((DateTime? selectedDate) {
+                    if (selectedDate != null) {
+                      setState(() {
+                        _selectedDate = selectedDate;
+                        _selectedDateFormatted =
+                            DateFormat.yMMMd().format(selectedDate);
+                      });
+                    }
+                  });
+                }),
+
+            // OutlinedButton(
+            //     onPressed: () {
+            //       DatePicker(
+            //         restorationId: actionName,
+            //       );
+            //     },
+            //     child: Text(
+            //       _getSelectedDayText(),
+            //       style: const TextStyle(
+            //           fontSize: 24.0, fontWeight: FontWeight.bold),
+            //     ),
+            //   ),
+            // DatePicker(
+            //     restorationId: actionName,
+            //     title: _getSelectedDayText(),
+            //     titleStyle:
+            //         const TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+            //   ),
+
+            // Text(
+            //     _getSelectedDayText(),
+            //     style:
+            //         const TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+            //   ),
             centerTitle: true,
             // Buttons at the end of the AppBar
             actions: <Widget>[
