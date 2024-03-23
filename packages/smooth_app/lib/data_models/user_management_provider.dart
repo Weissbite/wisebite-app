@@ -116,12 +116,9 @@ class UserManagementProvider with ChangeNotifier {
         await _signInWithApple();
     }
 
-    if (askUserSavingNewProducts && user != null && context.mounted) {
-      await showSaveNewlyScannedProducts(context);
-    }
-
-    // Fetching the scanned products for the user
-    await ProductListFirebaseManager().fetchUserProductLists();
+    ProductListFirebaseManager().saveAllProductLists().then((_) {
+      ProductListFirebaseManager().fetchUserProductLists();
+    });
   }
 
   // SIGN OUT
