@@ -9,6 +9,7 @@ import 'package:smooth_app/data_models/login_result.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 // import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/data_models/user_management_provider.dart';
+import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/buttons/service_sign_in_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
@@ -144,10 +145,10 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                           // TODO(yavor): check if successful login
                           // final UserCredential? userCreds =
                           await UserManagementProvider().signIn(
-                            provider: SignInProvider.Google,
-                            context: context,
-                            askUserSavingNewProducts: true,
-                          );
+                              provider: SignInProvider.Google,
+                              context: context,
+                              askUserSavingNewProducts: true,
+                              localDb: context.read<LocalDatabase>());
 
                           if (context.mounted) {
                             Navigator.pop(context);
@@ -164,10 +165,10 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                       ServiceSignInButton(
                         onPressed: () async {
                           await UserManagementProvider().signIn(
-                            provider: SignInProvider.Facebook,
-                            context: context,
-                            askUserSavingNewProducts: true,
-                          );
+                              provider: SignInProvider.Facebook,
+                              context: context,
+                              askUserSavingNewProducts: true,
+                              localDb: context.read<LocalDatabase>());
 
                           if (context.mounted) {
                             Navigator.pop(context);

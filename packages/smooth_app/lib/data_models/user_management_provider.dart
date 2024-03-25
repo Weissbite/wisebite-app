@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:smooth_app/data_models/user_data.dart';
 import 'package:smooth_app/database/firebase/product_lists_manager.dart';
+import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/pages/navigator/app_navigator.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
@@ -106,6 +107,7 @@ class UserManagementProvider with ChangeNotifier {
     required final SignInProvider provider,
     required final BuildContext context,
     required final bool askUserSavingNewProducts,
+    required final LocalDatabase localDb,
   }) async {
     switch (provider) {
       case SignInProvider.Google:
@@ -117,7 +119,7 @@ class UserManagementProvider with ChangeNotifier {
     }
 
     ProductListFirebaseManager().saveAllProductLists().then((_) {
-      ProductListFirebaseManager().fetchUserProductLists();
+      ProductListFirebaseManager().fetchUserProductLists(localDB: localDb);
     });
   }
 

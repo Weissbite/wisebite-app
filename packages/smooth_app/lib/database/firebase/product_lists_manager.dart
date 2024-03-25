@@ -23,7 +23,9 @@ class ProductListFirebaseManager {
   bool get _noUser => FirebaseAuth.instance.currentUser == null;
   String get _userID => FirebaseAuth.instance.currentUser!.uid;
 
-  Future<void> fetchUserProductLists() async {
+  Future<void> fetchUserProductLists({
+    required final LocalDatabase localDB,
+  }) async {
     if (_noUser) {
       return;
     }
@@ -34,7 +36,6 @@ class ProductListFirebaseManager {
             .where('userID', isEqualTo: _userID)
             .get();
 
-    final LocalDatabase localDB = await LocalDatabase.getLocalDatabase(false);
     final DaoProductList daoProductList = DaoProductList(localDB);
 
     if (productLists.docs.isEmpty) {
@@ -66,6 +67,8 @@ class ProductListFirebaseManager {
       productList.set(barcodes);
       daoProductList.put(productList);
     }
+
+    localDB.notifyListeners();
   }
 
   Future<Map<int, List<ScannedBarcode>>> _fetchProductListBarcodes(
