@@ -195,7 +195,6 @@ class _ProductListPageState extends State<ProductListPage>
 
     setState(() {
       _selectedDate = DateTime.parse(formattedDate);
-      _hideLeftArrow = _daysWithProducts.length == (index + 1);
     });
   }
 
@@ -208,40 +207,34 @@ class _ProductListPageState extends State<ProductListPage>
     refreshUpToDate();
     _fetchDaysWithProducts();
 
-    bool noProducts = false;
-    if (_isDateToday(_selectedDate)) {
-      final int selectedDateKey =
-          parseDateTimeAsScannedBarcodeKey(_selectedDate);
-      final List<ScannedBarcode>? todayProducts =
-          productList.getList()[selectedDateKey];
+    final bool loadingFromFirebase = localDatabase.loadingFromFirebase;
 
-      if (todayProducts == null || todayProducts.isEmpty) {
-        noProducts = true;
-      }
-    }
+    // Determine if the selected date is the earliest date with scanned products
+    final int indexOfSelectedDay = _daysWithProducts
+        .indexOf(parseDateTimeAsScannedBarcodeKey(_selectedDate));
+    _hideLeftArrow = _daysWithProducts.length == (indexOfSelectedDay + 1);
 
     return SmoothScaffold(
-      floatingActionButton: noProducts
+      floatingActionButton: _isDateToday(_selectedDate)
           ? FloatingActionButton.extended(
               icon: const Icon(CupertinoIcons.barcode),
               label: Text(appLocalizations.product_list_empty_title),
               onPressed: () =>
                   ExternalCarouselManager.read(context).showSearchCard(),
             )
-          : _selectionMode
-              ? null
-              : FloatingActionButton.extended(
-                  onPressed: () => setState(() => _selectionMode = true),
-                  label: const Text('Multi-select'),
-                  icon: const Icon(Icons.checklist),
-                ),
+          : null,
       appBar: SmoothAppBar(
-        leading: _hideLeftArrow || _daysWithProducts.length == 1
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.arrow_left),
-                onPressed: _navigateToPreviousDay,
-              ),
+        leading: loadingFromFirebase
+            ? const Padding(
+                padding: EdgeInsets.all(MEDIUM_SPACE),
+                child: CircularProgressIndicator.adaptive(),
+              )
+            : _hideLeftArrow || _daysWithProducts.length == 1
+                ? null
+                : IconButton(
+                    icon: const Icon(Icons.arrow_left),
+                    onPressed: _navigateToPreviousDay,
+                  ),
         title: ElevatedButton(
             child: Text(
               _getSelectedDayText(),

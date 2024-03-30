@@ -1,12 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/database/scanned_barcodes_manager.dart';
-import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/services/firebase_firestore_service.dart';
 
 enum _FirebaseFirestoreActions {
@@ -68,6 +65,7 @@ class ProductListFirebaseManager {
       daoProductList.put(productList);
     }
 
+    localDB.loadingFromFirebase = false;
     localDB.notifyListeners();
   }
 
@@ -309,45 +307,4 @@ class ProductListFirebaseManager {
 
     return productLists;
   }
-}
-
-Future<void> showSaveNewlyScannedProducts(BuildContext context) async {
-  final AppLocalizations appLocalizations = AppLocalizations.of(context);
-
-  return showDialog<void>(
-    context: context,
-    builder: (BuildContext context) {
-      return SmoothAlertDialog(
-        title: appLocalizations.save_new_products_title,
-        body: Column(
-          children: <Widget>[
-            Text(
-              appLocalizations.save_new_products_lists,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-          ],
-        ),
-        positiveAction: SmoothActionButton(
-          text: appLocalizations.yes,
-          onPressed: () async {
-            await ProductListFirebaseManager().saveAllProductLists();
-            if (context.mounted) {
-              Navigator.of(context, rootNavigator: true).pop('dialog');
-            }
-          },
-        ),
-        negativeAction: SmoothActionButton(
-          onPressed: () {
-            Navigator.of(context, rootNavigator: true).pop('dialog');
-          },
-          text: appLocalizations.no,
-          minWidth: 100,
-        ),
-        actionsAxis: Axis.vertical,
-        actionsOrder: SmoothButtonsBarOrder.auto,
-      );
-    },
-  );
 }

@@ -27,6 +27,8 @@ class LocalDatabase extends ChangeNotifier {
     _upToDateProductListProvider = UpToDateProductListProvider(this);
   }
 
+  bool loadingFromFirebase = false;
+
   final Database _database;
   late final UpToDateProductProvider _upToDateProductProvider;
   late final UpToDateProductListProvider _upToDateProductListProvider;
