@@ -27,6 +27,9 @@ class ProductListFirebaseManager {
       return;
     }
 
+    localDB.loadingFromFirebase = true;
+    localDB.notifyListeners();
+
     final QuerySnapshot<Map<String, dynamic>> productLists =
         await FirebaseFirestore.instance
             .collection(_collectionName)
@@ -164,12 +167,16 @@ class ProductListFirebaseManager {
     );
   }
 
-  Future<void> saveAllProductLists() async {
+  Future<void> saveAllProductLists({
+    required final LocalDatabase localDB,
+  }) async {
     if (_noUser) {
       return;
     }
 
-    final LocalDatabase localDB = await LocalDatabase.getLocalDatabase(false);
+    localDB.loadingFromFirebase = true;
+    localDB.notifyListeners();
+
     final DaoProductList daoProductList = DaoProductList(localDB);
 
     final List<ProductList> productLists = _getAllProductLists(daoProductList);
@@ -183,6 +190,9 @@ class ProductListFirebaseManager {
         }
       }
     }
+
+    localDB.loadingFromFirebase = false;
+    localDB.notifyListeners();
   }
 
   Future<void> _manageBarcode({

@@ -229,7 +229,7 @@ class _ProductListPageState extends State<ProductListPage>
                 padding: EdgeInsets.all(MEDIUM_SPACE),
                 child: CircularProgressIndicator.adaptive(),
               )
-            : _hideLeftArrow || _daysWithProducts.length == 1
+            : _hideLeftArrow || _daysWithProducts.length <= 1
                 ? null
                 : IconButton(
                     icon: const Icon(Icons.arrow_left),

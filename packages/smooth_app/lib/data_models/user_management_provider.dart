@@ -118,12 +118,9 @@ class UserManagementProvider with ChangeNotifier {
         await _signInWithApple();
     }
 
-    localDb.loadingFromFirebase = true;
-    localDb.notifyListeners();
-
     final ProductListFirebaseManager firebaseManager =
         ProductListFirebaseManager();
-    firebaseManager.saveAllProductLists().then((_) {
+    firebaseManager.saveAllProductLists(localDB: localDb).then((_) {
       firebaseManager.fetchUserProductLists(localDB: localDb);
     });
   }
