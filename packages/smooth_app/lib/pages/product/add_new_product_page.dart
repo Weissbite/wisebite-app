@@ -281,7 +281,7 @@ class _AddNewProductPageState extends State<AddNewProductPage>
     if (_isPopulated) {
       upToDateProduct.productName = upToDateProduct.productName?.trim();
       upToDateProduct.brands = upToDateProduct.brands?.trim();
-      await _daoProductList.push(_history, barcode);
+      await _daoProductList.push(_history, ScannedBarcode(barcode));
       _alreadyPushedToHistory = true;
     }
   }

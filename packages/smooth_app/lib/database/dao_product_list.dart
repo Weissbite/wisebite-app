@@ -1,15 +1,71 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
+import 'package:smooth_app/data_models/firestore_model.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/database/abstract_dao.dart';
 import 'package:smooth_app/database/dao_product.dart';
+import 'package:smooth_app/database/firebase/product_lists_manager.dart';
 import 'package:smooth_app/database/local_database.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 
 /// "Total size" fake value for lists that are not partial/paged.
 const int _uselessTotalSizeValue = 0;
+
+/// Transport class for a scanned barcode.
+class ScannedBarcode extends FirestoreModel<ScannedBarcode> {
+  ScannedBarcode(this._barcode, [this._lastScanTime = 0]) {
+    if (_lastScanTime <= 0) {
+      _lastScanTime = DateTime.now().millisecondsSinceEpoch;
+    }
+  }
+
+  @override
+  ScannedBarcode fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> data,
+    SnapshotOptions? options,
+  ) {
+    final Map<String, dynamic>? barcode = data.data();
+    return ScannedBarcode(
+      barcode!['barcode'],
+      barcode['last_scan_time'],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toFirestore() {
+    return <String, dynamic>{
+      'barcode': _barcode,
+      'last_scan_time': _lastScanTime,
+    };
+  }
+
+  String get barcode => _barcode;
+  int get lastScanTime => _lastScanTime;
+
+  late int _lastScanTime;
+  final String _barcode;
+}
+
+// Can be generated automatically
+class ScannedBarcodeAdapter extends TypeAdapter<ScannedBarcode> {
+  @override
+  final int typeId = 3;
+
+  @override
+  ScannedBarcode read(BinaryReader reader) {
+    return ScannedBarcode(reader.readString(), reader.readInt());
+  }
+
+  @override
+  void write(BinaryWriter writer, ScannedBarcode obj) {
+    writer.writeString(obj.barcode);
+    writer.writeInt(obj.lastScanTime);
+  }
+}
 
 /// An immutable barcode list; e.g. my search yesterday about "Nutella"
 class _BarcodeList {
@@ -19,7 +75,7 @@ class _BarcodeList {
     this.totalSize,
   );
 
-  _BarcodeList.now(final List<String> barcodes)
+  _BarcodeList.now(final Map<int, List<ScannedBarcode>> barcodes)
       : this(
           LocalDatabase.nowInMillis(),
           barcodes,
@@ -38,7 +94,7 @@ class _BarcodeList {
   /// In milliseconds since epoch.
   /// Can be used to decide if the data is recent enough or deprecated.
   final int timestamp;
-  final List<String> barcodes;
+  final Map<int, List<ScannedBarcode>> barcodes;
 
   /// Total size of server query results (or 0).
   final int totalSize;
@@ -52,7 +108,14 @@ class _BarcodeListAdapter extends TypeAdapter<_BarcodeList> {
   @override
   _BarcodeList read(BinaryReader reader) {
     final int timestamp = reader.readInt();
-    final List<String> barcodes = reader.readStringList();
+    final Map<dynamic, dynamic> barcodeMap = reader.readMap();
+
+    final Map<int, List<ScannedBarcode>> barcodes =
+        <int, List<ScannedBarcode>>{};
+    for (final int i in barcodeMap.keys) {
+      barcodes[i] = List<ScannedBarcode>.from(barcodeMap[i]);
+    }
+
     late int totalSize;
     try {
       totalSize = reader.readInt();
@@ -65,7 +128,7 @@ class _BarcodeListAdapter extends TypeAdapter<_BarcodeList> {
   @override
   void write(BinaryWriter writer, _BarcodeList obj) {
     writer.writeInt(obj.timestamp);
-    writer.writeStringList(obj.barcodes);
+    writer.writeMap(obj.barcodes);
     writer.writeInt(obj.totalSize);
   }
 }
@@ -80,7 +143,10 @@ class DaoProductList extends AbstractDao {
   Future<void> init() async => Hive.openLazyBox<_BarcodeList>(_hiveBoxName);
 
   @override
-  void registerAdapter() => Hive.registerAdapter(_BarcodeListAdapter());
+  void registerAdapter() {
+    Hive.registerAdapter(_BarcodeListAdapter());
+    Hive.registerAdapter(ScannedBarcodeAdapter());
+  }
 
   LazyBox<_BarcodeList> _getBox() => Hive.lazyBox<_BarcodeList>(_hiveBoxName);
 
@@ -145,13 +211,26 @@ class DaoProductList extends AbstractDao {
   Future<void> put(final ProductList productList) async =>
       _put(getKey(productList), _BarcodeList.fromProductList(productList));
 
-  Future<bool> delete(final ProductList productList) async {
+  Future<bool> delete(
+    final ProductList productList, {
+    final bool rename = false,
+  }) async {
     final LazyBox<_BarcodeList> box = _getBox();
     final String key = getKey(productList);
-    localDatabase.upToDateProductList.setLocalUpToDate(key, <String>[]);
+    localDatabase.upToDateProductList
+        .setLocalUpToDate(key, <int, List<ScannedBarcode>>{});
     if (!box.containsKey(key)) {
       return false;
     }
+
+    // We don't want the product list to get deleted from the Firestore upon renaming
+    if (!rename) {
+      await ProductListFirebaseManager().clearProductList(
+        productList: productList,
+        barcodes: productList.barcodes,
+      );
+    }
+
     await box.delete(key);
     return true;
   }
@@ -159,7 +238,8 @@ class DaoProductList extends AbstractDao {
   /// Loads the barcode list.
   Future<void> get(final ProductList productList) async {
     final _BarcodeList? list = await _get(productList);
-    final List<String> barcodes = <String>[];
+    final Map<int, List<ScannedBarcode>> barcodes =
+        <int, List<ScannedBarcode>>{};
     productList.totalSize = list?.totalSize ?? 0;
     if (list == null || list.barcodes.isEmpty) {
       productList.set(barcodes);
@@ -188,23 +268,58 @@ class DaoProductList extends AbstractDao {
   /// * If the barcode wasn't there, it's added to the end of the list.
   Future<void> push(
     final ProductList productList,
-    final String barcode,
+    final ScannedBarcode barcode,
   ) async {
+    final Map<int, List<ScannedBarcode>> barcodes;
+
     final _BarcodeList? list = await _get(productList);
-    final List<String> barcodes;
     if (list == null) {
-      barcodes = <String>[];
+      barcodes = <int, List<ScannedBarcode>>{};
     } else {
       barcodes = _getSafeBarcodeListCopy(list.barcodes);
     }
-    barcodes.remove(barcode); // removes a potential duplicate
-    barcodes.add(barcode);
-    final _BarcodeList newList = _BarcodeList.now(barcodes);
-    await _put(getKey(productList), newList);
+
+    if (barcodes.isNotEmpty) {
+      barcodeExists(
+        barcodes,
+        barcode.barcode,
+        (
+          ScannedBarcode foundBarcode,
+          List<ScannedBarcode> foundBarcodeList,
+          int foundInDay,
+        ) async {
+          foundBarcodeList.remove(foundBarcode);
+          await ProductListFirebaseManager().deleteBarcode(
+            productList: productList,
+            barcode: barcode,
+          );
+        },
+      );
+    }
+
+    final int today = getTodayDateAsScannedBarcodeKey();
+    if (barcodes[today] == null) {
+      barcodes[today] = <ScannedBarcode>[];
+    }
+
+    barcodes[today]!.add(barcode);
+    await _put(getKey(productList), _BarcodeList.now(barcodes));
+    await ProductListFirebaseManager().addBarcode(
+      productList: productList,
+      barcode: barcode,
+    );
   }
 
-  Future<void> clear(final ProductList productList) async {
-    final _BarcodeList newList = _BarcodeList.now(<String>[]);
+  Future<void> clear(final ProductList productList,
+      [final bool clearInFirebase = true]) async {
+    final _BarcodeList newList =
+        _BarcodeList.now(<int, List<ScannedBarcode>>{});
+    if (clearInFirebase) {
+      await ProductListFirebaseManager().clearProductList(
+        productList: productList,
+        barcodes: productList.barcodes,
+      );
+    }
     await _put(getKey(productList), newList);
   }
 
@@ -217,23 +332,53 @@ class DaoProductList extends AbstractDao {
     final bool include,
   ) async {
     final _BarcodeList? list = await _get(productList);
-    final List<String> barcodes;
+    final Map<int, List<ScannedBarcode>> barcodes;
     if (list == null) {
-      barcodes = <String>[];
+      barcodes = <int, List<ScannedBarcode>>{};
     } else {
       barcodes = _getSafeBarcodeListCopy(list.barcodes);
     }
-    if (barcodes.contains(barcode)) {
+
+    final bool found = barcodeExists(barcodes, barcode, (
+      ScannedBarcode foundBarcode,
+      List<ScannedBarcode> foundBarcodeList,
+      int foundInDay,
+    ) async {
+      if (!include) {
+        foundBarcodeList.remove(foundBarcode);
+        await ProductListFirebaseManager().deleteBarcode(
+          productList: productList,
+          barcode: foundBarcode,
+        );
+      }
+    });
+
+    if (found) {
       if (include) {
         return false;
       }
-      barcodes.remove(barcode);
+
+      // There's no need to do anything here because we've already removed the barcode when we searched for it.
     } else {
       if (!include) {
         return false;
       }
-      barcodes.add(barcode);
+
+      final ScannedBarcode newBarcode = ScannedBarcode(barcode);
+      List<ScannedBarcode>? todayScannedBarcodes =
+          barcodes[getTodayDateAsScannedBarcodeKey()];
+      if (todayScannedBarcodes != null) {
+        todayScannedBarcodes.add(newBarcode);
+      } else {
+        todayScannedBarcodes = <ScannedBarcode>[newBarcode];
+      }
+
+      await ProductListFirebaseManager().addBarcode(
+        productList: productList,
+        barcode: newBarcode,
+      );
     }
+
     final _BarcodeList newList = _BarcodeList.now(barcodes);
     await _put(getKey(productList), newList);
     return true;
@@ -246,23 +391,41 @@ class DaoProductList extends AbstractDao {
     final bool include = true,
   }) async {
     final _BarcodeList? list = await _get(productList);
-    final List<String> allBarcodes;
+    final Map<int, List<ScannedBarcode>> allBarcodes;
 
     if (list == null) {
-      allBarcodes = <String>[];
+      allBarcodes = <int, List<ScannedBarcode>>{};
     } else {
       allBarcodes = _getSafeBarcodeListCopy(list.barcodes);
     }
 
     for (final String barcode in barcodes) {
       if (include) {
-        if (!allBarcodes.contains(barcode)) {
-          allBarcodes.add(barcode);
+        final ScannedBarcode newBarcode = ScannedBarcode(barcode);
+        if (allBarcodes[getTodayDateAsScannedBarcodeKey()] == null) {
+          allBarcodes[getTodayDateAsScannedBarcodeKey()] = <ScannedBarcode>[
+            newBarcode
+          ];
+        } else {
+          allBarcodes[getTodayDateAsScannedBarcodeKey()]!.add(newBarcode);
         }
+
+        await ProductListFirebaseManager().addBarcode(
+          productList: productList,
+          barcode: newBarcode,
+        );
       } else {
-        if (allBarcodes.contains(barcode)) {
-          allBarcodes.remove(barcode);
-        }
+        barcodeExists(allBarcodes, barcode, (
+          final ScannedBarcode foundBarcode,
+          final List<ScannedBarcode> foundBarcodeList,
+          int foundInDay,
+        ) async {
+          foundBarcodeList.remove(foundBarcode);
+          await ProductListFirebaseManager().deleteBarcode(
+            productList: productList,
+            barcode: foundBarcode,
+          );
+        });
       }
     }
 
@@ -275,10 +438,16 @@ class DaoProductList extends AbstractDao {
     final String newName,
   ) async {
     final ProductList newList = ProductList.user(newName);
-    final _BarcodeList list =
-        await _get(initialList) ?? _BarcodeList.now(<String>[]);
+    final _BarcodeList list = await _get(initialList) ??
+        _BarcodeList.now(<int, List<ScannedBarcode>>{});
     await _put(getKey(newList), list);
-    await delete(initialList);
+    await delete(initialList, rename: true);
+
+    await ProductListFirebaseManager().renameProductList(
+      productList: initialList,
+      newName: newName,
+    );
+
     await get(newList);
     return newList;
   }
@@ -291,7 +460,8 @@ class DaoProductList extends AbstractDao {
       return result;
     }
     final DaoProduct daoProduct = DaoProduct(localDatabase);
-    for (final String barcode in list.barcodes) {
+    final List<String> allProductBarcodes = getAllBarcodes(list.barcodes);
+    for (final String barcode in allProductBarcodes) {
       late bool? present;
       try {
         final Product? product = await daoProduct.get(barcode);
@@ -326,17 +496,23 @@ class DaoProductList extends AbstractDao {
     for (final dynamic key in _getBox().keys) {
       final String tmp = key.toString();
       final ProductListType productListType = getProductListType(tmp);
+
       if (productListType != ProductListType.USER) {
         continue;
       }
+
       final _BarcodeList? barcodeList = await _getBox().get(key);
       if (barcodeList == null) {
         continue;
       }
+
+      final List<String> allListScannedBarcodes =
+          getAllBarcodes(barcodeList.barcodes);
       for (final String barcode in withBarcodes) {
-        if (!barcodeList.barcodes.contains(barcode)) {
+        if (!allListScannedBarcodes.contains(barcode)) {
           break;
         }
+
         if (withBarcodes.last == barcode) {
           result.add(getProductListParameters(tmp));
           break;
@@ -365,6 +541,7 @@ class DaoProductList extends AbstractDao {
   /// List<String> barcodes = _getSafeBarcodeListCopy(_barcodeList.barcodes);
   /// barcodes.add('1234'); // no risk at all
   /// ```
-  static List<String> _getSafeBarcodeListCopy(final List<String> barcodes) =>
-      List<String>.from(barcodes);
+  static Map<int, List<ScannedBarcode>> _getSafeBarcodeListCopy(
+          final Map<int, List<ScannedBarcode>> barcodes) =>
+      Map<int, List<ScannedBarcode>>.from(barcodes);
 }

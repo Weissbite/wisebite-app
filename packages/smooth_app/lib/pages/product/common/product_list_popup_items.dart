@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/local_database.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/helpers/analytics_helper.dart';
 import 'package:smooth_app/helpers/temp_product_list_share_helper.dart';
@@ -141,7 +142,8 @@ class ProductListPopupShare extends ProductListPopupItem {
     required final BuildContext context,
   }) async {
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
-    final List<String> products = productList.getList();
+
+    final List<String> products = getAllBarcodes(productList.getList());
     final String url = shareProductList(products).toString();
 
     final RenderBox? box = context.findRenderObject() as RenderBox?;
@@ -173,7 +175,7 @@ class ProductListPopupOpenInWeb extends ProductListPopupItem {
     required final LocalDatabase localDatabase,
     required final BuildContext context,
   }) async {
-    final List<String> products = productList.getList();
+    final List<String> products = getAllBarcodes(productList.getList());
     AnalyticsHelper.trackEvent(AnalyticsEvent.openListWeb);
     await launchUrl(shareProductList(products));
     return null;

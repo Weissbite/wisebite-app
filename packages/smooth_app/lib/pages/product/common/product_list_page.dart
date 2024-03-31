@@ -1,38 +1,40 @@
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
-import 'package:smooth_app/data_models/continuous_scan_model.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/data_models/up_to_date_product_list_mixin.dart';
+import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/database/dao_product.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/local_database.dart';
-import 'package:smooth_app/generic_lib/bottom_sheets/smooth_bottom_sheet.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/duration_constants.dart';
 import 'package:smooth_app/generic_lib/loading_dialog.dart';
-import 'package:smooth_app/generic_lib/widgets/smooth_responsive.dart';
 import 'package:smooth_app/helpers/app_helper.dart';
 import 'package:smooth_app/helpers/robotoff_insight_helper.dart';
-import 'package:smooth_app/pages/all_product_list_modal.dart';
 import 'package:smooth_app/pages/carousel_manager.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_dev_mode.dart';
 import 'package:smooth_app/pages/product/common/product_list_item_popup_items.dart';
 import 'package:smooth_app/pages/product/common/product_list_item_simple.dart';
-import 'package:smooth_app/pages/product/common/product_list_popup_items.dart';
-import 'package:smooth_app/pages/product/common/product_query_page_helper.dart';
 import 'package:smooth_app/pages/product/common/product_refresher.dart';
-import 'package:smooth_app/pages/product_list_user_dialog_helper.dart';
 import 'package:smooth_app/query/product_query.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
 import 'package:smooth_app/widgets/will_pop_scope.dart';
+
+extension _DateOnlyCompare on DateTime {
+  bool isSameDate(DateTime other) {
+    return day == other.day && month == other.month && year == other.year;
+  }
+}
 
 /// Displays the products of a product list, with access to other lists.
 class ProductListPage extends StatefulWidget {
@@ -60,18 +62,53 @@ class _ProductListPageState extends State<ProductListPage>
   void initState() {
     super.initState();
     initUpToDate(widget.productList, context.read<LocalDatabase>());
+    _fetchDaysWithProducts();
   }
 
-  final ProductListPopupItem _rename = ProductListPopupRename();
-  final ProductListPopupItem _clear = ProductListPopupClear();
-  final ProductListPopupItem _openInWeb = ProductListPopupOpenInWeb();
-  final ProductListPopupItem _share = ProductListPopupShare();
   final ProductListItemPopupItem _deleteItems = ProductListItemPopupDelete();
   final ProductListItemPopupItem _rankItems = ProductListItemPopupRank();
   final ProductListItemPopupItem _sideBySideItems =
       ProductListItemPopupSideBySide();
 
-  //returns bool to handle WillPopScope
+  final CarouselController _controller = CarouselController();
+  bool _hideLeftArrow = false;
+
+  DateTime _selectedDate = DateTime.now();
+
+  /// List of days with products for the current product list
+  List<int> _daysWithProducts = <int>[];
+
+  /// Handles the right left tap
+  void _navigateToPreviousDay() {
+    _controller.nextPage();
+  }
+
+  /// Handles the right arrow tap
+  void _navigateToNextDay() {
+    _controller.previousPage();
+  }
+
+  /// Returns true if the given date is today, otherwise returns false
+  bool _isDateToday(final DateTime date) => date.isSameDate(DateTime.now());
+
+  /// Formats the currently selected date to text
+  String _getSelectedDayText() {
+    final DateTime now = DateTime.now();
+    final DateTime yesterday = DateTime(now.year, now.month, now.day - 1);
+    final DateTime tomorrow = DateTime(now.year, now.month, now.day + 1);
+
+    if (_isDateToday(_selectedDate)) {
+      return 'Today';
+    } else if (_selectedDate.isSameDate(yesterday)) {
+      return 'Yesterday';
+    } else if (_selectedDate.isSameDate(tomorrow)) {
+      return 'Tomorrow';
+    } else {
+      return DateFormat('EEE, MMM d, yyyy').format(_selectedDate);
+    }
+  }
+
+  /// returns bool to handle WillPopScope
   Future<bool> _handleUserBacktap() async {
     if (_selectionMode) {
       setState(
@@ -86,129 +123,133 @@ class _ProductListPageState extends State<ProductListPage>
     }
   }
 
+  /// Shows a calendar and handles the date selection
+  /// If a user's logged in the first allowed date is the day of the user creation
+  Future<void> _selectDate() async {
+    final DateTime now = DateTime.now();
+    final ThemeData themeData = Theme.of(context);
+    final bool userIsLoggedIn = UserManagementProvider.user != null;
+
+    final DateTime? selectedDate = await showDatePicker(
+        context: context,
+        initialDate: _selectedDate,
+        firstDate: userIsLoggedIn
+            ? UserManagementProvider.user!.metadata.creationTime!
+            : DateTime(now.year - 1, now.month, now.day),
+        lastDate: now,
+        selectableDayPredicate: (final DateTime date) =>
+            _daysWithProducts.contains(parseDateTimeAsScannedBarcodeKey(date)),
+        builder: (BuildContext context, Widget? child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: ColorScheme.light(
+                primary:
+                    themeData.colorScheme.surface, // header background color
+                onPrimary: themeData.colorScheme.onSurface, // header text color
+                onSurface: themeData.primaryColor, // calendar dates color
+              ),
+            ),
+            child: child!,
+          );
+        });
+
+    if (selectedDate != null) {
+      setState(() {
+        _selectedDate = selectedDate;
+      });
+
+      final int indexOfSelectedDay = _daysWithProducts
+          .indexOf(parseDateTimeAsScannedBarcodeKey(_selectedDate));
+      _controller.animateToPage(indexOfSelectedDay);
+    }
+  }
+
+  /// Fetches and sorts the days with products for the product list
+  void _fetchDaysWithProducts() {
+    _daysWithProducts.clear();
+
+    final Map<int, List<ScannedBarcode>> barcodes = productList.getList();
+    for (final MapEntry<int, List<ScannedBarcode>> i in barcodes.entries) {
+      if (i.value.isNotEmpty) {
+        _daysWithProducts.add(i.key);
+      }
+    }
+
+    _daysWithProducts.sort();
+    _daysWithProducts = _daysWithProducts.reversed.toList();
+
+    /// Today's date should be always in the list, even if there are no scanned products for it
+    final int todayAsKey = getTodayDateAsScannedBarcodeKey();
+    if (!_daysWithProducts.contains(todayAsKey)) {
+      _daysWithProducts.insert(0, todayAsKey);
+    }
+  }
+
+  void _onDateChange(final int index) {
+    final int newDate = _daysWithProducts[index];
+
+    // Create a DateTime object from the key
+    final String keyString = newDate.toString()..padLeft(6, '0');
+    final String formattedDate =
+        '20${keyString.substring(0, 2)}-${keyString.substring(2, 4)}-${keyString.substring(4, 6)}';
+
+    setState(() {
+      _selectedDate = DateTime.parse(formattedDate);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final LocalDatabase localDatabase = context.watch<LocalDatabase>();
-    final DaoProductList daoProductList = DaoProductList(localDatabase);
     final ThemeData themeData = Theme.of(context);
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
     final UserPreferences userPreferences = context.watch<UserPreferences>();
     refreshUpToDate();
+    _fetchDaysWithProducts();
 
-    /// If we were on a user list, but it has been deleted, we switch to history
-    if (!daoProductList.exist(productList) &&
-        productList.listType == ProductListType.USER) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => setState(
-            () => productList = ProductList.history(),
-          ));
+    final bool loadingFromFirebase = localDatabase.loadingFromFirebase;
 
-      return EMPTY_WIDGET;
-    }
-
-    final List<String> products = productList.getList();
-    final bool dismissible;
-
-    switch (productList.listType) {
-      case ProductListType.SCAN_SESSION:
-      case ProductListType.SCAN_HISTORY:
-      case ProductListType.HISTORY:
-      case ProductListType.USER:
-        dismissible = productList.barcodes.isNotEmpty;
-        break;
-      case ProductListType.HTTP_SEARCH_CATEGORY:
-      case ProductListType.HTTP_SEARCH_KEYWORDS:
-      case ProductListType.HTTP_USER_CONTRIBUTOR:
-      case ProductListType.HTTP_USER_INFORMER:
-      case ProductListType.HTTP_USER_PHOTOGRAPHER:
-      case ProductListType.HTTP_USER_TO_BE_COMPLETED:
-      case ProductListType.HTTP_ALL_TO_BE_COMPLETED:
-        dismissible = false;
-    }
-    final bool enableClear = products.isNotEmpty;
-    final bool enableRename = productList.listType == ProductListType.USER;
+    // Determine if the selected date is the earliest date with scanned products
+    final int indexOfSelectedDay = _daysWithProducts
+        .indexOf(parseDateTimeAsScannedBarcodeKey(_selectedDate));
+    _hideLeftArrow = _daysWithProducts.length == (indexOfSelectedDay + 1);
 
     return SmoothScaffold(
-      floatingActionButton: products.isEmpty
+      floatingActionButton: _isDateToday(_selectedDate)
           ? FloatingActionButton.extended(
               icon: const Icon(CupertinoIcons.barcode),
               label: Text(appLocalizations.product_list_empty_title),
               onPressed: () =>
                   ExternalCarouselManager.read(context).showSearchCard(),
             )
-          : _selectionMode
-              ? null
-              : FloatingActionButton.extended(
-                  onPressed: () => setState(() => _selectionMode = true),
-                  label: const Text('Multi-select'),
-                  icon: const Icon(Icons.checklist),
-                ),
+          : null,
       appBar: SmoothAppBar(
-        centerTitle: false,
-        actions: <Widget>[
-          if (widget.allowToSwitchBetweenLists)
-            IconButton(
-              icon: const Icon(CupertinoIcons.square_list),
-              tooltip: appLocalizations.action_change_list,
-              onPressed: () async {
-                final ProductList? selected =
-                    await showSmoothDraggableModalSheet<ProductList>(
-                  context: context,
-                  header: SmoothModalSheetHeader(
-                    title: appLocalizations.product_list_select,
-                    suffix: SmoothModalSheetHeaderButton(
-                      label: appLocalizations.product_list_create,
-                      prefix: const Icon(Icons.add_circle_outline_sharp),
-                      tooltip: appLocalizations.product_list_create_tooltip,
-                      onTap: () async =>
-                          ProductListUserDialogHelper(daoProductList)
-                              .showCreateUserListDialog(context),
-                    ),
+        leading: loadingFromFirebase
+            ? const Padding(
+                padding: EdgeInsets.all(MEDIUM_SPACE),
+                child: CircularProgressIndicator.adaptive(),
+              )
+            : _hideLeftArrow || _daysWithProducts.length <= 1
+                ? null
+                : IconButton(
+                    icon: const Icon(Icons.arrow_left),
+                    onPressed: _navigateToPreviousDay,
                   ),
-                  bodyBuilder: (BuildContext context) => AllProductListModal(
-                    currentList: productList,
-                  ),
-                  initHeight: _computeModalInitHeight(context),
-                );
-
-                if (selected == null) {
-                  return;
-                }
-                if (context.mounted) {
-                  await daoProductList.get(selected);
-                  if (context.mounted) {
-                    setState(() => productList = selected);
-                  }
-                }
-              },
+        title: ElevatedButton(
+            child: Text(
+              _getSelectedDayText(),
+              style: const TextStyle(fontSize: 18.0),
             ),
-          PopupMenuButton<ProductListPopupItem>(
-            onSelected: (final ProductListPopupItem action) async {
-              final ProductList? differentProductList =
-                  await action.doSomething(
-                productList: productList,
-                localDatabase: localDatabase,
-                context: context,
-              );
-              if (differentProductList != null) {
-                setState(() => productList = differentProductList);
-              }
-            },
-            itemBuilder: (BuildContext context) =>
-                <PopupMenuEntry<ProductListPopupItem>>[
-              if (enableRename) _rename.getMenuItem(appLocalizations),
-              _share.getMenuItem(appLocalizations),
-              _openInWeb.getMenuItem(appLocalizations),
-              if (enableClear) _clear.getMenuItem(appLocalizations),
-            ],
-          ),
+            onPressed: () => _selectDate()),
+        centerTitle: true,
+        // Buttons at the end of the AppBar
+        actions: <Widget>[
+          if (!_isDateToday(_selectedDate))
+            IconButton(
+              icon: const Icon(Icons.arrow_right),
+              onPressed: _navigateToNextDay,
+            ),
         ],
-        title: AutoSizeText(
-          ProductQueryPageHelper.getProductListLabel(
-            productList,
-            appLocalizations,
-          ),
-          maxLines: 2,
-        ),
         actionMode: _selectionMode,
         onLeaveActionMode: () {
           setState(() => _selectionMode = false);
@@ -225,7 +266,13 @@ class _ProductListPageState extends State<ProductListPage>
               );
               if (andThenSetState) {
                 if (context.mounted) {
-                  setState(() {});
+                  setState(() {
+                    if (action.isDelete) {
+                      _selectionMode = false;
+                      _selectedBarcodes.clear();
+                      _navigateToNextDay();
+                    }
+                  });
                 }
               }
             },
@@ -251,74 +298,104 @@ class _ProductListPageState extends State<ProductListPage>
           ),
         ],
       ),
-      body: products.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(SMALL_SPACE),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    SvgPicture.asset(
-                      'assets/misc/empty-list.svg',
-                      package: AppHelper.APP_PACKAGE,
-                      width: MediaQuery.of(context).size.width / 2,
-                    ),
-                    Text(
-                      appLocalizations.product_list_empty_message,
-                      textAlign: TextAlign.center,
-                      style: themeData.textTheme.bodyMedium?.apply(
-                        color: themeData.colorScheme.onBackground,
-                      ),
-                    ),
-                    EMPTY_WIDGET,
-                  ],
-                ),
-              ),
-            )
-          : WillPopScope2(
-              onWillPop: () async => (await _handleUserBacktap(), null),
-              child: RefreshIndicator(
-                //if it is in selectmode then refresh indicator is not shown
-                notificationPredicate:
-                    _selectionMode ? (_) => false : (_) => true,
-                onRefresh: () async => _refreshListProducts(
-                  products,
-                  localDatabase,
-                  appLocalizations,
-                ),
-                child: ListView.builder(
-                  itemCount: products.length,
-                  itemBuilder: (BuildContext context, int index) => _buildItem(
-                    dismissible,
-                    products,
-                    index,
-                    localDatabase,
-                    appLocalizations,
-                  ),
-                ),
-              ),
-            ),
+      body: CarouselSlider.builder(
+        itemCount: _daysWithProducts.length,
+        itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
+          final int selectedDay = _daysWithProducts[itemIndex];
+          final List<ScannedBarcode>? selectedDayBarcodes =
+              productList.getList()[selectedDay];
+
+          return selectedDayBarcodes == null || selectedDayBarcodes.isEmpty
+              ? LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) =>
+                      RefreshIndicator(
+                        //if it is in selectmode then refresh indicator is not shown
+                        notificationPredicate:
+                            _selectionMode ? (_) => false : (_) => true,
+                        onRefresh: () async => _refreshListProducts(
+                          getAllBarcodes(productList.getList()),
+                          localDatabase,
+                          appLocalizations,
+                        ),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight),
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(SMALL_SPACE),
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    SvgPicture.asset(
+                                      'assets/misc/empty-list.svg',
+                                      package: AppHelper.APP_PACKAGE,
+                                      width:
+                                          MediaQuery.of(context).size.width / 2,
+                                    ),
+                                    Text(
+                                      appLocalizations
+                                          .product_list_empty_message,
+                                      textAlign: TextAlign.center,
+                                      style:
+                                          themeData.textTheme.bodyMedium?.apply(
+                                        color:
+                                            themeData.colorScheme.onBackground,
+                                      ),
+                                    ),
+                                    EMPTY_WIDGET,
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ))
+              : WillPopScope2(
+                  onWillPop: () async => (await _handleUserBacktap(), null),
+                  child: RefreshIndicator(
+                      //if it is in selectmode then refresh indicator is not shown
+                      notificationPredicate:
+                          _selectionMode ? (_) => false : (_) => true,
+                      onRefresh: () async => _refreshListProducts(
+                            getAllBarcodes(productList.getList()),
+                            localDatabase,
+                            appLocalizations,
+                          ),
+                      child: ListView.builder(
+                        itemCount: selectedDayBarcodes.length,
+                        itemBuilder: (BuildContext context, int index) =>
+                            _buildItem(
+                          selectedDayBarcodes.reversed
+                              .toList(), // Reverse the list so that the most recently scanned barcodes are at the top
+                          index,
+                          localDatabase,
+                          appLocalizations,
+                        ),
+                      )),
+                );
+        },
+        options: CarouselOptions(
+            height: MediaQuery.of(context).size.height,
+            viewportFraction: 1.0,
+            enlargeCenterPage: false,
+            enableInfiniteScroll: false,
+            reverse: true,
+            onPageChanged: (final int index, _) => _onDateChange(index)),
+        carouselController: _controller,
+      ),
     );
   }
 
-  double _computeModalInitHeight(BuildContext context) {
-    if (context.isSmallDevice()) {
-      return 0.7;
-    } else if (context.isSmartphoneDevice()) {
-      return 0.55;
-    } else {
-      return 0.45;
-    }
-  }
-
   Widget _buildItem(
-    final bool dismissible,
-    final List<String> barcodes,
+    final List<ScannedBarcode> barcodes,
     final int index,
     final LocalDatabase localDatabase,
     final AppLocalizations appLocalizations,
   ) {
-    final String barcode = barcodes[index];
+    final String barcode = barcodes[index].barcode;
     final bool selected = _selectedBarcodes.contains(barcode);
     void onTap() => setState(
           () {
@@ -366,67 +443,6 @@ class _ProductListPageState extends State<ProductListPage>
         ),
       ),
     );
-    if (dismissible) {
-      return Dismissible(
-        direction: DismissDirection.endToStart,
-        background: Container(
-          alignment: AlignmentDirectional.centerEnd,
-          margin: const EdgeInsets.symmetric(vertical: 14),
-          color: RED_COLOR,
-          padding: const EdgeInsetsDirectional.only(end: 30),
-          child: const Icon(
-            Icons.delete,
-            color: Colors.white,
-          ),
-        ),
-        key: Key(barcode),
-        onDismissed: (final DismissDirection direction) async {
-          final bool removed = productList.remove(barcode);
-          bool removedFromSelectedBarcodes = false;
-          if (removed) {
-            await DaoProductList(localDatabase).put(productList);
-            removedFromSelectedBarcodes = _selectedBarcodes.remove(barcode);
-
-            if (productList.listType == ProductListType.SCAN_SESSION &&
-                mounted) {
-              context.read<ContinuousScanModel>().removeBarcode(barcode);
-            }
-
-            setState(() => barcodes.removeAt(index));
-          }
-          if (!mounted) {
-            return;
-          }
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                removed
-                    ? appLocalizations.product_removed_list
-                    : appLocalizations.product_could_not_remove,
-              ),
-              duration: SnackBarDuration.medium,
-              action: !removed
-                  ? null
-                  : SnackBarAction(
-                      textColor: PRIMARY_BLUE_COLOR,
-                      label: appLocalizations.undo,
-                      onPressed: () async {
-                        barcodes.insert(index, barcode);
-                        productList.set(barcodes);
-                        if (removedFromSelectedBarcodes) {
-                          _selectedBarcodes.add(barcode);
-                        }
-                        await DaoProductList(localDatabase).put(productList);
-                        setState(() {});
-                      },
-                    ),
-            ),
-          );
-        },
-        child: child,
-      );
-    }
     return Container(
       key: Key(barcode),
       child: child,

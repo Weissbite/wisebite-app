@@ -10,6 +10,7 @@ import 'package:smooth_app/cards/product_cards/smooth_product_card_template.dart
 import 'package:smooth_app/data_models/product_list_supplier.dart';
 import 'package:smooth_app/data_models/product_query_model.dart';
 import 'package:smooth_app/database/local_database.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 import 'package:smooth_app/generic_lib/animations/smooth_reveal_animation.dart';
 import 'package:smooth_app/generic_lib/buttons/smooth_large_button_with_icon.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
@@ -168,7 +169,7 @@ class _ProductQueryPageState extends State<ProductQueryPage>
                     MaterialPageRoute<Widget>(
                       builder: (BuildContext context) =>
                           PersonalizedRankingPage(
-                        barcodes: _model.displayBarcodes,
+                        barcodes: getAllBarcodes(_model.displayBarcodes),
                         title: widget.name,
                       ),
                     ),
@@ -233,7 +234,9 @@ class _ProductQueryPageState extends State<ProductQueryPage>
                 }
                 index--;
 
-                final int barcodesCount = _model.displayBarcodes.length;
+                final List<String> allBarcodes =
+                    getAllBarcodes(_model.displayBarcodes);
+                final int barcodesCount = allBarcodes.length;
 
                 // TODO(monsieurtanuki): maybe call it earlier, like for first unknown page index - 5?
                 if (index >= barcodesCount) {
@@ -260,7 +263,7 @@ class _ProductQueryPageState extends State<ProductQueryPage>
                   );
                 }
                 return ProductListItemSimple(
-                  barcode: _model.displayBarcodes[index],
+                  barcode: allBarcodes[index],
                 );
               },
               itemCount: _getItemCount(),

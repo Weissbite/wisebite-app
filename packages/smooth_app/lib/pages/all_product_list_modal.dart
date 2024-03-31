@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/local_database.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_list_tile.dart';
 import 'package:smooth_app/pages/product/common/product_list_popup_items.dart';
@@ -88,7 +89,7 @@ class _ModalProductListItem extends StatelessWidget {
 
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
 
-    final int productsLength = productList.barcodes.length;
+    final int productsLength = getNumberOfAllBarcodes(productList.barcodes);
     final bool enableRename = productList.listType == ProductListType.USER;
     final bool hasProducts = productsLength > 0;
 
@@ -102,7 +103,7 @@ class _ModalProductListItem extends StatelessWidget {
       subtitle: Text(
         appLocalizations.user_list_length(productsLength),
       ),
-      trailing: (enableRename || hasProducts || productList.isEditable)
+      trailing: (hasProducts || productList.isEditable || enableRename)
           ? PopupMenuButton<ProductListPopupMenuEntry>(
               itemBuilder: (BuildContext context) {
                 final List<ProductListPopupItem> list = <ProductListPopupItem>[

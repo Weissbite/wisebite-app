@@ -1,4 +1,6 @@
 import 'package:openfoodfacts/openfoodfacts.dart';
+import 'package:smooth_app/database/dao_product_list.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 
 enum ProductListType {
   /// API search by [SearchTerms] keywords
@@ -174,9 +176,10 @@ class ProductList {
   /// "Total size" returned by the query.
   int totalSize = 0;
 
-  final List<String> _barcodes = <String>[];
+  final Map<int, List<ScannedBarcode>> _barcodes =
+      <int, List<ScannedBarcode>>{};
 
-  List<String> get barcodes => _barcodes;
+  Map<int, List<ScannedBarcode>> get barcodes => _barcodes;
 
   bool isEmpty() => _barcodes.isEmpty;
 
@@ -185,52 +188,38 @@ class ProductList {
   /// Returns false if not already in the list
   /// Don't forget to update the database afterwards
   bool remove(final String barcode) {
-    if (!_barcodes.contains(barcode)) {
-      return false;
-    }
-    _barcodes.remove(barcode);
-    return true;
+    return barcodeExists(_barcodes, barcode, (
+      ScannedBarcode foundBarcode,
+      List<ScannedBarcode> foundBarcodeList,
+      _,
+    ) {
+      foundBarcodeList.remove(foundBarcode);
+    });
   }
 
   /// Sets all products with the same order as the input list
   void setAll(final List<Product> products) {
-    final List<String> barcodes = <String>[];
+    final List<ScannedBarcode> newBarcodes = <ScannedBarcode>[];
     for (final Product product in products) {
-      final String barcode = product.barcode!;
-      barcodes.add(barcode);
+      newBarcodes.add(ScannedBarcode(product.barcode!));
     }
+
+    final Map<int, List<ScannedBarcode>> barcodes = <int, List<ScannedBarcode>>{
+      getTodayDateAsScannedBarcodeKey(): newBarcodes
+    };
+
     set(barcodes);
   }
 
-  void set(final Iterable<String> barcodes) {
+  void set(final Map<int, List<ScannedBarcode>> barcodes) {
     _barcodes.clear();
     _barcodes.addAll(barcodes);
   }
 
-  List<String> getList() {
-    final List<String> result = <String>[];
-    final Iterable<String> barcodes =
-        _isReversed() ? _barcodes.reversed : _barcodes;
-    result.addAll(barcodes);
+  Map<int, List<ScannedBarcode>> getList() {
+    final Map<int, List<ScannedBarcode>> result = <int, List<ScannedBarcode>>{};
+    result.addAll(_barcodes);
     return result;
-  }
-
-  bool _isReversed() {
-    switch (listType) {
-      case ProductListType.HTTP_SEARCH_KEYWORDS:
-      case ProductListType.HTTP_SEARCH_CATEGORY:
-      case ProductListType.HTTP_USER_CONTRIBUTOR:
-      case ProductListType.HTTP_USER_INFORMER:
-      case ProductListType.HTTP_USER_PHOTOGRAPHER:
-      case ProductListType.HTTP_USER_TO_BE_COMPLETED:
-      case ProductListType.HTTP_ALL_TO_BE_COMPLETED:
-      case ProductListType.USER:
-        return false;
-      case ProductListType.SCAN_SESSION:
-      case ProductListType.SCAN_HISTORY:
-      case ProductListType.HISTORY:
-        return true;
-    }
   }
 
   String getParametersKey() {

@@ -38,6 +38,12 @@ class FirestoreService<T extends FirestoreModel<T>> {
     await documentReference.set(data, SetOptions(merge: merge));
   }
 
+  Future<void> deleteDocument({
+    required String documentId,
+  }) async {
+    await _firestore.collection(collectionPath).doc(documentId).delete();
+  }
+
   // Method to get a document reference with a converter
   DocumentReference<T> _getDocumentWithConverter({required String documentId}) {
     return _firestore

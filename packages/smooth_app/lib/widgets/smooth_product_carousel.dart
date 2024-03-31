@@ -15,6 +15,8 @@ import 'package:smooth_app/cards/product_cards/smooth_product_card_thanks.dart';
 import 'package:smooth_app/data_models/continuous_scan_model.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/data_models/tagline.dart';
+import 'package:smooth_app/database/dao_product_list.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
 import 'package:smooth_app/helpers/app_helper.dart';
@@ -44,13 +46,18 @@ class SmoothProductCarousel extends StatefulWidget {
 class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
   static const double HORIZONTAL_SPACE_BETWEEN_CARDS = 5.0;
 
-  List<String> barcodes = <String>[];
-  String? _lastConsultedBarcode;
+  // Working only with today's scanned barcodes
+  List<ScannedBarcode> barcodes = <ScannedBarcode>[];
+  ScannedBarcode? _lastConsultedBarcode;
   int? _carrouselMovingTo;
   int _lastIndex = 0;
 
   int get _searchCardAdjustment => widget.containSearchCard ? 1 : 0;
   late ContinuousScanModel _model;
+
+  List<ScannedBarcode> _getTodayBarcodes() =>
+      _model.getBarcodes()[getTodayDateAsScannedBarcodeKey()] ??
+      <ScannedBarcode>[];
 
   @override
   void didChangeDependencies() {
@@ -61,7 +68,7 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
       return;
     }
 
-    barcodes = _model.getBarcodes();
+    barcodes = _getTodayBarcodes().reversed.toList();
 
     if (barcodes.isEmpty) {
       // Ensure to reset all variables
@@ -78,7 +85,7 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
     final int cardsCount = barcodes.length + _searchCardAdjustment;
 
     if (_model.latestConsultedBarcode != null &&
-        _model.latestConsultedBarcode!.isNotEmpty) {
+        _model.latestConsultedBarcode!.barcode.isNotEmpty) {
       final int indexBarcode = barcodes.indexOf(_model.latestConsultedBarcode!);
       if (indexBarcode >= 0) {
         final int indexCarousel = indexBarcode + _searchCardAdjustment;
@@ -100,7 +107,7 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
       widget.onPageChangedTo?.call(
         page,
         page >= _searchCardAdjustment
-            ? barcodes[page - _searchCardAdjustment]
+            ? barcodes[page - _searchCardAdjustment].barcode
             : null,
       );
 
@@ -112,7 +119,8 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    barcodes = _model.getBarcodes();
+    // Reverse the list so that the most recently scanned barcodes are at the start
+    barcodes = _getTodayBarcodes().reversed.toList();
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -167,7 +175,8 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
     if (index >= barcodes.length) {
       return EMPTY_WIDGET;
     }
-    final String barcode = barcodes[index];
+
+    final String barcode = barcodes.elementAt(index).barcode;
     switch (_model.getBarcodeState(barcode)!) {
       case ScannedProductState.FOUND:
       case ScannedProductState.CACHED:

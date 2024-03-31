@@ -26,6 +26,8 @@ abstract class ProductListItemPopupItem {
   /// IconData of the popup menu item.
   IconData getIconData();
 
+  bool get isDelete => false;
+
   /// Action of the popup menu item.
   ///
   /// Returns true if the caller must refresh (setState) (e.g. after deleting).
@@ -138,6 +140,9 @@ class ProductListItemPopupDelete extends ProductListItemPopupItem {
 
   @override
   IconData getIconData() => Icons.delete;
+
+  @override
+  bool get isDelete => true;
 
   @override
   Future<bool> doSomething({

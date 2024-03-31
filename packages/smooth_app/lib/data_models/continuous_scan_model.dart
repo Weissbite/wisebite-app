@@ -8,6 +8,7 @@ import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/database/dao_product.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/local_database.dart';
+import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 import 'package:smooth_app/generic_lib/duration_constants.dart';
 import 'package:smooth_app/helpers/analytics_helper.dart';
 import 'package:smooth_app/helpers/collections_helper.dart';
@@ -29,21 +30,22 @@ class ContinuousScanModel with ChangeNotifier {
 
   final Map<String, ScannedProductState> _states =
       <String, ScannedProductState>{};
-  final List<String> _barcodes = <String>[];
+  final Map<int, List<ScannedBarcode>> _barcodes =
+      <int, List<ScannedBarcode>>{};
   final ProductList _productList = ProductList.scanSession();
   final ProductList _scanHistory = ProductList.scanHistory();
   final ProductList _history = ProductList.history();
 
-  String? _latestScannedBarcode;
-  String? _latestFoundBarcode;
-  String? _latestConsultedBarcode;
+  ScannedBarcode? _latestScannedBarcode;
+  ScannedBarcode? _latestFoundBarcode;
+  ScannedBarcode? _latestConsultedBarcode;
   late DaoProduct _daoProduct;
   late DaoProductList _daoProductList;
 
   ProductList get productList => _productList;
 
   /// List all barcodes scanned (even products being loaded or not found)
-  List<String> getBarcodes() => _barcodes;
+  Map<int, List<ScannedBarcode>> getBarcodes() => _barcodes;
 
   /// List only barcodes where the product exists
   Iterable<String> getAvailableBarcodes() => _states
@@ -52,9 +54,9 @@ class ContinuousScanModel with ChangeNotifier {
           entry.value == ScannedProductState.CACHED)
       .keys;
 
-  String? get latestConsultedBarcode => _latestConsultedBarcode;
+  ScannedBarcode? get latestConsultedBarcode => _latestConsultedBarcode;
 
-  set lastConsultedBarcode(String? barcode) {
+  set lastConsultedBarcode(ScannedBarcode? barcode) {
     _latestConsultedBarcode = barcode;
     if (barcode != null) {
       notifyListeners();
@@ -82,13 +84,15 @@ class ContinuousScanModel with ChangeNotifier {
       _latestFoundBarcode = null;
       _barcodes.clear();
       _states.clear();
-      _latestScannedBarcode = null;
       await refreshProductList();
-      for (final String barcode in _productList.barcodes) {
-        _barcodes.add(barcode);
-        _states[barcode] = ScannedProductState.CACHED;
-        _latestScannedBarcode = barcode;
-      }
+
+      _productList.barcodes.forEach((int key, List<ScannedBarcode> value) {
+        _barcodes[key] = value;
+        for (final ScannedBarcode i in value) {
+          _states[i.barcode] = ScannedProductState.CACHED;
+          _latestScannedBarcode = i;
+        }
+      });
 
       return true;
     } catch (e) {
@@ -119,25 +123,20 @@ class ContinuousScanModel with ChangeNotifier {
 
     code = _fixBarcodeIfNecessary(code);
 
-    if (_latestScannedBarcode == code || _barcodes.contains(code)) {
-      lastConsultedBarcode = code;
-      return false;
-    }
-
     AnalyticsHelper.trackEvent(
       AnalyticsEvent.scanAction,
       barcode: code,
     );
 
-    _latestScannedBarcode = code;
-    return _addBarcode(code);
+    _latestScannedBarcode = ScannedBarcode(code);
+    return _addBarcode(_latestScannedBarcode!);
   }
 
   Future<bool> onCreateProduct(String? barcode) async {
     if (barcode == null) {
       return false;
     }
-    return _addBarcode(barcode);
+    return _addBarcode(ScannedBarcode(barcode));
   }
 
   Future<void> retryBarcodeFetch(String barcode) async {
@@ -145,28 +144,40 @@ class ContinuousScanModel with ChangeNotifier {
     await _updateBarcode(barcode);
   }
 
-  Future<bool> _addBarcode(final String barcode) async {
-    final ScannedProductState? state = getBarcodeState(barcode);
+  Future<bool> _addBarcode(final ScannedBarcode barcode) async {
+    _barcodes[getTodayDateAsScannedBarcodeKey()] ??= <ScannedBarcode>[];
+
+    final ScannedProductState? state = getBarcodeState(barcode.barcode);
     if (state == null || state == ScannedProductState.NOT_FOUND) {
-      if (!_barcodes.contains(barcode)) {
-        _barcodes.add(barcode);
+      if (!barcodeExists(_barcodes, barcode.barcode)) {
+        _barcodes[getTodayDateAsScannedBarcodeKey()]!.add(barcode);
       }
-      _setBarcodeState(barcode, ScannedProductState.LOADING);
-      _cacheOrLoadBarcode(barcode);
+
+      _setBarcodeState(barcode.barcode, ScannedProductState.LOADING);
+      _cacheOrLoadBarcode(barcode.barcode);
       lastConsultedBarcode = barcode;
       return true;
     }
+
     if (state == ScannedProductState.FOUND ||
         state == ScannedProductState.CACHED) {
-      _barcodes.remove(barcode);
-      _barcodes.add(barcode);
+      barcodeExists(_barcodes, barcode.barcode, (
+        final ScannedBarcode foundBarcode,
+        final List<ScannedBarcode> barcodeScanDayList,
+        _,
+      ) {
+        barcodeScanDayList.remove(foundBarcode);
+      });
+
+      _barcodes[getTodayDateAsScannedBarcodeKey()]!.add(barcode);
       _addProduct(barcode, state);
       if (state == ScannedProductState.CACHED) {
-        _updateBarcode(barcode);
+        _updateBarcode(barcode.barcode);
       }
       lastConsultedBarcode = barcode;
       return true;
     }
+
     return false;
   }
 
@@ -185,17 +196,17 @@ class ContinuousScanModel with ChangeNotifier {
         final FetchedProduct fetchedProduct =
             await _queryBarcode(barcode).timeout(SnackBarDuration.long);
         if (fetchedProduct.product != null) {
-          _addProduct(barcode, ScannedProductState.CACHED);
+          _addProduct(ScannedBarcode(barcode), ScannedProductState.CACHED);
           return true;
         }
       } on TimeoutException {
         // We tried to load the product from the server,
         // but it was taking more than 5 seconds.
         // So we'll just show the already cached product.
-        _addProduct(barcode, ScannedProductState.CACHED);
+        _addProduct(ScannedBarcode(barcode), ScannedProductState.CACHED);
         return true;
       }
-      _addProduct(barcode, ScannedProductState.CACHED);
+      _addProduct(ScannedBarcode(barcode), ScannedProductState.CACHED);
       return true;
     }
     return false;
@@ -216,7 +227,7 @@ class ContinuousScanModel with ChangeNotifier {
     final FetchedProduct fetchedProduct = await _queryBarcode(barcode);
     switch (fetchedProduct.status) {
       case FetchedProductStatus.ok:
-        _addProduct(barcode, ScannedProductState.FOUND);
+        _addProduct(ScannedBarcode(barcode), ScannedProductState.FOUND);
         return;
       case FetchedProductStatus.internetNotFound:
         _setBarcodeState(barcode, ScannedProductState.NOT_FOUND);
@@ -236,7 +247,7 @@ class ContinuousScanModel with ChangeNotifier {
     final FetchedProduct fetchedProduct = await _queryBarcode(barcode);
     switch (fetchedProduct.status) {
       case FetchedProductStatus.ok:
-        _addProduct(barcode, ScannedProductState.FOUND);
+        _addProduct(ScannedBarcode(barcode), ScannedProductState.FOUND);
         return;
       case FetchedProductStatus.internetNotFound:
         _setBarcodeState(barcode, ScannedProductState.NOT_FOUND);
@@ -251,7 +262,7 @@ class ContinuousScanModel with ChangeNotifier {
   }
 
   Future<void> _addProduct(
-    final String barcode,
+    final ScannedBarcode barcode,
     final ScannedProductState state,
   ) async {
     if (_latestFoundBarcode != barcode) {
@@ -261,7 +272,7 @@ class ContinuousScanModel with ChangeNotifier {
       await _daoProductList.push(_history, _latestFoundBarcode!);
       _daoProductList.localDatabase.notifyListeners();
     }
-    _setBarcodeState(barcode, state);
+    _setBarcodeState(barcode.barcode, state);
   }
 
   Future<void> clearScanSession() async {
@@ -278,10 +289,17 @@ class ContinuousScanModel with ChangeNotifier {
       false,
     );
 
-    _barcodes.remove(barcode);
+    barcodeExists(_barcodes, barcode, (
+      ScannedBarcode foundBarcode,
+      List<ScannedBarcode> foundBarcodeList,
+      _,
+    ) {
+      foundBarcodeList.remove(foundBarcode);
+    });
     _states.remove(barcode);
 
-    if (barcode == _latestScannedBarcode) {
+    if (_latestScannedBarcode != null &&
+        _latestScannedBarcode!.barcode == barcode) {
       _latestScannedBarcode = null;
     }
 
