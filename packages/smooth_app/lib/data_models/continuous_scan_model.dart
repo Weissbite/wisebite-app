@@ -128,8 +128,7 @@ class ContinuousScanModel with ChangeNotifier {
       barcode: code,
     );
 
-    _latestScannedBarcode = ScannedBarcode(code);
-    return _addBarcode(_latestScannedBarcode!);
+    return _addBarcode(ScannedBarcode(code));
   }
 
   Future<bool> onCreateProduct(String? barcode) async {
@@ -145,36 +144,48 @@ class ContinuousScanModel with ChangeNotifier {
   }
 
   Future<bool> _addBarcode(final ScannedBarcode barcode) async {
-    _barcodes[getTodayDateAsScannedBarcodeKey()] ??= <ScannedBarcode>[];
+    final int todayAsKey = getTodayDateAsScannedBarcodeKey();
+    _barcodes[todayAsKey] ??= <ScannedBarcode>[];
+    final List<ScannedBarcode> todayScannedBarcodes = _barcodes[todayAsKey]!;
+
+    // Don't add the same barcode to the list if it was scanned less than a minute ago.
+    // Sometimes when scanning, the scanner sends multiple requests for a new scan of the same product.
+    // We want to prevent multiple items of the same barcode being added at once.
+    if (todayScannedBarcodes.isNotEmpty &&
+        _latestScannedBarcode != null &&
+        _latestScannedBarcode!.barcode == barcode.barcode) {
+      final DateTime oldBarcodeScanTime = DateTime.fromMillisecondsSinceEpoch(
+          _latestScannedBarcode!.lastScanTime);
+      final DateTime newBarcodeScanTime =
+          DateTime.fromMillisecondsSinceEpoch(barcode.lastScanTime);
+
+      if (newBarcodeScanTime.difference(oldBarcodeScanTime).inMinutes <= 1) {
+        return true;
+      }
+    }
+
+    _latestScannedBarcode = barcode;
+    _barcodes[todayAsKey]!.add(barcode);
 
     final ScannedProductState? state = getBarcodeState(barcode.barcode);
     if (state == null || state == ScannedProductState.NOT_FOUND) {
-      if (!barcodeExists(_barcodes, barcode.barcode)) {
-        _barcodes[getTodayDateAsScannedBarcodeKey()]!.add(barcode);
-      }
-
       _setBarcodeState(barcode.barcode, ScannedProductState.LOADING);
       _cacheOrLoadBarcode(barcode.barcode);
       lastConsultedBarcode = barcode;
+
       return true;
     }
 
     if (state == ScannedProductState.FOUND ||
         state == ScannedProductState.CACHED) {
-      barcodeExists(_barcodes, barcode.barcode, (
-        final ScannedBarcode foundBarcode,
-        final List<ScannedBarcode> barcodeScanDayList,
-        _,
-      ) {
-        barcodeScanDayList.remove(foundBarcode);
-      });
-
-      _barcodes[getTodayDateAsScannedBarcodeKey()]!.add(barcode);
       _addProduct(barcode, state);
+
       if (state == ScannedProductState.CACHED) {
         _updateBarcode(barcode.barcode);
       }
+
       lastConsultedBarcode = barcode;
+
       return true;
     }
 
@@ -247,7 +258,7 @@ class ContinuousScanModel with ChangeNotifier {
     final FetchedProduct fetchedProduct = await _queryBarcode(barcode);
     switch (fetchedProduct.status) {
       case FetchedProductStatus.ok:
-        _addProduct(ScannedBarcode(barcode), ScannedProductState.FOUND);
+        _setBarcodeState(barcode, ScannedProductState.FOUND);
         return;
       case FetchedProductStatus.internetNotFound:
         _setBarcodeState(barcode, ScannedProductState.NOT_FOUND);
@@ -267,8 +278,10 @@ class ContinuousScanModel with ChangeNotifier {
   ) async {
     if (_latestFoundBarcode != barcode) {
       _latestFoundBarcode = barcode;
-      await _daoProductList.push(productList, _latestFoundBarcode!);
-      await _daoProductList.push(_scanHistory, _latestFoundBarcode!);
+
+      /// There is no need to add the barcode to the other two lists as we are only showing the history list.
+      // await _daoProductList.push(productList, _latestFoundBarcode!);
+      // await _daoProductList.push(_scanHistory, _latestFoundBarcode!);
       await _daoProductList.push(_history, _latestFoundBarcode!);
       _daoProductList.localDatabase.notifyListeners();
     }
