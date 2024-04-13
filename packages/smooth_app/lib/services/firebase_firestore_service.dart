@@ -28,8 +28,8 @@ class FirestoreService<T extends FirestoreModel<T>> {
 
   /// Sets or merges data in a document.
   Future<void> setDocument({
-    required String documentId,
     required T data,
+    String? documentId,
     bool merge = false,
   }) async {
     final DocumentReference<T> documentReference =
@@ -45,7 +45,7 @@ class FirestoreService<T extends FirestoreModel<T>> {
   }
 
   // Method to get a document reference with a converter
-  DocumentReference<T> _getDocumentWithConverter({required String documentId}) {
+  DocumentReference<T> _getDocumentWithConverter({String? documentId}) {
     return _firestore
         .collection(collectionPath)
         .doc(documentId)

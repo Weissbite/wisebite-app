@@ -33,7 +33,6 @@ class ContinuousScanModel with ChangeNotifier {
   final Map<int, List<ScannedBarcode>> _barcodes =
       <int, List<ScannedBarcode>>{};
   final ProductList _productList = ProductList.scanSession();
-  final ProductList _scanHistory = ProductList.scanHistory();
   final ProductList _history = ProductList.history();
 
   ScannedBarcode? _latestScannedBarcode;
