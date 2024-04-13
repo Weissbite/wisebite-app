@@ -152,15 +152,13 @@ class ContinuousScanModel with ChangeNotifier {
     // We want to prevent multiple items of the same barcode being added at once.
     if (todayScannedBarcodes.isNotEmpty &&
         _latestScannedBarcode != null &&
-        _latestScannedBarcode!.barcode == barcode.barcode) {
-      final DateTime oldBarcodeScanTime = DateTime.fromMillisecondsSinceEpoch(
-          _latestScannedBarcode!.lastScanTime);
-      final DateTime newBarcodeScanTime =
-          DateTime.fromMillisecondsSinceEpoch(barcode.lastScanTime);
-
-      if (newBarcodeScanTime.difference(oldBarcodeScanTime).inMinutes <= 1) {
-        return true;
-      }
+        _latestScannedBarcode!.barcode == barcode.barcode &&
+        getScanTimeDifferenceInSeconds(
+              _latestScannedBarcode!.lastScanTime,
+              barcode.lastScanTime,
+            ) <=
+            60) {
+      return true;
     }
 
     _latestScannedBarcode = barcode;

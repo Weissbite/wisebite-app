@@ -55,3 +55,15 @@ bool barcodeExists(
 
   return false;
 }
+
+int getScanTimeDifferenceInSeconds(
+  final int oldScanTime,
+  final int newScanTime,
+) {
+  final DateTime oldBarcodeScanTime =
+      DateTime.fromMillisecondsSinceEpoch(oldScanTime);
+  final DateTime newBarcodeScanTime =
+      DateTime.fromMillisecondsSinceEpoch(newScanTime);
+
+  return newBarcodeScanTime.difference(oldBarcodeScanTime).inSeconds;
+}

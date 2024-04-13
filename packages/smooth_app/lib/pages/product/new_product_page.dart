@@ -33,7 +33,6 @@ import 'package:smooth_app/pages/product/reordered_knowledge_panel_cards.dart';
 import 'package:smooth_app/pages/product/standard_knowledge_panel_cards.dart';
 import 'package:smooth_app/pages/product/summary_card.dart';
 import 'package:smooth_app/pages/product/website_card.dart';
-import 'package:smooth_app/pages/product_list_user_dialog_helper.dart';
 import 'package:smooth_app/query/product_query.dart';
 import 'package:smooth_app/themes/constant_icons.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
@@ -76,9 +75,6 @@ class _ProductPageState extends State<ProductPage>
     super.initState();
     initUpToDate(widget.product, context.read<LocalDatabase>());
     questionsLayout = getUserQuestionsLayout(context.read<UserPreferences>());
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateLocalDatabaseWithProductHistory(context);
-    });
   }
 
   @override
@@ -156,17 +152,6 @@ class _ProductPageState extends State<ProductPage>
         ),
       ),
     );
-  }
-
-  Future<void> _updateLocalDatabaseWithProductHistory(
-    final BuildContext context,
-  ) async {
-    final LocalDatabase localDatabase = context.read<LocalDatabase>();
-    await DaoProductList(localDatabase).push(
-      ProductList.history(),
-      ScannedBarcode(barcode),
-    );
-    localDatabase.notifyListeners();
   }
 
   Widget _buildProductBody(BuildContext context) {
@@ -276,16 +261,24 @@ class _ProductPageState extends State<ProductPage>
   }
 
   Future<void> _editList() async {
+    final AppLocalizations appLocalizations = AppLocalizations.of(context);
     final LocalDatabase localDatabase = context.read<LocalDatabase>();
-    final DaoProductList daoProductList = DaoProductList(localDatabase);
-    final bool? refreshed = await ProductListUserDialogHelper(daoProductList)
-        .showUserAddProductsDialog(
-      context,
-      <String>{widget.product.barcode!},
-    );
-    if (refreshed == true) {
-      setState(() {});
-    }
+
+    DaoProductList(localDatabase)
+        .push(ProductList.history(), ScannedBarcode(barcode))
+        .then((final int timeDifferenceInSeconds) {
+      String message = appLocalizations
+          .wait_n_seconds_before_next_addition(60 - timeDifferenceInSeconds);
+
+      if (timeDifferenceInSeconds == 0) {
+        localDatabase.notifyListeners();
+        message = appLocalizations.successfully_added;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    });
   }
 
   Future<void> _shareProduct() async {
@@ -314,7 +307,7 @@ class _ProductPageState extends State<ProductPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               _buildActionBarItem(
-                Icons.bookmark_border,
+                Icons.add,
                 appLocalizations.user_list_button_add_product,
                 _editList,
               ),

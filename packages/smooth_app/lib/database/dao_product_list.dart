@@ -261,12 +261,8 @@ class DaoProductList extends AbstractDao {
     return list.barcodes.length;
   }
 
-  /// Moves a barcode to the end of the list.
-  ///
-  /// One barcode duplicate is potentially removed:
-  /// * If the barcode was already there, it's moved to the end of the list.
-  /// * If the barcode wasn't there, it's added to the end of the list.
-  Future<void> push(
+  /// Adds a barcode to the barcodes list
+  Future<int> push(
     final ProductList productList,
     final ScannedBarcode barcode,
   ) async {
@@ -282,12 +278,34 @@ class DaoProductList extends AbstractDao {
     final int today = getTodayDateAsScannedBarcodeKey();
     barcodes[today] ??= <ScannedBarcode>[];
 
+    // Don't add if the same product was added less than a minute ago
+    if (barcodes[today]!.isNotEmpty) {
+      // Start from the oldest
+      for (final ScannedBarcode i in barcodes[today]!.reversed) {
+        if (i.barcode != barcode.barcode) {
+          continue;
+        }
+
+        final int scanTimeDifference = getScanTimeDifferenceInSeconds(
+          i!.lastScanTime,
+          barcode.lastScanTime,
+        );
+        if (scanTimeDifference <= 60) {
+          return scanTimeDifference;
+        }
+
+        break;
+      }
+    }
+
     barcodes[today]!.add(barcode);
     await _put(getKey(productList), _BarcodeList.now(barcodes));
     await ProductListFirebaseManager().addBarcode(
       productList: productList,
       barcode: barcode,
     );
+
+    return 0;
   }
 
   Future<void> clear(final ProductList productList,
@@ -379,6 +397,7 @@ class DaoProductList extends AbstractDao {
       allBarcodes = _getSafeBarcodeListCopy(list.barcodes);
     }
 
+    // TODO(iliyan03): May use a WriteBatch when adding/removing multiple products to/from firebase
     for (final String barcode in barcodes) {
       if (include) {
         final ScannedBarcode newBarcode = ScannedBarcode(barcode);

@@ -2532,5 +2532,14 @@
     "processing": "Processing...",
     "submit": "Submit",
     "save_new_products_title": "Save newly scanned products?",
-    "save_new_products_lists": "Do you want to keep your newly scanned products? If you don't save them, they will be overwritten with the currently saved data for your user."
+    "save_new_products_lists": "Do you want to keep your newly scanned products? If you don't save them, they will be overwritten with the currently saved data for your user.",
+    "successfully_added": "Product successfully added to diary",
+    "wait_n_seconds_before_next_addition": "Wait {n} seconds before adding the same product",
+    "@wait_n_seconds_before_next_addition": {
+            "placeholders": {
+                "n": {
+                    "type": "int"
+                }
+            }
+        }
 }
