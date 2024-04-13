@@ -287,7 +287,7 @@ class DaoProductList extends AbstractDao {
         }
 
         final int scanTimeDifference = getScanTimeDifferenceInSeconds(
-          i!.lastScanTime,
+          i.lastScanTime,
           barcode.lastScanTime,
         );
         if (scanTimeDifference <= 60) {
