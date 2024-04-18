@@ -35,7 +35,7 @@ abstract class ProductListItemPopupItem {
     required final ProductList productList,
     required final LocalDatabase localDatabase,
     required final BuildContext context,
-    required final Iterable<String> selectedBarcodes,
+    required final Iterable<ScannedBarcode> selectedBarcodes,
   });
 
   /// Returns the popup menu item.
@@ -67,7 +67,7 @@ class ProductListItemPopupSideBySide extends ProductListItemPopupItem {
     required final ProductList productList,
     required final LocalDatabase localDatabase,
     required final BuildContext context,
-    required final Iterable<String> selectedBarcodes,
+    required final Iterable<ScannedBarcode> selectedBarcodes,
   }) async {
     final OrderedNutrientsCache? cache =
         await OrderedNutrientsCache.getCache(context);
@@ -84,8 +84,8 @@ class ProductListItemPopupSideBySide extends ProductListItemPopupItem {
       }
       final DaoProduct daoProduct = DaoProduct(localDatabase);
       final List<Product> list = <Product>[];
-      for (final String barcode in selectedBarcodes) {
-        list.add((await daoProduct.get(barcode))!);
+      for (final ScannedBarcode barcode in selectedBarcodes) {
+        list.add((await daoProduct.get(barcode.barcode))!);
       }
       if (context.mounted) {
         await Navigator.push<void>(
@@ -117,13 +117,18 @@ class ProductListItemPopupRank extends ProductListItemPopupItem {
     required final ProductList productList,
     required final LocalDatabase localDatabase,
     required final BuildContext context,
-    required final Iterable<String> selectedBarcodes,
+    required final Iterable<ScannedBarcode> selectedBarcodes,
   }) async {
+    final List<String> barcodes = List<String>.generate(
+      selectedBarcodes.length,
+      (int index) => selectedBarcodes.elementAt(index).barcode,
+    );
+
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
         builder: (_) => PersonalizedRankingPage(
-          barcodes: selectedBarcodes.toList(),
+          barcodes: barcodes,
           title: AppLocalizations.of(context).product_list_your_ranking,
         ),
       ),
@@ -149,7 +154,7 @@ class ProductListItemPopupDelete extends ProductListItemPopupItem {
     required final ProductList productList,
     required final LocalDatabase localDatabase,
     required final BuildContext context,
-    required final Iterable<String> selectedBarcodes,
+    required final Iterable<ScannedBarcode> selectedBarcodes,
   }) async {
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
     final DaoProductList daoProductList = DaoProductList(localDatabase);
@@ -180,9 +185,16 @@ class ProductListItemPopupDelete extends ProductListItemPopupItem {
     if (letsDoIt != true) {
       return false;
     }
+
+    final List<String> barcodes = List<String>.generate(
+      selectedBarcodes.length,
+      (int index) => selectedBarcodes.elementAt(index).barcode,
+      growable: false,
+    );
+
     await daoProductList.bulkSet(
       productList,
-      selectedBarcodes.toList(growable: false),
+      barcodes,
       include: false,
     );
     await daoProductList.get(productList);

@@ -125,34 +125,38 @@ class ProductListFirebaseManager {
     required final ProductList productList,
     required final Map<int, List<ScannedBarcode>> barcodes,
   }) async {
-    if (_noUser) {
-      return;
-    }
+    // TODO(ILIYAN03): Currently there's no functionality for clearing a product list
+    // if (_noUser) {
+    //   return;
+    // }
+    //
+    // final QuerySnapshot<Map<String, dynamic>> productLists =
+    //     await _getProductLists(productList: productList);
+    // if (productLists.docs.isEmpty) {
+    //   return;
+    // }
+    //
+    // final String productListDocID = productLists.docs.first.id;
+    //
+    // // To remove the barcodes subcollection, all documents within it must be deleted.
+    // TODO(iliyan03): Could use WriteBatch for deleting multiple docs at once
+    // final String barcodesSubcollection =
+    //     _getBarcodesSubCollectionPath(productListDocID: productListDocID);
+    // for (final List<ScannedBarcode> i in barcodes.values) {
+    //   for (final ScannedBarcode j in i) {
+    //     await FirebaseFirestore.instance
+    //         .collection(barcodesSubcollection)
+    //         .doc(j.barcode)
+    //         .delete();
+    //   }
+    // }
+    //
+    // await FirebaseFirestore.instance
+    //     .collection(_collectionName)
+    //     .doc(productListDocID)
+    //     .delete();
 
-    final QuerySnapshot<Map<String, dynamic>> productLists =
-        await _getProductLists(productList: productList);
-    if (productLists.docs.isEmpty) {
-      return;
-    }
-
-    final String productListDocID = productLists.docs.first.id;
-
-    // To remove the barcodes subcollection, all documents within it must be deleted.
-    final String barcodesSubcollection =
-        _getBarcodesSubCollectionPath(productListDocID: productListDocID);
-    for (final List<ScannedBarcode> i in barcodes.values) {
-      for (final ScannedBarcode j in i) {
-        await FirebaseFirestore.instance
-            .collection(barcodesSubcollection)
-            .doc(j.barcode)
-            .delete();
-      }
-    }
-
-    await FirebaseFirestore.instance
-        .collection(_collectionName)
-        .doc(productListDocID)
-        .delete();
+    return;
   }
 
   Future<void> renameProductList({
@@ -233,7 +237,6 @@ class ProductListFirebaseManager {
           );
 
           await service.setDocument(
-            documentId: barcode.barcode,
             data: barcode,
             merge: true,
           );
@@ -242,14 +245,28 @@ class ProductListFirebaseManager {
 
       case _FirebaseFirestoreActions.delete:
         {
-          final FirestoreService<ScannedBarcode> service =
-              FirestoreService<ScannedBarcode>(
-            collectionPath: _getBarcodesSubCollectionPath(
-                productListDocID: productLists.docs.first.id),
-            fromFirestore: ScannedBarcode('').fromFirestore,
+          final String barcodesSubcollectionPath =
+              _getBarcodesSubCollectionPath(
+            productListDocID: productLists.docs.first.id,
           );
 
-          await service.deleteDocument(documentId: barcode.barcode);
+          final QuerySnapshot<Map<String, dynamic>> querySnapshot =
+              await FirebaseFirestore.instance
+                  .collection(barcodesSubcollectionPath)
+                  .where('barcode', isEqualTo: barcode.barcode)
+                  .where('last_scan_time', isEqualTo: barcode.lastScanTime)
+                  .get();
+
+          if (querySnapshot.docs.isEmpty) {
+            break;
+          }
+
+          final String barcodeDocumentID = querySnapshot.docs.first.id;
+
+          await FirebaseFirestore.instance
+              .collection(barcodesSubcollectionPath)
+              .doc(barcodeDocumentID)
+              .delete();
         }
         break;
 

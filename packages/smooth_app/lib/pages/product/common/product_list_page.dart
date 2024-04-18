@@ -52,7 +52,7 @@ class ProductListPage extends StatefulWidget {
 
 class _ProductListPageState extends State<ProductListPage>
     with TraceableClientMixin, UpToDateProductListMixin {
-  final Set<String> _selectedBarcodes = <String>{};
+  final Set<ScannedBarcode> _selectedBarcodes = <ScannedBarcode>{};
   bool _selectionMode = false;
 
   @override
@@ -395,7 +395,7 @@ class _ProductListPageState extends State<ProductListPage>
     final LocalDatabase localDatabase,
     final AppLocalizations appLocalizations,
   ) {
-    final String barcode = barcodes[index].barcode;
+    final ScannedBarcode barcode = barcodes[index];
     final bool selected = _selectedBarcodes.contains(barcode);
     void onTap() => setState(
           () {
@@ -427,7 +427,7 @@ class _ProductListPageState extends State<ProductListPage>
             ),
             Expanded(
               child: ProductListItemSimple(
-                barcode: barcode,
+                barcode: barcode.barcode,
                 onTap: _selectionMode ? onTap : null,
                 onLongPress: !_selectionMode
                     ? () => setState(
@@ -444,7 +444,7 @@ class _ProductListPageState extends State<ProductListPage>
       ),
     );
     return Container(
-      key: Key(barcode),
+      key: Key(barcode.barcode),
       child: child,
     );
   }

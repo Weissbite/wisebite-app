@@ -279,28 +279,8 @@ class DaoProductList extends AbstractDao {
       barcodes = _getSafeBarcodeListCopy(list.barcodes);
     }
 
-    if (barcodes.isNotEmpty) {
-      barcodeExists(
-        barcodes,
-        barcode.barcode,
-        (
-          ScannedBarcode foundBarcode,
-          List<ScannedBarcode> foundBarcodeList,
-          int foundInDay,
-        ) async {
-          foundBarcodeList.remove(foundBarcode);
-          await ProductListFirebaseManager().deleteBarcode(
-            productList: productList,
-            barcode: barcode,
-          );
-        },
-      );
-    }
-
     final int today = getTodayDateAsScannedBarcodeKey();
-    if (barcodes[today] == null) {
-      barcodes[today] = <ScannedBarcode>[];
-    }
+    barcodes[today] ??= <ScannedBarcode>[];
 
     barcodes[today]!.add(barcode);
     await _put(getKey(productList), _BarcodeList.now(barcodes));
