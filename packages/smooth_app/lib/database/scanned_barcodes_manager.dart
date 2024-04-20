@@ -56,10 +56,10 @@ bool barcodeExists(
   return false;
 }
 
-int getScanTimeDifferenceInSeconds(
-  final int oldScanTime,
-  final int newScanTime,
-) {
+int getScanTimeDifferenceInSeconds({
+  required final int oldScanTime,
+  required final int newScanTime,
+}) {
   final DateTime oldBarcodeScanTime =
       DateTime.fromMillisecondsSinceEpoch(oldScanTime);
   final DateTime newBarcodeScanTime =

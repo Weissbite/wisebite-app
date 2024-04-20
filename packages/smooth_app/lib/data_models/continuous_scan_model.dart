@@ -154,8 +154,8 @@ class ContinuousScanModel with ChangeNotifier {
         _latestScannedBarcode != null &&
         _latestScannedBarcode!.barcode == barcode.barcode &&
         getScanTimeDifferenceInSeconds(
-              _latestScannedBarcode!.lastScanTime,
-              barcode.lastScanTime,
+              oldScanTime: _latestScannedBarcode!.lastScanTime,
+              newScanTime: barcode.lastScanTime,
             ) <=
             60) {
       return true;

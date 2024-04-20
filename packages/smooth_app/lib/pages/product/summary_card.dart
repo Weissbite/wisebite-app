@@ -124,6 +124,7 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
           child: _buildSummaryCardContent(context),
         ),
         margin: EdgeInsets.zero,
+        scrollable: true,
       );
     }
     return LayoutBuilder(

@@ -1,6 +1,5 @@
-import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -15,24 +14,16 @@ import 'package:smooth_app/data_models/product_preferences.dart';
 import 'package:smooth_app/data_models/up_to_date_mixin.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/local_database.dart';
-import 'package:smooth_app/generic_lib/buttons/smooth_large_button_with_icon.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/duration_constants.dart';
 import 'package:smooth_app/generic_lib/widgets/smooth_back_button.dart';
-import 'package:smooth_app/generic_lib/widgets/smooth_card.dart';
 import 'package:smooth_app/helpers/analytics_helper.dart';
-import 'package:smooth_app/helpers/launch_url_helper.dart';
+import 'package:smooth_app/helpers/product_cards_helper.dart';
+import 'package:smooth_app/knowledge_panel/knowledge_panels_builder.dart';
 import 'package:smooth_app/pages/carousel_manager.dart';
-import 'package:smooth_app/pages/preferences/user_preferences_dev_mode.dart';
-import 'package:smooth_app/pages/product/common/product_list_page.dart';
-import 'package:smooth_app/pages/product/common/product_refresher.dart';
 import 'package:smooth_app/pages/product/edit_product_page.dart';
 import 'package:smooth_app/pages/product/product_questions_widget.dart';
-import 'package:smooth_app/pages/product/reorderable_knowledge_panel_page.dart';
-import 'package:smooth_app/pages/product/reordered_knowledge_panel_cards.dart';
-import 'package:smooth_app/pages/product/standard_knowledge_panel_cards.dart';
 import 'package:smooth_app/pages/product/summary_card.dart';
-import 'package:smooth_app/pages/product/website_card.dart';
 import 'package:smooth_app/query/product_query.dart';
 import 'package:smooth_app/themes/constant_icons.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
@@ -156,25 +147,9 @@ class _ProductPageState extends State<ProductPage>
 
   Widget _buildProductBody(BuildContext context) {
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
-    final LocalDatabase localDatabase = context.read<LocalDatabase>();
-    final UserPreferences userPreferences = context.watch<UserPreferences>();
-    final DaoProductList daoProductList = DaoProductList(localDatabase);
-    return RefreshIndicator(
-      onRefresh: () async => ProductRefresher().fetchAndRefresh(
-        barcode: barcode,
-        context: context,
-      ),
-      child: ListView(
-        // /!\ Smart Dart
-        // `physics: const AlwaysScrollableScrollPhysics()`
-        // means that we will always scroll, even if it's pointless.
-        // Why do we need to? For the RefreshIndicator, that wouldn't be
-        // triggered on a ListView smaller than the screen
-        // (as there will be no scroll).
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(
-          bottom: SMALL_SPACE,
-        ),
+
+    return SmoothScaffold(
+      body: Column(
         children: <Widget>[
           Align(
             heightFactor: 0.7,
@@ -189,75 +164,98 @@ class _ProductPageState extends State<ProductPage>
             padding: const EdgeInsets.symmetric(
               horizontal: SMALL_SPACE,
             ),
-            child: HeroMode(
-              enabled: widget.withHeroAnimation &&
-                  widget.heroTag?.isNotEmpty == true,
-              child: Hero(
-                tag: widget.heroTag ?? '',
-                child: KeepQuestionWidgetAlive(
-                  keepWidgetAlive: _keepRobotoffQuestionsAlive,
-                  child: SummaryCard(
-                    upToDateProduct,
-                    _productPreferences,
-                    isFullVersion: true,
-                    showUnansweredQuestions: true,
-                  ),
-                ),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: LayoutBuilder(
+                builder: (_, BoxConstraints constraints) =>
+                    _buildCarousel(constraints),
               ),
             ),
+          ),
+          const SizedBox(
+            height: MEDIUM_SPACE,
           ),
           _buildActionBar(appLocalizations),
-          _buildListIfRelevantWidget(
-            appLocalizations,
-            daoProductList,
-          ),
-          if (userPreferences.getFlag(
-                  UserPreferencesDevMode.userPreferencesFlagUserOrderedKP) ??
-              false)
-            ReorderedKnowledgePanelCards(upToDateProduct)
-          else
-            StandardKnowledgePanelCards(upToDateProduct),
-          // TODO(monsieurtanuki): include website in reordered knowledge panels
-          if (upToDateProduct.website != null &&
-              upToDateProduct.website!.trim().isNotEmpty)
-            WebsiteCard(upToDateProduct.website!),
-          if (userPreferences.getFlag(
-                  UserPreferencesDevMode.userPreferencesFlagShortcutToPrices) ??
-              false)
-            Padding(
-              padding: const EdgeInsets.all(SMALL_SPACE),
-              child: SmoothLargeButtonWithIcon(
-                text: appLocalizations.prices_app_button,
-                icon: CupertinoIcons.tag_fill,
-                onPressed: () async => LaunchUrlHelper.launchURL(
-                  'https://prices.openfoodfacts.org/app/products/${upToDateProduct.barcode!}',
-                  false,
-                ),
-              ),
-            ),
-          if (userPreferences.getFlag(
-                  UserPreferencesDevMode.userPreferencesFlagUserOrderedKP) ??
-              false)
-            Padding(
-              padding: const EdgeInsets.all(SMALL_SPACE),
-              child: SmoothLargeButtonWithIcon(
-                text: appLocalizations.reorder_attribute_action,
-                icon: Icons.sort,
-                onPressed: () async => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) =>
-                        ReorderableKnowledgePanelPage(upToDateProduct),
-                  ),
-                ),
-              ),
-            ),
-          if (questionsLayout == ProductQuestionsLayout.banner)
-            // assuming it's tall enough in order to go above the banner
-            const SizedBox(height: 4 * VERY_LARGE_SPACE),
         ],
       ),
     );
+  }
+
+  CarouselSlider _buildCarousel(BoxConstraints constraints) {
+    final Widget summaryCard = HeroMode(
+      enabled: widget.withHeroAnimation && widget.heroTag?.isNotEmpty == true,
+      child: Hero(
+        tag: widget.heroTag ?? '',
+        child: KeepQuestionWidgetAlive(
+          keepWidgetAlive: _keepRobotoffQuestionsAlive,
+          child: SummaryCard(
+            upToDateProduct,
+            _productPreferences,
+            isFullVersion: true,
+            showUnansweredQuestions: true,
+          ),
+        ),
+      ),
+    );
+
+    final List<Widget> knowledgePanels = <Widget>[summaryCard];
+    knowledgePanels.addAll(_getCarouselPanels());
+
+    return CarouselSlider.builder(
+      itemCount: knowledgePanels.length,
+      itemBuilder: (BuildContext context, int itemIndex, int itemRealIndex) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 5,
+          ),
+          child: knowledgePanels.elementAt(itemIndex),
+        );
+      },
+      options: CarouselOptions(
+        enlargeCenterPage: false,
+        height: constraints.maxHeight,
+        viewportFraction: 0.90,
+        enableInfiniteScroll: false,
+      ),
+    );
+  }
+
+  List<Widget> _getCarouselPanels() {
+    final List<Widget> knowledgePanelWidgets = <Widget>[];
+    if (upToDateProduct.knowledgePanels != null) {
+      final List<KnowledgePanelElement> elements =
+          KnowledgePanelsBuilder.getRootPanelElements(upToDateProduct);
+      for (final KnowledgePanelElement panelElement in elements) {
+        final List<Widget> children = KnowledgePanelsBuilder.getChildren(
+          context,
+          panelElement: panelElement,
+          product: upToDateProduct,
+          onboardingMode: false,
+        );
+        if (children.isNotEmpty) {
+          knowledgePanelWidgets.add(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          );
+        }
+      }
+    }
+
+    final List<Widget> widgetsWrappedInSmoothCards = knowledgePanelWidgets
+        .map((Widget widget) => Padding(
+              padding: const EdgeInsetsDirectional.only(top: VERY_LARGE_SPACE),
+              child: buildProductSmoothCard(
+                body: widget,
+                padding: SMOOTH_CARD_PADDING,
+                margin: EdgeInsets.zero,
+                scrollable: true,
+              ),
+            ))
+        .toList(growable: false);
+
+    return widgetsWrappedInSmoothCards;
   }
 
   Future<void> _editList() async {
@@ -307,11 +305,6 @@ class _ProductPageState extends State<ProductPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               _buildActionBarItem(
-                Icons.add,
-                appLocalizations.user_list_button_add_product,
-                _editList,
-              ),
-              _buildActionBarItem(
                 Icons.edit,
                 appLocalizations.edit_product_label,
                 () async {
@@ -333,6 +326,11 @@ class _ProductPageState extends State<ProductPage>
                   // Force Robotoff questions to be reloaded
                   setState(() => _keepRobotoffQuestionsAlive = true);
                 },
+              ),
+              _buildActionBarItem(
+                Icons.add,
+                appLocalizations.user_list_button_add_product,
+                _editList,
               ),
               _buildActionBarItem(
                 ConstantIcons.instance.getShareIcon(),
@@ -375,102 +373,6 @@ class _ProductPageState extends State<ProductPage>
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.0),
               child: AutoSizeText(label, textAlign: TextAlign.center),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildListIfRelevantWidget(
-    final AppLocalizations appLocalizations,
-    final DaoProductList daoProductList,
-  ) =>
-      FutureBuilder<List<String>>(
-        future: daoProductList.getUserListsWithBarcodes(<String>[barcode]),
-        builder: (
-          final BuildContext context,
-          final AsyncSnapshot<List<String>> snapshot,
-        ) {
-          if (snapshot.data != null && snapshot.data!.isNotEmpty) {
-            return _buildListWidget(
-              appLocalizations,
-              snapshot.data!,
-              daoProductList,
-            );
-          }
-          return EMPTY_WIDGET;
-        },
-      );
-
-  Widget _buildListWidget(
-    final AppLocalizations appLocalizations,
-    final List<String> productListNames,
-    final DaoProductList daoProductList,
-  ) {
-    final List<Widget> children = <Widget>[];
-    for (final String productListName in productListNames) {
-      children.add(
-        Padding(
-          padding: const EdgeInsetsDirectional.only(
-            top: VERY_SMALL_SPACE,
-            end: VERY_SMALL_SPACE,
-          ),
-          child: ElevatedButton(
-            style: ButtonStyle(
-                padding: MaterialStateProperty.all(
-                  const EdgeInsets.symmetric(
-                      horizontal: VERY_LARGE_SPACE, vertical: MEDIUM_SPACE),
-                ),
-                shape: MaterialStateProperty.all(
-                  const RoundedRectangleBorder(
-                    borderRadius: ROUNDED_BORDER_RADIUS,
-                  ),
-                )),
-            onPressed: () async {
-              final ProductList productList = ProductList.user(productListName);
-              await daoProductList.get(productList);
-              if (!mounted) {
-                return;
-              }
-              await Navigator.push<void>(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) => ProductListPage(
-                    productList,
-                    allowToSwitchBetweenLists: false,
-                  ),
-                ),
-              );
-              setState(() {});
-            },
-            child: Text(
-              productListName.toUpperCase(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                // color: buttonData.textColor ?? themeData.colorScheme.primary,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return SmoothCard(
-      child: Padding(
-        padding: const EdgeInsets.all(SMALL_SPACE),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              appLocalizations.user_list_subtitle_product,
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            WrapSuper(
-              wrapType: WrapType.fit,
-              wrapFit: WrapFit.proportional,
-              spacing: VERY_SMALL_SPACE,
-              children: children,
             ),
           ],
         ),

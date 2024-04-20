@@ -277,7 +277,7 @@ class DaoProductList extends AbstractDao {
 
     final int today = getTodayDateAsScannedBarcodeKey();
     barcodes[today] ??= <ScannedBarcode>[];
-    
+
     // Don't add if the same product was added less than a minute ago
     if (barcodes[today]!.isNotEmpty) {
       // Start from the oldest
@@ -287,8 +287,8 @@ class DaoProductList extends AbstractDao {
         }
 
         final int scanTimeDifference = getScanTimeDifferenceInSeconds(
-          i.lastScanTime,
-          barcode.lastScanTime,
+          oldScanTime: i.lastScanTime,
+          newScanTime: barcode.lastScanTime,
         );
         if (scanTimeDifference <= 60) {
           return scanTimeDifference;
