@@ -86,6 +86,7 @@ jobs:
           --project="wisebite-app" \
           --android-package-name="org.openfoodfacts.scanner" \
           --ios-bundle-id="org.openfoodfacts.scanner" \
+          --macos-bundle-id="org.openfoodfacts.scanner" \
           --platforms="android,ios" \
           --token="${{ secrets.FIREBASE_CI_TOKEN }}" \
           --yes
