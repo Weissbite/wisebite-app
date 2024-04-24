@@ -7,7 +7,7 @@ on:
 env:
   JAVA_VERSION: 17
   RUBY_VERSION: 3.2.0
-  GOOGLE_APPLICATION_CREDENTIALS: ${{ vars.GOOGLE_APPLICATION_CREDENTIALS }}
+  GOOGLE_APPLICATION_CREDENTIALS: "$HOME/.config/google-creds.json"
 
 
 jobs:
@@ -63,8 +63,8 @@ jobs:
         env:
           GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_FIREBASE_ADMIN_JSON }}
         run: |
-          mkdir -p "$(dirname $GOOGLE_APPLICATION_CREDENTIALS)"
-          echo "${GOOGLE_SA_JSON}" | base64 -di > $GOOGLE_APPLICATION_CREDENTIALS
+          mkdir -p "$(dirname ${GOOGLE_APPLICATION_CREDENTIALS})"
+          echo "${GOOGLE_SA_JSON}" | base64 -di > ${GOOGLE_APPLICATION_CREDENTIALS}
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
