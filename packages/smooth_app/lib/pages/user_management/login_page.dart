@@ -1,13 +1,11 @@
-// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
-// import 'package:openfoodfacts/openfoodfacts.dart';
+// import 'package:openfoodfacts/openfoodfacts.dart' as off;
 import 'package:provider/provider.dart';
 import 'package:smooth_app/data_models/login_result.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
-// import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/buttons/service_sign_in_button.dart';
@@ -54,25 +52,21 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
     });
 
     // _loginResult = await userManagementProvider.login(
-    //   User(
-    //     userId: userIdController.text,
-    //     password: passwordController.text,
+    //   const off.User(
+    //     userId: '%{{OpenFoodFacts_USERNAME}}%',
+    //     password: '%{{OpenFoodFacts_PASSWORD}}%',
     //   ),
     // );
 
     if (_loginResult!.type == LoginResultType.successful) {
       AnalyticsHelper.trackEvent(AnalyticsEvent.loginAction);
-      if (!mounted) {
-        return;
-      }
-
       // TODO(yavor): Pop-up dialog for review.
       // await showInAppReviewIfNecessary(context);
 
       // if (!mounted) {
       //   return;
       // }
-      Navigator.pop(context);
+      // Navigator.pop(context);
     } else {
       setState(() => _runningQuery = false);
     }
@@ -150,8 +144,14 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                               askUserSavingNewProducts: true,
                               localDb: context.read<LocalDatabase>());
 
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          _login(context);
+
                           if (context.mounted) {
-                            Navigator.pop(context);
+                            Navigator.of(context).pop(true);
                           }
                         },
                         backgroundColor: Colors.white,
