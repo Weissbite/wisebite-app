@@ -80,7 +80,15 @@ jobs:
           cd ./packages/smooth_app/ && pwd && dart pub global activate flutterfire_cli --overwrite;
 
       - name: Configure Firebase
-        run: cd ./packages/smooth_app/ && pwd && flutterfire configure --project wisebite-app --android-package-name "org.openfoodfacts.scanner" --platforms "android,ios" --token "${{ secrets.FIREBASE_CI_TOKEN }}" --yes
+        run: |
+          cd ./packages/smooth_app/ && pwd \
+          && flutterfire configure \
+          --project="wisebite-app" \
+          --android-package-name="org.openfoodfacts.scanner" \
+          --ios-bundle-id="org.openfoodfacts.scanner" \
+          --platforms="android,ios" \
+          --token="${{ secrets.FIREBASE_CI_TOKEN }}" \
+          --yes
 
       - name: Build app
         run: cd ./packages/smooth_app/ && pwd && flutter build appbundle --release -t lib/entrypoints/android/main_google_play.dart
