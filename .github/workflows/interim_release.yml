@@ -1,0 +1,92 @@
+name: Create interim release
+
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+env:
+  JAVA_VERSION: 17
+  RUBY_VERSION: 3.2.0
+  GOOGLE_APPLICATION_CREDENTIALS: ${{ vars.GOOGLE_APPLICATION_CREDENTIALS }}
+
+
+jobs:
+  deploy_android:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - run: echo "Create interim release from $GITHUB_SHA"
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4.0.0
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          ruby-version: ${{ env.RUBY_VERSION }}
+
+      - name: bundle install
+        run: bundle install
+        working-directory: ./packages/smooth_app/android/
+
+      # Get the flutter version from ./flutter-version.txt
+      - run: echo "FLUTTER_VERSION=$(cat flutter-version.txt)" >> $GITHUB_OUTPUT
+        id: flutter-version
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          #channel: stable
+          cache: true
+          flutter-version: ${{ steps.flutter-version.outputs.FLUTTER_VERSION }}
+          cache-key: flutter-${{ hashFiles('flutter-version.txt')}}-${{ hashFiles('packages\smooth_app\pubspec.lock')}}
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Get dependencies
+        run: ci/pub_upgrade.sh
+
+      - name: Replace credentials in user_management_provider.dart
+        run: |
+          sed -i 's/%OPENFOODFACTS_USERNAME%/${{ secrets.OPENFOODFACTS_USERNAME }}/g' ./packages/smooth_app/lib/data_models/user_management_provider.dart
+          sed -i 's/%OPENFOODFACTS_PASSWORD%/${{ secrets.OPENFOODFACTS_PASSWORD }}/g' ./packages/smooth_app/lib/data_models/user_management_provider.dart
+        shell: bash
+
+      - name: Put Firebase credentials in file
+        env:
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_FIREBASE_ADMIN_JSON }}
+        run: |
+          mkdir -p "$(dirname $GOOGLE_APPLICATION_CREDENTIALS)"
+          echo "${GOOGLE_SA_JSON}" | base64 -di > $GOOGLE_APPLICATION_CREDENTIALS
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: "Install Firebase CLI"
+        run: |
+          npm i -g firebase-tools
+
+      - name: Install FlutterFire
+        run: |
+          cd ./packages/smooth_app/ && pwd && dart pub global activate flutterfire_cli --overwrite;
+
+      - name: Configure Firebase
+        run: cd ./packages/smooth_app/ && pwd && flutterfire configure --project wisebite-app --platforms "android,ios" --token "${{ secrets.FIREBASE_CI_TOKEN }}" --yes
+
+      - name: Build app
+        run: cd ./packages/smooth_app/ && pwd && flutter build appbundle --release -t lib/entrypoints/android/main_google_play.dart
+
+      - name: Upload APK as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: wisebite-interim-release-$GITHUB_SHA.apk
+          path: ./packages/smooth_app/build/app/outputs/flutter-apk/app-release.apk

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
@@ -17,7 +18,6 @@ import 'package:smooth_app/pages/preferences/user_preferences_page.dart';
 import 'package:smooth_app/pages/product/common/product_query_page_helper.dart';
 import 'package:smooth_app/pages/user_management/login_page.dart';
 import 'package:smooth_app/query/paged_product_query.dart';
-import 'package:smooth_app/query/paged_to_be_completed_product_query.dart';
 import 'package:smooth_app/query/paged_user_product_query.dart';
 import 'package:smooth_app/query/product_query.dart';
 import 'package:smooth_app/services/smooth_services.dart';
@@ -38,19 +38,21 @@ class UserPreferencesAccount extends AbstractUserPreferences {
   @override
   PreferencePageType getPreferencePageType() => PreferencePageType.ACCOUNT;
 
-  String? _getUserId() => UserManagementProvider.user?.displayName;
+  String? _getWisebiteUserId() => UserManagementProvider.user?.displayName;
+  // String? _getUserId() => OpenFoodAPIConfiguration.globalUser?.userId;
 
   @override
   String getTitleString() {
-    final String? userId = _getUserId();
+    final String? wisebiteUserId = _getWisebiteUserId();
+    // final String? userId = _getUserId();
 
-    if (userId == null) {
+    if (wisebiteUserId == null) {
       return appLocalizations.user_profile_title_guest;
     }
-    if (userId.isEmail) {
-      return appLocalizations.user_profile_title_id_email(userId);
+    if (wisebiteUserId.isEmail) {
+      return appLocalizations.user_profile_title_id_email(wisebiteUserId);
     }
-    return appLocalizations.user_profile_title_id_default(userId);
+    return appLocalizations.user_profile_title_id_default(wisebiteUserId);
   }
 
   @override
@@ -64,7 +66,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
   @override
   List<String> getLabels() => <String>[
         ...super.getLabels(),
-        if (_getUserId() == null) appLocalizations.sign_in,
+        if (_getWisebiteUserId() == null) appLocalizations.sign_in,
       ];
 
   @override
@@ -90,7 +92,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
 
   @override
   Widget? getAdditionalSubtitle() {
-    if (_getUserId() != null) {
+    if (_getWisebiteUserId() != null) {
       // we are already connected: no "LOGIN" button
       return null;
     }
@@ -156,7 +158,6 @@ class UserPreferencesAccount extends AbstractUserPreferences {
                 if (!areMetricsFilled) {
                   showCompleteProfileDialog(context);
                 }
-                Navigator.of(context).pop();
               },
               style: ButtonStyle(
                 minimumSize: MaterialStateProperty.all<Size>(
@@ -183,9 +184,15 @@ class UserPreferencesAccount extends AbstractUserPreferences {
     }
 
     final LocalDatabase localDatabase = context.read<LocalDatabase>();
-    // Credentials
-    final String userId = UserManagementProvider.user!.uid;
+    // Credentials for OpenFoodFacts.
+    String? userId = OpenFoodAPIConfiguration.globalUser?.userId;
+    // In case we failed to connect to OpenFoodFacts, ensure we use the correct userId.
+    // userId actually represents the username.
+    userId ??= 'wisebite';
+    final String wisebiteUserId = UserManagementProvider.user!.uid;
+    Logs.d('Current OpenFoodFacts user: $userId for $wisebiteUserId');
     return <UserPreferencesItem>[
+      // TODO(APP-25): Add back pages once completed.
       _buildProductQueryTile(
         productQuery: PagedUserProductQuery(
           userId: userId,
@@ -208,35 +215,35 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         localDatabase: localDatabase,
         myCount: _getMyCount(UserSearchType.INFORMER),
       ),
-      _buildProductQueryTile(
-        productQuery: PagedUserProductQuery(
-          userId: userId,
-          type: UserSearchType.PHOTOGRAPHER,
-        ),
-        title: appLocalizations.user_search_photographer_title,
-        iconData: Icons.add_a_photo,
-        context: context,
-        localDatabase: localDatabase,
-        myCount: _getMyCount(UserSearchType.PHOTOGRAPHER),
-      ),
-      _buildProductQueryTile(
-        productQuery: PagedUserProductQuery(
-          userId: userId,
-          type: UserSearchType.TO_BE_COMPLETED,
-        ),
-        title: appLocalizations.user_search_to_be_completed_title,
-        iconData: Icons.more_horiz,
-        context: context,
-        localDatabase: localDatabase,
-        myCount: _getMyCount(UserSearchType.TO_BE_COMPLETED),
-      ),
-      _buildProductQueryTile(
-        productQuery: PagedToBeCompletedProductQuery(),
-        title: appLocalizations.all_search_to_be_completed_title,
-        iconData: Icons.more_outlined,
-        context: context,
-        localDatabase: localDatabase,
-      ),
+      // _buildProductQueryTile(
+      //   productQuery: PagedUserProductQuery(
+      //     userId: userId,
+      //     type: UserSearchType.PHOTOGRAPHER,
+      //   ),
+      //   title: appLocalizations.user_search_photographer_title,
+      //   iconData: Icons.add_a_photo,
+      //   context: context,
+      //   localDatabase: localDatabase,
+      //   myCount: _getMyCount(UserSearchType.PHOTOGRAPHER),
+      // ),
+      // _buildProductQueryTile(
+      //   productQuery: PagedUserProductQuery(
+      //     userId: userId,
+      //     type: UserSearchType.TO_BE_COMPLETED,
+      //   ),
+      //   title: appLocalizations.user_search_to_be_completed_title,
+      //   iconData: Icons.more_horiz,
+      //   context: context,
+      //   localDatabase: localDatabase,
+      //   myCount: _getMyCount(UserSearchType.TO_BE_COMPLETED),
+      // ),
+      // _buildProductQueryTile(
+      //   productQuery: PagedToBeCompletedProductQuery(),
+      //   title: appLocalizations.all_search_to_be_completed_title,
+      //   iconData: Icons.more_outlined,
+      //   context: context,
+      //   localDatabase: localDatabase,
+      // ),
       _getListTile(
         appLocalizations.metrics,
         () {
@@ -249,7 +256,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
         () async {
           if (await _confirmLogout() == true) {
             if (context.mounted) {
-              await UserManagementProvider().signOut(context);
+              await UserManagementProvider().signOut();
               if (context.mounted) {
                 Navigator.pop(context);
               }
@@ -285,6 +292,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
     final UserSearchType type,
   ) async {
     final User user = OpenFoodAPIConfiguration.globalUser!;
+    final fb.User wisebiteUser = UserManagementProvider.user!;
     final ProductSearchQueryConfiguration configuration = type.getConfiguration(
       user.userId,
       1,
@@ -304,7 +312,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
       return result.count;
     } catch (e) {
       Logs.e(
-        'Could not count the number of products for $type, ${user.userId}',
+        'Could not count the number of products for $type, ${user.userId}(${wisebiteUser.displayName})',
         ex: e,
       );
       return null;
