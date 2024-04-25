@@ -11,7 +11,7 @@ env:
 
 
 jobs:
-  deploy_android:
+  build_apk:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
@@ -84,6 +84,11 @@ jobs:
           cd ./packages/smooth_app/ && pwd \
           && flutterfire configure \
           --project="wisebite-app" \
+          --android-package-name="org.openfoodfacts.scanner" \
+          --ios-bundle-id="org.openfoodfacts.scanner" \
+          --macos-bundle-id="org.openfoodfacts.scanner" \
+          --web-app-id="org.openfoodfacts.scanner" \
+          --windows-app-id="org.openfoodfacts.scanner" \
           --platforms="android,ios" \
           --token="${{ secrets.FIREBASE_CI_TOKEN }}" \
           --yes
