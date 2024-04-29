@@ -348,7 +348,9 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
             HideableContainerState.of(context).hide(() async {
               final ContinuousScanModel model =
                   context.read<ContinuousScanModel>();
-              await model.removeBarcode(barcode);
+
+              // TODO(iliyan03): Fix
+              //await model.removeBarcode(barcode);
 
               // Vibrate twice
               SmoothHapticFeedback.confirm();

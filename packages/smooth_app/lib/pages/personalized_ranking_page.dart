@@ -75,15 +75,16 @@ class _PersonalizedRankingPageState extends State<PersonalizedRankingPage>
     }
   }
 
-  Future<void> _handlePopUpClick(String value) async {
-    switch (value) {
-      case 'add_to_list':
-        await _addToLists(context);
-        break;
-      default:
-        throw Exception('Unknown case $value');
-    }
-  }
+  /// iliyan03 : Not using custom lists currently
+  // Future<void> _handlePopUpClick(String value) async {
+  //   switch (value) {
+  //     case 'add_to_list':
+  //       await _addToLists(context);
+  //       break;
+  //     default:
+  //       throw Exception('Unknown case $value');
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -95,19 +96,19 @@ class _PersonalizedRankingPageState extends State<PersonalizedRankingPage>
     return SmoothScaffold(
       appBar: SmoothAppBar(
         title: Text(widget.title, overflow: TextOverflow.fade),
-        actions: <Widget>[
-          PopupMenuButton<String>(
-            onSelected: _handlePopUpClick,
-            itemBuilder: (BuildContext context) {
-              return <PopupMenuEntry<String>>[
-                PopupMenuItem<String>(
-                  value: 'add_to_list',
-                  child: Text(appLocalizations.user_list_button_add_product),
-                ),
-              ];
-            },
-          ),
-        ],
+        // actions: <Widget>[
+        //   PopupMenuButton<String>(
+        //     onSelected: _handlePopUpClick,
+        //     itemBuilder: (BuildContext context) {
+        //       return <PopupMenuEntry<String>>[
+        //         PopupMenuItem<String>(
+        //           value: 'add_to_list',
+        //           child: Text(appLocalizations.user_list_button_add_product),
+        //         ),
+        //       ];
+        //     },
+        //   ),
+        // ],
       ),
       body: ChangeNotifierProvider<PersonalizedRankingModel>(
         create: (final BuildContext context) => _model,

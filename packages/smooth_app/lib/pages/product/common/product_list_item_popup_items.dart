@@ -186,15 +186,9 @@ class ProductListItemPopupDelete extends ProductListItemPopupItem {
       return false;
     }
 
-    final List<String> barcodes = List<String>.generate(
-      selectedBarcodes.length,
-      (int index) => selectedBarcodes.elementAt(index).barcode,
-      growable: false,
-    );
-
     await daoProductList.bulkSet(
       productList,
-      barcodes,
+      selectedBarcodes.toSet(),
       include: false,
     );
     await daoProductList.get(productList);

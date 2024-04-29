@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:smooth_app/data_models/firestore_model.dart';
@@ -16,12 +19,14 @@ import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 const int _uselessTotalSizeValue = 0;
 
 /// Transport class for a scanned barcode.
+@immutable
 class ScannedBarcode extends FirestoreModel<ScannedBarcode> {
-  ScannedBarcode(this._barcode, [this._lastScanTime = 0]) {
-    if (_lastScanTime <= 0) {
-      _lastScanTime = DateTime.now().millisecondsSinceEpoch;
-    }
-  }
+  ScannedBarcode(
+    this._barcode, {
+    int? lastScanTime,
+  }) : _lastScanTime = lastScanTime ?? DateTime.now().millisecondsSinceEpoch;
+  final int _lastScanTime;
+  final String _barcode;
 
   @override
   ScannedBarcode fromFirestore(
@@ -31,7 +36,7 @@ class ScannedBarcode extends FirestoreModel<ScannedBarcode> {
     final Map<String, dynamic>? barcode = data.data();
     return ScannedBarcode(
       barcode!['barcode'],
-      barcode['last_scan_time'],
+      lastScanTime: barcode['last_scan_time'],
     );
   }
 
@@ -43,11 +48,22 @@ class ScannedBarcode extends FirestoreModel<ScannedBarcode> {
     };
   }
 
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    return other is ScannedBarcode &&
+        other.barcode == _barcode &&
+        other.lastScanTime == _lastScanTime;
+  }
+
+  @override
+  int get hashCode => Object.hash(_barcode, _lastScanTime);
+
   String get barcode => _barcode;
   int get lastScanTime => _lastScanTime;
-
-  late int _lastScanTime;
-  final String _barcode;
 }
 
 // Can be generated automatically
@@ -57,7 +73,7 @@ class ScannedBarcodeAdapter extends TypeAdapter<ScannedBarcode> {
 
   @override
   ScannedBarcode read(BinaryReader reader) {
-    return ScannedBarcode(reader.readString(), reader.readInt());
+    return ScannedBarcode(reader.readString(), lastScanTime: reader.readInt());
   }
 
   @override
@@ -75,7 +91,7 @@ class _BarcodeList {
     this.totalSize,
   );
 
-  _BarcodeList.now(final Map<int, List<ScannedBarcode>> barcodes)
+  _BarcodeList.now(final Map<int, LinkedHashSet<ScannedBarcode>> barcodes)
       : this(
           LocalDatabase.nowInMillis(),
           barcodes,
@@ -94,7 +110,7 @@ class _BarcodeList {
   /// In milliseconds since epoch.
   /// Can be used to decide if the data is recent enough or deprecated.
   final int timestamp;
-  final Map<int, List<ScannedBarcode>> barcodes;
+  final Map<int, LinkedHashSet<ScannedBarcode>> barcodes;
 
   /// Total size of server query results (or 0).
   final int totalSize;
@@ -110,10 +126,10 @@ class _BarcodeListAdapter extends TypeAdapter<_BarcodeList> {
     final int timestamp = reader.readInt();
     final Map<dynamic, dynamic> barcodeMap = reader.readMap();
 
-    final Map<int, List<ScannedBarcode>> barcodes =
-        <int, List<ScannedBarcode>>{};
+    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
+        <int, LinkedHashSet<ScannedBarcode>>{};
     for (final int i in barcodeMap.keys) {
-      barcodes[i] = List<ScannedBarcode>.from(barcodeMap[i]);
+      barcodes[i] = LinkedHashSet<ScannedBarcode>.from(barcodeMap[i]);
     }
 
     late int totalSize;
@@ -125,10 +141,29 @@ class _BarcodeListAdapter extends TypeAdapter<_BarcodeList> {
     return _BarcodeList(timestamp, barcodes, totalSize);
   }
 
+  static Map<int, List<ScannedBarcode>> _getConverted(
+    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes,
+  ) {
+    final Map<int, List<ScannedBarcode>> converted =
+        <int, List<ScannedBarcode>>{};
+    if (barcodes.isEmpty) {
+      return converted;
+    }
+
+    barcodes.forEach((
+      int key,
+      LinkedHashSet<ScannedBarcode> value,
+    ) {
+      converted[key] = List<ScannedBarcode>.from(value);
+    });
+
+    return converted;
+  }
+
   @override
   void write(BinaryWriter writer, _BarcodeList obj) {
     writer.writeInt(obj.timestamp);
-    writer.writeMap(obj.barcodes);
+    writer.writeMap(_getConverted(obj.barcodes));
     writer.writeInt(obj.totalSize);
   }
 }
@@ -217,19 +252,21 @@ class DaoProductList extends AbstractDao {
   }) async {
     final LazyBox<_BarcodeList> box = _getBox();
     final String key = getKey(productList);
-    localDatabase.upToDateProductList
-        .setLocalUpToDate(key, <int, List<ScannedBarcode>>{});
+    localDatabase.upToDateProductList.setLocalUpToDate(
+      key,
+      <int, LinkedHashSet<ScannedBarcode>>{},
+    );
     if (!box.containsKey(key)) {
       return false;
     }
 
     // We don't want the product list to get deleted from the Firestore upon renaming
-    if (!rename) {
-      await ProductListFirebaseManager().clearProductList(
-        productList: productList,
-        barcodes: productList.barcodes,
-      );
-    }
+    // if (!rename) {
+    //   await ProductListFirebaseManager().clearProductList(
+    //     productList: productList,
+    //     barcodes: productList.barcodes,
+    //   );
+    // }
 
     await box.delete(key);
     return true;
@@ -238,8 +275,8 @@ class DaoProductList extends AbstractDao {
   /// Loads the barcode list.
   Future<void> get(final ProductList productList) async {
     final _BarcodeList? list = await _get(productList);
-    final Map<int, List<ScannedBarcode>> barcodes =
-        <int, List<ScannedBarcode>>{};
+    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
+        <int, LinkedHashSet<ScannedBarcode>>{};
     productList.totalSize = list?.totalSize ?? 0;
     if (list == null || list.barcodes.isEmpty) {
       productList.set(barcodes);
@@ -266,39 +303,46 @@ class DaoProductList extends AbstractDao {
     final ProductList productList,
     final ScannedBarcode barcode,
   ) async {
-    final Map<int, List<ScannedBarcode>> barcodes;
+    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes;
 
     final _BarcodeList? list = await _get(productList);
     if (list == null) {
-      barcodes = <int, List<ScannedBarcode>>{};
+      barcodes = <int, LinkedHashSet<ScannedBarcode>>{};
     } else {
       barcodes = _getSafeBarcodeListCopy(list.barcodes);
     }
 
     final int today = getTodayDateAsScannedBarcodeKey();
-    barcodes[today] ??= <ScannedBarcode>[];
+    barcodes[today] ??= LinkedHashSet<ScannedBarcode>();
+
+    final LinkedHashSet<ScannedBarcode> todayBarcodes = barcodes[today]!;
 
     // Don't add if the same product was added less than a minute ago
-    if (barcodes[today]!.isNotEmpty) {
-      // Start from the oldest
-      for (final ScannedBarcode i in barcodes[today]!.reversed) {
+    if (todayBarcodes.isNotEmpty) {
+      int scanTimeDifference = -1;
+      todayBarcodes.firstWhereOrNull((final ScannedBarcode i) {
         if (i.barcode != barcode.barcode) {
-          continue;
+          return false;
         }
 
-        final int scanTimeDifference = getScanTimeDifferenceInSeconds(
+        scanTimeDifference = getScanTimeDifferenceInSeconds(
           oldScanTime: i.lastScanTime,
           newScanTime: barcode.lastScanTime,
         );
+
         if (scanTimeDifference <= 60) {
-          return scanTimeDifference;
+          return true;
         }
 
-        break;
+        return false;
+      });
+
+      if (scanTimeDifference > -1 && scanTimeDifference <= 60) {
+        return scanTimeDifference;
       }
     }
 
-    barcodes[today]!.add(barcode);
+    todayBarcodes.add(barcode);
     await _put(getKey(productList), _BarcodeList.now(barcodes));
     await ProductListFirebaseManager().addBarcode(
       productList: productList,
@@ -311,13 +355,13 @@ class DaoProductList extends AbstractDao {
   Future<void> clear(final ProductList productList,
       [final bool clearInFirebase = true]) async {
     final _BarcodeList newList =
-        _BarcodeList.now(<int, List<ScannedBarcode>>{});
-    if (clearInFirebase) {
-      await ProductListFirebaseManager().clearProductList(
-        productList: productList,
-        barcodes: productList.barcodes,
-      );
-    }
+        _BarcodeList.now(<int, LinkedHashSet<ScannedBarcode>>{});
+    // if (clearInFirebase) {
+    //   await ProductListFirebaseManager().clearProductList(
+    //     productList: productList,
+    //     barcodes: productList.barcodes,
+    //   );
+    // }
     await _put(getKey(productList), newList);
   }
 
@@ -326,105 +370,91 @@ class DaoProductList extends AbstractDao {
   /// Returns true if there was a change in the list.
   Future<bool> set(
     final ProductList productList,
-    final String barcode,
+    final ScannedBarcode barcode,
     final bool include,
   ) async {
     final _BarcodeList? list = await _get(productList);
-    final Map<int, List<ScannedBarcode>> barcodes;
+    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes;
     if (list == null) {
-      barcodes = <int, List<ScannedBarcode>>{};
+      barcodes = <int, LinkedHashSet<ScannedBarcode>>{};
     } else {
       barcodes = _getSafeBarcodeListCopy(list.barcodes);
     }
 
-    final bool found = barcodeExists(barcodes, barcode, (
-      ScannedBarcode foundBarcode,
-      List<ScannedBarcode> foundBarcodeList,
-      int foundInDay,
-    ) async {
-      if (!include) {
-        foundBarcodeList.remove(foundBarcode);
-        await ProductListFirebaseManager().deleteBarcode(
-          productList: productList,
-          barcode: foundBarcode,
-        );
-      }
-    });
-
-    if (found) {
-      if (include) {
-        return false;
-      }
-
-      // There's no need to do anything here because we've already removed the barcode when we searched for it.
-    } else {
-      if (!include) {
-        return false;
-      }
-
-      final ScannedBarcode newBarcode = ScannedBarcode(barcode);
-      List<ScannedBarcode>? todayScannedBarcodes =
+    bool result = false;
+    if (include) {
+      LinkedHashSet<ScannedBarcode>? todayScans =
           barcodes[getTodayDateAsScannedBarcodeKey()];
-      if (todayScannedBarcodes != null) {
-        todayScannedBarcodes.add(newBarcode);
-      } else {
-        todayScannedBarcodes = <ScannedBarcode>[newBarcode];
-      }
+      todayScans ??= LinkedHashSet<ScannedBarcode>();
+
+      todayScans.add(barcode);
 
       await ProductListFirebaseManager().addBarcode(
         productList: productList,
-        barcode: newBarcode,
+        barcode: barcode,
       );
+
+      result = true;
+    } else {
+      for (final LinkedHashSet<ScannedBarcode> i in barcodes.values) {
+        if (i.remove(barcode)) {
+          await ProductListFirebaseManager().deleteBarcode(
+            productList: productList,
+            barcode: barcode,
+          );
+
+          result = true;
+          break;
+        }
+      }
+    }
+
+    if (!result) {
+      return result;
     }
 
     final _BarcodeList newList = _BarcodeList.now(barcodes);
     await _put(getKey(productList), newList);
-    return true;
+    return result;
   }
 
   /// Adds or removes list of barcodes to/from a [productList] in one go (depending on [include])
   Future<void> bulkSet(
     final ProductList productList,
-    final List<String> barcodes, {
+    final Set<ScannedBarcode> barcodes, {
     final bool include = true,
   }) async {
     final _BarcodeList? list = await _get(productList);
-    final Map<int, List<ScannedBarcode>> allBarcodes;
+    final Map<int, LinkedHashSet<ScannedBarcode>> allBarcodes;
 
     if (list == null) {
-      allBarcodes = <int, List<ScannedBarcode>>{};
+      allBarcodes = <int, LinkedHashSet<ScannedBarcode>>{};
     } else {
       allBarcodes = _getSafeBarcodeListCopy(list.barcodes);
     }
 
     // TODO(iliyan03): May use a WriteBatch when adding/removing multiple products to/from firebase
-    for (final String barcode in barcodes) {
-      if (include) {
-        final ScannedBarcode newBarcode = ScannedBarcode(barcode);
-        if (allBarcodes[getTodayDateAsScannedBarcodeKey()] == null) {
-          allBarcodes[getTodayDateAsScannedBarcodeKey()] = <ScannedBarcode>[
-            newBarcode
-          ];
-        } else {
-          allBarcodes[getTodayDateAsScannedBarcodeKey()]!.add(newBarcode);
-        }
+    if (include) {
+      final LinkedHashSet<ScannedBarcode> todayBarcodes =
+          LinkedHashSet<ScannedBarcode>();
+      for (final ScannedBarcode i in barcodes) {
+        todayBarcodes.add(i);
 
         await ProductListFirebaseManager().addBarcode(
           productList: productList,
-          barcode: newBarcode,
+          barcode: i,
         );
-      } else {
-        barcodeExists(allBarcodes, barcode, (
-          final ScannedBarcode foundBarcode,
-          final List<ScannedBarcode> foundBarcodeList,
-          int foundInDay,
-        ) async {
-          foundBarcodeList.remove(foundBarcode);
-          await ProductListFirebaseManager().deleteBarcode(
-            productList: productList,
-            barcode: foundBarcode,
-          );
-        });
+      }
+    } else {
+      for (final LinkedHashSet<ScannedBarcode> i in allBarcodes.values) {
+        for (final ScannedBarcode j in barcodes) {
+          if (i.remove(j)) {
+            await ProductListFirebaseManager().deleteBarcode(
+              productList: productList,
+              barcode: j,
+            );
+          }
+        }
       }
     }
 
@@ -438,7 +468,7 @@ class DaoProductList extends AbstractDao {
   ) async {
     final ProductList newList = ProductList.user(newName);
     final _BarcodeList list = await _get(initialList) ??
-        _BarcodeList.now(<int, List<ScannedBarcode>>{});
+        _BarcodeList.now(<int, LinkedHashSet<ScannedBarcode>>{});
     await _put(getKey(newList), list);
     await delete(initialList, rename: true);
 
@@ -540,7 +570,8 @@ class DaoProductList extends AbstractDao {
   /// List<String> barcodes = _getSafeBarcodeListCopy(_barcodeList.barcodes);
   /// barcodes.add('1234'); // no risk at all
   /// ```
-  static Map<int, List<ScannedBarcode>> _getSafeBarcodeListCopy(
-          final Map<int, List<ScannedBarcode>> barcodes) =>
-      Map<int, List<ScannedBarcode>>.from(barcodes);
+  static Map<int, LinkedHashSet<ScannedBarcode>> _getSafeBarcodeListCopy(
+    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes,
+  ) =>
+      Map<int, LinkedHashSet<ScannedBarcode>>.from(barcodes);
 }

@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/scanned_barcodes_manager.dart';
@@ -176,48 +178,34 @@ class ProductList {
   /// "Total size" returned by the query.
   int totalSize = 0;
 
-  final Map<int, List<ScannedBarcode>> _barcodes =
-      <int, List<ScannedBarcode>>{};
+  final Map<int, LinkedHashSet<ScannedBarcode>> _barcodes =
+      <int, LinkedHashSet<ScannedBarcode>>{};
 
-  Map<int, List<ScannedBarcode>> get barcodes => _barcodes;
+  Map<int, LinkedHashSet<ScannedBarcode>> get barcodes => _barcodes;
 
   bool isEmpty() => _barcodes.isEmpty;
 
-  /// Removes a barcode from the list
-  ///
-  /// Returns false if not already in the list
-  /// Don't forget to update the database afterwards
-  bool remove(final String barcode) {
-    return barcodeExists(_barcodes, barcode, (
-      ScannedBarcode foundBarcode,
-      List<ScannedBarcode> foundBarcodeList,
-      _,
-    ) {
-      foundBarcodeList.remove(foundBarcode);
-    });
-  }
-
   /// Sets all products with the same order as the input list
   void setAll(final List<Product> products) {
-    final List<ScannedBarcode> newBarcodes = <ScannedBarcode>[];
+    final LinkedHashSet<ScannedBarcode> newBarcodes =
+        LinkedHashSet<ScannedBarcode>();
     for (final Product product in products) {
       newBarcodes.add(ScannedBarcode(product.barcode!));
     }
 
-    final Map<int, List<ScannedBarcode>> barcodes = <int, List<ScannedBarcode>>{
+    set(<int, LinkedHashSet<ScannedBarcode>>{
       getTodayDateAsScannedBarcodeKey(): newBarcodes
-    };
-
-    set(barcodes);
+    });
   }
 
-  void set(final Map<int, List<ScannedBarcode>> barcodes) {
+  void set(final Map<int, LinkedHashSet<ScannedBarcode>> barcodes) {
     _barcodes.clear();
     _barcodes.addAll(barcodes);
   }
 
-  Map<int, List<ScannedBarcode>> getList() {
-    final Map<int, List<ScannedBarcode>> result = <int, List<ScannedBarcode>>{};
+  Map<int, LinkedHashSet<ScannedBarcode>> getList() {
+    final Map<int, LinkedHashSet<ScannedBarcode>> result =
+        <int, LinkedHashSet<ScannedBarcode>>{};
     result.addAll(_barcodes);
     return result;
   }

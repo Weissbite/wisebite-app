@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smooth_app/data_models/product_list.dart';
@@ -39,17 +41,12 @@ class ProductListFirebaseManager {
     final DaoProductList daoProductList = DaoProductList(localDB);
 
     if (productLists.docs.isEmpty) {
-      // Clearing all local data from the product lists, so there's no data inconsistency
-      for (final ProductList i in _getAllProductLists(daoProductList)) {
-        daoProductList.clear(i, false);
-      }
-
       return;
     }
 
     for (final QueryDocumentSnapshot<Map<String, dynamic>> productListDoc
         in productLists.docs) {
-      final Map<int, List<ScannedBarcode>> barcodes =
+      final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
           await _fetchProductListBarcodes(productListDoc.id);
 
       late ProductList productList;
@@ -72,10 +69,10 @@ class ProductListFirebaseManager {
     localDB.notifyListeners();
   }
 
-  Future<Map<int, List<ScannedBarcode>>> _fetchProductListBarcodes(
+  Future<Map<int, LinkedHashSet<ScannedBarcode>>> _fetchProductListBarcodes(
       final String productListDocID) async {
-    final Map<int, List<ScannedBarcode>> barcodes =
-        <int, List<ScannedBarcode>>{};
+    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
+        <int, LinkedHashSet<ScannedBarcode>>{};
 
     final QuerySnapshot<Map<String, dynamic>> storedBarcodes =
         await FirebaseFirestore.instance
@@ -87,12 +84,10 @@ class ProductListFirebaseManager {
         in storedBarcodes.docs) {
       final ScannedBarcode barcode = ScannedBarcode('').fromFirestore(i, null);
       final int scanDay = parseDateTimeAsScannedBarcodeKey(
-          DateTime.fromMillisecondsSinceEpoch(barcode.lastScanTime));
+        DateTime.fromMillisecondsSinceEpoch(barcode.lastScanTime),
+      );
 
-      if (barcodes[scanDay] == null) {
-        barcodes[scanDay] = <ScannedBarcode>[];
-      }
-
+      barcodes[scanDay] ??= LinkedHashSet<ScannedBarcode>();
       barcodes[scanDay]!.add(barcode);
     }
 
@@ -123,7 +118,7 @@ class ProductListFirebaseManager {
 
   Future<void> clearProductList({
     required final ProductList productList,
-    required final Map<int, List<ScannedBarcode>> barcodes,
+    required final Map<int, LinkedHashSet<ScannedBarcode>> barcodes,
   }) async {
     // TODO(ILIYAN03): Currently there's no functionality for clearing a product list
     // if (_noUser) {
@@ -187,7 +182,7 @@ class ProductListFirebaseManager {
     for (final ProductList productList in productLists) {
       await daoProductList.get(productList);
 
-      for (final List<ScannedBarcode> barcodes
+      for (final LinkedHashSet<ScannedBarcode> barcodes
           in productList.getList().values) {
         for (final ScannedBarcode i in barcodes) {
           await addBarcode(productList: productList, barcode: i);
@@ -238,6 +233,7 @@ class ProductListFirebaseManager {
 
           await service.setDocument(
             data: barcode,
+            documentId: _getDocID(barcode),
             merge: true,
           );
         }
@@ -250,22 +246,9 @@ class ProductListFirebaseManager {
             productListDocID: productLists.docs.first.id,
           );
 
-          final QuerySnapshot<Map<String, dynamic>> querySnapshot =
-              await FirebaseFirestore.instance
-                  .collection(barcodesSubcollectionPath)
-                  .where('barcode', isEqualTo: barcode.barcode)
-                  .where('last_scan_time', isEqualTo: barcode.lastScanTime)
-                  .get();
-
-          if (querySnapshot.docs.isEmpty) {
-            break;
-          }
-
-          final String barcodeDocumentID = querySnapshot.docs.first.id;
-
           await FirebaseFirestore.instance
               .collection(barcodesSubcollectionPath)
-              .doc(barcodeDocumentID)
+              .doc(_getDocID(barcode))
               .delete();
         }
         break;
@@ -333,5 +316,9 @@ class ProductListFirebaseManager {
     }
 
     return productLists;
+  }
+
+  String _getDocID(final ScannedBarcode barcode) {
+    return '${barcode.barcode}_${barcode.lastScanTime}';
   }
 }
