@@ -56,9 +56,8 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
   int get _searchCardAdjustment => widget.containSearchCard ? 1 : 0;
   late ContinuousScanModel _model;
 
-  LinkedHashSet<ScannedBarcode> _getTodayBarcodes() =>
-      _model.getBarcodes()[getTodayDateAsScannedBarcodeKey()] ??
-      LinkedHashSet<ScannedBarcode>();
+  LinkedHashSet<ScannedBarcode>? _getTodayBarcodes() =>
+      _model.getBarcodes()[getTodayDateAsScannedBarcodeKey()];
 
   @override
   void didChangeDependencies() {
@@ -69,7 +68,9 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
       return;
     }
 
-    barcodes = _getTodayBarcodes().toList().reversed.toList();
+    barcodes = _getTodayBarcodes() != null
+        ? _getTodayBarcodes()!.toList().reversed.toList()
+        : <ScannedBarcode>[];
 
     if (barcodes.isEmpty) {
       // Ensure to reset all variables
@@ -121,7 +122,9 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
   @override
   Widget build(BuildContext context) {
     // Reverse the list so that the most recently scanned barcodes are at the start
-    barcodes = _getTodayBarcodes().toList().reversed.toList();
+    barcodes = _getTodayBarcodes() != null
+        ? _getTodayBarcodes()!.toList().reversed.toList()
+        : <ScannedBarcode>[];
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -181,15 +184,15 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
     switch (_model.getBarcodeState(barcode.barcode)!) {
       case ScannedProductState.FOUND:
       case ScannedProductState.CACHED:
-        return ScanProductCardLoader(barcode.barcode);
+        return ScanProductCardLoader(barcode);
       case ScannedProductState.LOADING:
         return SmoothProductCardLoading(
-          barcode: barcode.barcode,
+          barcode: barcode,
           onRemoveProduct: (_) => _model.removeBarcode(barcode),
         );
       case ScannedProductState.NOT_FOUND:
         return SmoothProductCardNotFound(
-          barcode: barcode.barcode,
+          barcode: barcode,
           onAddProduct: () async {
             await _model.refresh();
             setState(() {});
@@ -200,12 +203,12 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
         return const SmoothProductCardThanks();
       case ScannedProductState.ERROR_INTERNET:
         return SmoothProductCardError(
-          barcode: barcode.barcode,
+          barcode: barcode,
           errorType: ScannedProductState.ERROR_INTERNET,
         );
       case ScannedProductState.ERROR_INVALID_CODE:
         return SmoothProductCardError(
-          barcode: barcode.barcode,
+          barcode: barcode,
           errorType: ScannedProductState.ERROR_INVALID_CODE,
         );
     }

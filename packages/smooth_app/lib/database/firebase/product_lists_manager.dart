@@ -36,6 +36,10 @@ class ProductListFirebaseManager {
         await FirebaseFirestore.instance
             .collection(_collectionName)
             .where('userID', isEqualTo: _userID)
+            .where(
+              'name',
+              isEqualTo: ProductListType.HISTORY.key,
+            ) // iliyan03: Currently working only with history list
             .get();
 
     final DaoProductList daoProductList = DaoProductList(localDB);
@@ -76,8 +80,11 @@ class ProductListFirebaseManager {
 
     final QuerySnapshot<Map<String, dynamic>> storedBarcodes =
         await FirebaseFirestore.instance
-            .collection(_getBarcodesSubCollectionPath(
-                productListDocID: productListDocID))
+            .collection(
+              _getBarcodesSubCollectionPath(
+                productListDocID: productListDocID,
+              ),
+            )
             .get();
 
     for (final QueryDocumentSnapshot<Map<String, dynamic>> i
@@ -120,7 +127,7 @@ class ProductListFirebaseManager {
     required final ProductList productList,
     required final Map<int, LinkedHashSet<ScannedBarcode>> barcodes,
   }) async {
-    // TODO(ILIYAN03): Currently there's no functionality for clearing a product list
+    // TODO(ILIYAN03): There's no option for clearing a list
     // if (_noUser) {
     //   return;
     // }
@@ -204,6 +211,11 @@ class ProductListFirebaseManager {
       return;
     }
 
+    // iliyan03: Currently working only with history list
+    if (productList.listType.key != ProductListType.HISTORY.key) {
+      return;
+    }
+
     final QuerySnapshot<Map<String, dynamic>> productLists =
         await _getProductLists(productList: productList);
 
@@ -281,7 +293,9 @@ class ProductListFirebaseManager {
   }
 
   Future<String> _addProductList(
-      final String productListName, final String userID) async {
+    final String productListName,
+    final String userID,
+  ) async {
     final Map<String, String> data = <String, String>{
       'name': productListName,
       'userID': userID,

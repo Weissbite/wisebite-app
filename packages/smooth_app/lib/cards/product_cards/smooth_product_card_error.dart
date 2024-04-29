@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_app/cards/product_cards/smooth_product_base_card.dart';
 import 'package:smooth_app/data_models/continuous_scan_model.dart';
+import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/helpers/app_helper.dart';
 import 'package:smooth_app/pages/product/common/product_dialog_helper.dart';
@@ -15,7 +16,7 @@ class SmoothProductCardError extends StatelessWidget {
     required this.errorType,
   });
 
-  final String barcode;
+  final ScannedBarcode barcode;
   final ScannedProductState errorType;
 
   @override
@@ -36,7 +37,7 @@ class SmoothProductCardError extends StatelessWidget {
             height: SMALL_SPACE,
           ),
           Text(
-            barcode,
+            barcode.barcode,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(
@@ -55,7 +56,7 @@ class SmoothProductCardError extends StatelessWidget {
             onPressed: () async {
               await context
                   .read<ContinuousScanModel>()
-                  .retryBarcodeFetch(barcode);
+                  .retryBarcodeFetch(barcode.barcode);
             },
             child: Text(appLocalizations.retry_button_label),
           ),

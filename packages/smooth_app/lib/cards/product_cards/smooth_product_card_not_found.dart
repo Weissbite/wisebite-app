@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:smooth_app/cards/product_cards/smooth_product_base_card.dart';
+import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/generic_lib/buttons/smooth_large_button_with_icon.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/helpers/analytics_helper.dart';
@@ -13,11 +14,11 @@ class SmoothProductCardNotFound extends StatelessWidget {
     required this.barcode,
     this.onAddProduct,
     this.onRemoveProduct,
-  }) : assert(barcode.isNotEmpty);
+  }) : assert(barcode.barcode.isNotEmpty);
 
   final Future<void> Function()? onAddProduct;
   final OnRemoveCallback? onRemoveProduct;
-  final String barcode;
+  final ScannedBarcode barcode;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +39,7 @@ class SmoothProductCardNotFound extends StatelessWidget {
               onRemove: (BuildContext context) {
                 AnalyticsHelper.trackEvent(
                   AnalyticsEvent.ignoreProductNotFound,
-                  barcode: barcode,
+                  barcode: barcode.barcode,
                 );
 
                 onRemoveProduct?.call(context);
@@ -58,7 +59,7 @@ class SmoothProductCardNotFound extends StatelessWidget {
             flex: 3,
             child: AutoSizeText(
               '\n${appLocalizations.add_product_take_photos}\n'
-              '(${appLocalizations.barcode_barcode(barcode)})',
+              '(${appLocalizations.barcode_barcode(barcode.barcode)})',
               style: textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -69,7 +70,7 @@ class SmoothProductCardNotFound extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: LARGE_SPACE),
             onPressed: () async {
               await AppNavigator.of(context).push(
-                AppRoutes.PRODUCT_CREATOR(barcode),
+                AppRoutes.PRODUCT_CREATOR(barcode.barcode),
               );
               await onAddProduct?.call();
             },

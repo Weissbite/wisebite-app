@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:rive/rive.dart';
 import 'package:smooth_app/cards/product_cards/smooth_product_base_card.dart';
 import 'package:smooth_app/data_models/continuous_scan_model.dart';
+import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/generic_lib/buttons/smooth_simple_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/duration_constants.dart';
@@ -19,7 +20,7 @@ class SmoothProductCardLoading extends StatefulWidget {
     this.onRemoveProduct,
   });
 
-  final String barcode;
+  final ScannedBarcode barcode;
   final OnRemoveCallback? onRemoveProduct;
 
   @override
@@ -133,13 +134,14 @@ class _SmoothProductCardLoadingState extends State<SmoothProductCardLoading> {
                                   onPressed: () {
                                     AnalyticsHelper.trackEvent(
                                       AnalyticsEvent.restartProductLoading,
-                                      barcode: widget.barcode,
+                                      barcode: widget.barcode.barcode,
                                     );
 
                                     final ContinuousScanModel model =
                                         context.read<ContinuousScanModel>();
 
-                                    model.retryBarcodeFetch(widget.barcode);
+                                    model.retryBarcodeFetch(
+                                        widget.barcode.barcode);
                                   },
                                 ),
                               )
@@ -170,7 +172,7 @@ class _SmoothProductCardLoadingState extends State<SmoothProductCardLoading> {
                     onRemove: (BuildContext context) {
                       AnalyticsHelper.trackEvent(
                         AnalyticsEvent.ignoreProductLoading,
-                        barcode: widget.barcode,
+                        barcode: widget.barcode.barcode,
                       );
 
                       widget.onRemoveProduct?.call(context);

@@ -35,6 +35,7 @@ class ContinuousScanModel with ChangeNotifier {
       <int, LinkedHashSet<ScannedBarcode>>{};
   final ProductList _productList = ProductList.scanSession();
   final ProductList _history = ProductList.history();
+  final ProductList _scanHistory = ProductList.scanHistory();
 
   ScannedBarcode? _latestScannedBarcode;
   ScannedBarcode? _latestFoundBarcode;
@@ -279,9 +280,8 @@ class ContinuousScanModel with ChangeNotifier {
     if (_latestFoundBarcode != barcode) {
       _latestFoundBarcode = barcode;
 
-      /// There is no need to add the barcode to the other two lists as we are only showing the history list.
       // await _daoProductList.push(productList, _latestFoundBarcode!);
-      // await _daoProductList.push(_scanHistory, _latestFoundBarcode!);
+      await _daoProductList.push(_scanHistory, _latestFoundBarcode!);
       await _daoProductList.push(_history, _latestFoundBarcode!);
       _daoProductList.localDatabase.notifyListeners();
     }
