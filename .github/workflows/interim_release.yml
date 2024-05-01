@@ -11,7 +11,7 @@ env:
 
 
 jobs:
-  build_apk:
+  build_app_bundle:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout code
@@ -61,7 +61,7 @@ jobs:
 
       - name: Put Firebase credentials in file
         env:
-          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_FIREBASE_ADMIN_JSON }}
+          GOOlLE_SA_JSON: ${{ secrets.GOOGLE_SA_FIREBASE_ADMIN_JSON }}
         run: |
           mkdir -p "$(dirname ${GOOGLE_APPLICATION_CREDENTIALS})"
           echo "${GOOGLE_SA_JSON}" | base64 -di > ${GOOGLE_APPLICATION_CREDENTIALS}
@@ -94,7 +94,7 @@ jobs:
           --yes
 
       - name: Build app
-        run: cd ./packages/smooth_app/ && pwd && flutter build apk
+        run: cd ./packages/smooth_app/ && pwd && flutter build appbundle --release
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v2
