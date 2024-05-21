@@ -15,6 +15,19 @@ import 'package:smooth_app/database/firebase/product_lists_manager.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/database/scanned_barcodes_manager.dart';
 
+/// A map representing all scanned products, categorized by the day of the scan.
+///
+/// The key is an integer representing the scan date in YYMMDD format.
+/// The value is a set of `ScannedBarcode` objects scanned on that particular day.
+///
+/// Example:
+/// ```
+/// <240520, {barcode1, barcode2, barcode3}>
+/// ```
+/// - The key `240520` represents the date May 20th, 2024.
+/// - The value is a `LinkedHashSet` of `ScannedBarcode` objects scanned on that date.
+typedef ScannedBarcodesMap = Map<int, LinkedHashSet<ScannedBarcode>>;
+
 /// "Total size" fake value for lists that are not partial/paged.
 const int _uselessTotalSizeValue = 0;
 
@@ -91,7 +104,7 @@ class _BarcodeList {
     this.totalSize,
   );
 
-  _BarcodeList.now(final Map<int, LinkedHashSet<ScannedBarcode>> barcodes)
+  _BarcodeList.now(final ScannedBarcodesMap barcodes)
       : this(
           LocalDatabase.nowInMillis(),
           barcodes,
@@ -110,7 +123,7 @@ class _BarcodeList {
   /// In milliseconds since epoch.
   /// Can be used to decide if the data is recent enough or deprecated.
   final int timestamp;
-  final Map<int, LinkedHashSet<ScannedBarcode>> barcodes;
+  final ScannedBarcodesMap barcodes;
 
   /// Total size of server query results (or 0).
   final int totalSize;
@@ -126,8 +139,7 @@ class _BarcodeListAdapter extends TypeAdapter<_BarcodeList> {
     final int timestamp = reader.readInt();
     final Map<dynamic, dynamic> barcodeMap = reader.readMap();
 
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
-        <int, LinkedHashSet<ScannedBarcode>>{};
+    final ScannedBarcodesMap barcodes = <int, LinkedHashSet<ScannedBarcode>>{};
     for (final int i in barcodeMap.keys) {
       barcodes[i] = LinkedHashSet<ScannedBarcode>.from(barcodeMap[i]);
     }
@@ -142,7 +154,7 @@ class _BarcodeListAdapter extends TypeAdapter<_BarcodeList> {
   }
 
   static Map<int, List<ScannedBarcode>> _getConverted(
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes,
+    final ScannedBarcodesMap barcodes,
   ) {
     final Map<int, List<ScannedBarcode>> converted =
         <int, List<ScannedBarcode>>{};
@@ -275,8 +287,7 @@ class DaoProductList extends AbstractDao {
   /// Loads the barcode list.
   Future<void> get(final ProductList productList) async {
     final _BarcodeList? list = await _get(productList);
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
-        <int, LinkedHashSet<ScannedBarcode>>{};
+    final ScannedBarcodesMap barcodes = <int, LinkedHashSet<ScannedBarcode>>{};
     productList.totalSize = list?.totalSize ?? 0;
     if (list == null || list.barcodes.isEmpty) {
       productList.set(barcodes);
@@ -303,7 +314,7 @@ class DaoProductList extends AbstractDao {
     final ProductList productList,
     final ScannedBarcode barcode,
   ) async {
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes;
+    final ScannedBarcodesMap barcodes;
 
     final _BarcodeList? list = await _get(productList);
     if (list == null) {
@@ -374,7 +385,7 @@ class DaoProductList extends AbstractDao {
     final bool include,
   ) async {
     final _BarcodeList? list = await _get(productList);
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes;
+    final ScannedBarcodesMap barcodes;
     if (list == null) {
       barcodes = <int, LinkedHashSet<ScannedBarcode>>{};
     } else {
@@ -425,7 +436,7 @@ class DaoProductList extends AbstractDao {
     final bool include = true,
   }) async {
     final _BarcodeList? list = await _get(productList);
-    final Map<int, LinkedHashSet<ScannedBarcode>> allBarcodes;
+    final ScannedBarcodesMap allBarcodes;
 
     if (list == null) {
       allBarcodes = <int, LinkedHashSet<ScannedBarcode>>{};
@@ -570,8 +581,8 @@ class DaoProductList extends AbstractDao {
   /// List<String> barcodes = _getSafeBarcodeListCopy(_barcodeList.barcodes);
   /// barcodes.add('1234'); // no risk at all
   /// ```
-  static Map<int, LinkedHashSet<ScannedBarcode>> _getSafeBarcodeListCopy(
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes,
+  static ScannedBarcodesMap _getSafeBarcodeListCopy(
+    final ScannedBarcodesMap barcodes,
   ) =>
-      Map<int, LinkedHashSet<ScannedBarcode>>.from(barcodes);
+      ScannedBarcodesMap.from(barcodes);
 }

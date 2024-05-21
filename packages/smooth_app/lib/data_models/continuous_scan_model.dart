@@ -31,8 +31,7 @@ class ContinuousScanModel with ChangeNotifier {
 
   final Map<String, ScannedProductState> _states =
       <String, ScannedProductState>{};
-  final Map<int, LinkedHashSet<ScannedBarcode>> _barcodes =
-      <int, LinkedHashSet<ScannedBarcode>>{};
+  final ScannedBarcodesMap _barcodes = <int, LinkedHashSet<ScannedBarcode>>{};
   final ProductList _productList = ProductList.scanSession();
   final ProductList _history = ProductList.history();
   final ProductList _scanHistory = ProductList.scanHistory();
@@ -46,7 +45,7 @@ class ContinuousScanModel with ChangeNotifier {
   ProductList get productList => _productList;
 
   /// List all barcodes scanned (even products being loaded or not found)
-  Map<int, LinkedHashSet<ScannedBarcode>> getBarcodes() => _barcodes;
+  ScannedBarcodesMap getBarcodes() => _barcodes;
 
   /// List only barcodes where the product exists
   Iterable<String> getAvailableBarcodes() => _states

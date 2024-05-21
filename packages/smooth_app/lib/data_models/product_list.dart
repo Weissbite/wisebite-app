@@ -178,10 +178,9 @@ class ProductList {
   /// "Total size" returned by the query.
   int totalSize = 0;
 
-  final Map<int, LinkedHashSet<ScannedBarcode>> _barcodes =
-      <int, LinkedHashSet<ScannedBarcode>>{};
+  final ScannedBarcodesMap _barcodes = <int, LinkedHashSet<ScannedBarcode>>{};
 
-  Map<int, LinkedHashSet<ScannedBarcode>> get barcodes => _barcodes;
+  ScannedBarcodesMap get barcodes => _barcodes;
 
   bool isEmpty() => _barcodes.isEmpty;
 
@@ -198,14 +197,13 @@ class ProductList {
     });
   }
 
-  void set(final Map<int, LinkedHashSet<ScannedBarcode>> barcodes) {
+  void set(final ScannedBarcodesMap barcodes) {
     _barcodes.clear();
     _barcodes.addAll(barcodes);
   }
 
-  Map<int, LinkedHashSet<ScannedBarcode>> getList() {
-    final Map<int, LinkedHashSet<ScannedBarcode>> result =
-        <int, LinkedHashSet<ScannedBarcode>>{};
+  ScannedBarcodesMap getList() {
+    final ScannedBarcodesMap result = <int, LinkedHashSet<ScannedBarcode>>{};
     result.addAll(_barcodes);
     return result;
   }

@@ -43,17 +43,16 @@ class UpToDateProductListProvider {
 
   void setLocalUpToDate(
     final String key,
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes,
+    final ScannedBarcodesMap barcodes,
   ) {
     if (!_interest.containsKey(key)) {
       return;
     }
-    _barcodes[key] =
-        Map<int, LinkedHashSet<ScannedBarcode>>.from(barcodes); // need to copy
+    _barcodes[key] = ScannedBarcodesMap.from(barcodes); // need to copy
   }
 
   /// Returns the latest barcodes.
-  Map<int, LinkedHashSet<ScannedBarcode>> getLocalUpToDate(
+  ScannedBarcodesMap getLocalUpToDate(
     final ProductList productList,
   ) =>
       _barcodes[_getKey(productList)] ?? <int, LinkedHashSet<ScannedBarcode>>{};

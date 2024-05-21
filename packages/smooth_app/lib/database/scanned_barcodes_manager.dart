@@ -10,7 +10,7 @@ int parseDateTimeAsScannedBarcodeKey(final DateTime date) =>
     int.parse(DateFormat('yyMMdd').format(date));
 
 List<String> getAllBarcodes(
-  final Map<int, LinkedHashSet<ScannedBarcode>> barcodes, [
+  final ScannedBarcodesMap barcodes, [
   final bool newFirst = true,
 ]) {
   final List<String> allBarcodes = <String>[];
@@ -27,8 +27,7 @@ List<String> getAllBarcodes(
   return allBarcodes;
 }
 
-int getNumberOfAllBarcodes(
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes) {
+int getNumberOfAllBarcodes(final ScannedBarcodesMap barcodes) {
   int numberOfBarcodes = 0;
   for (final LinkedHashSet<ScannedBarcode> i in barcodes.values) {
     numberOfBarcodes += i.length;

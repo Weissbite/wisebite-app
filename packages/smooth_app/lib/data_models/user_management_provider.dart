@@ -120,9 +120,7 @@ class UserManagementProvider with ChangeNotifier {
 
     final ProductListFirebaseManager firebaseManager =
         ProductListFirebaseManager();
-    firebaseManager.saveAllProductLists(localDB: localDb).then((_) {
-      firebaseManager.fetchUserProductLists(localDB: localDb);
-    });
+    await firebaseManager.synchronizeWithLocal(localDB: localDb);
   }
 
   // SIGN OUT

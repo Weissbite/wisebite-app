@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
@@ -50,7 +48,7 @@ mixin UpToDateProductListMixin<T extends StatefulWidget> on State<T> {
   /// To be used in the `build` method, after a call to
   /// `context.watch<LocalDatabase>()`.
   void refreshUpToDate() {
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
+    final ScannedBarcodesMap barcodes =
         _localDatabase.upToDateProductList.getLocalUpToDate(_productList);
     _productList.set(barcodes);
   }

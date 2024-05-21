@@ -170,8 +170,7 @@ class _ProductListPageState extends State<ProductListPage>
   void _fetchDaysWithProducts() {
     _daysWithProducts.clear();
 
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
-        productList.getList();
+    final ScannedBarcodesMap barcodes = productList.getList();
 
     barcodes.forEach((int key, LinkedHashSet<ScannedBarcode> value) {
       if (value.isNotEmpty) {

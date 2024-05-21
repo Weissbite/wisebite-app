@@ -21,8 +21,7 @@ class ProductQueryModel with ChangeNotifier {
 
   late LoadingStatus _loadingStatus;
   String? _loadingError;
-  Map<int, LinkedHashSet<ScannedBarcode>> displayBarcodes =
-      <int, LinkedHashSet<ScannedBarcode>>{};
+  ScannedBarcodesMap displayBarcodes = <int, LinkedHashSet<ScannedBarcode>>{};
 
   bool isEmpty() => displayBarcodes.isEmpty;
 
@@ -72,7 +71,7 @@ class ProductQueryModel with ChangeNotifier {
   }
 
   Future<void> _process(
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes,
+    final ScannedBarcodesMap barcodes,
     final bool fromScratch,
   ) async {
     if (fromScratch) {

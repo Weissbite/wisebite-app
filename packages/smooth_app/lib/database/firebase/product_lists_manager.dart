@@ -19,10 +19,13 @@ class ProductListFirebaseManager {
   final String _collectionName = 'product_lists';
   final String _barcodesSubCollectionName = 'barcodes';
 
+  /// Flag showing if the user's signed in.
   bool get _noUser => FirebaseAuth.instance.currentUser == null;
+
+  /// Getter for the user's ID. Must be used only when a user's signed in.
   String get _userID => FirebaseAuth.instance.currentUser!.uid;
 
-  Future<void> fetchUserProductLists({
+  Future<void> synchronizeWithLocal({
     required final LocalDatabase localDB,
   }) async {
     if (_noUser) {
@@ -32,59 +35,71 @@ class ProductListFirebaseManager {
     localDB.loadingFromFirebase = true;
     localDB.notifyListeners();
 
-    final QuerySnapshot<Map<String, dynamic>> productLists =
-        await FirebaseFirestore.instance
-            .collection(_collectionName)
-            .where('userID', isEqualTo: _userID)
-            .where(
-              'name',
-              isEqualTo: ProductListType.HISTORY.key,
-            ) // iliyan03: Currently working only with history list
-            .get();
+    final ScannedBarcodesMap firebaseBarcodes =
+        await _fetchFirestoreStoredBarcodes(localDB: localDB);
 
+    final ProductList history = ProductList.history();
     final DaoProductList daoProductList = DaoProductList(localDB);
+    await daoProductList.get(history);
 
-    if (productLists.docs.isEmpty) {
-      return;
+    final ScannedBarcodesMap localBarcodes = history.getList();
+
+    /// Update local list
+    final ScannedBarcodesMap newLocalBarcodes =
+        ScannedBarcodesMap.from(localBarcodes);
+    for (final MapEntry<int, LinkedHashSet<ScannedBarcode>> i
+        in firebaseBarcodes.entries) {
+      if (localBarcodes.containsKey(i.key)) {
+        newLocalBarcodes[i.key]!.addAll(i.value);
+      } else {
+        newLocalBarcodes[i.key] = LinkedHashSet<ScannedBarcode>.from(i.value);
+      }
     }
 
-    for (final QueryDocumentSnapshot<Map<String, dynamic>> productListDoc
-        in productLists.docs) {
-      final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
-          await _fetchProductListBarcodes(productListDoc.id);
+    history.set(newLocalBarcodes);
+    await daoProductList.put(history);
 
-      late ProductList productList;
-      final String productListName = productListDoc['name'];
-      if (productListName == ProductListType.HISTORY.key) {
-        productList = ProductList.history();
-      } else if (productListName == ProductListType.SCAN_HISTORY.key) {
-        productList = ProductList.scanHistory();
-      } else if (productListName == ProductListType.SCAN_SESSION.key) {
-        productList = ProductList.scanSession();
-      } else {
-        productList = ProductList.user(productListName);
+    /// Update firebase' list
+    for (final MapEntry<int, LinkedHashSet<ScannedBarcode>> i
+        in localBarcodes.entries) {
+      if (firebaseBarcodes.containsKey(i.key)) {
+        for (final ScannedBarcode j in i.value) {
+          if (firebaseBarcodes[i.key]!.contains(j)) {
+            continue;
+          }
+
+          await addBarcode(productList: history, barcode: j);
+        }
+        continue;
       }
 
-      productList.set(barcodes);
-      daoProductList.put(productList);
+      for (final ScannedBarcode j in i.value) {
+        await addBarcode(productList: history, barcode: j);
+      }
     }
 
     localDB.loadingFromFirebase = false;
     localDB.notifyListeners();
   }
 
-  Future<Map<int, LinkedHashSet<ScannedBarcode>>> _fetchProductListBarcodes(
-      final String productListDocID) async {
-    final Map<int, LinkedHashSet<ScannedBarcode>> barcodes =
+  Future<ScannedBarcodesMap> _fetchFirestoreStoredBarcodes({
+    required final LocalDatabase localDB,
+  }) async {
+    final QuerySnapshot<Map<String, dynamic>> productList =
+        await _getProductList(productList: ProductList.history());
+
+    if (productList.docs.isEmpty) {
+      return <int, LinkedHashSet<ScannedBarcode>>{};
+    }
+
+    final ScannedBarcodesMap fetchedBarcodes =
         <int, LinkedHashSet<ScannedBarcode>>{};
 
     final QuerySnapshot<Map<String, dynamic>> storedBarcodes =
         await FirebaseFirestore.instance
-            .collection(
-              _getBarcodesSubCollectionPath(
-                productListDocID: productListDocID,
-              ),
-            )
+            .collection(_getBarcodesSubCollectionPath(
+              productListDocID: productList.docs.first.id,
+            ))
             .get();
 
     for (final QueryDocumentSnapshot<Map<String, dynamic>> i
@@ -94,13 +109,14 @@ class ProductListFirebaseManager {
         DateTime.fromMillisecondsSinceEpoch(barcode.lastScanTime),
       );
 
-      barcodes[scanDay] ??= LinkedHashSet<ScannedBarcode>();
-      barcodes[scanDay]!.add(barcode);
+      fetchedBarcodes[scanDay] ??= LinkedHashSet<ScannedBarcode>();
+      fetchedBarcodes[scanDay]!.add(barcode);
     }
 
-    return barcodes;
+    return fetchedBarcodes;
   }
 
+  /// Adds [barcode] to [productList] barcodes subcollection in Firebase Firestore.
   Future<void> addBarcode({
     required final ProductList productList,
     required final ScannedBarcode barcode,
@@ -112,6 +128,7 @@ class ProductListFirebaseManager {
     );
   }
 
+  /// Deletes [barcode] from [productList] barcodes subcollection in Firebase Firestore.
   Future<void> deleteBarcode({
     required final ProductList productList,
     required final ScannedBarcode barcode,
@@ -123,44 +140,7 @@ class ProductListFirebaseManager {
     );
   }
 
-  Future<void> clearProductList({
-    required final ProductList productList,
-    required final Map<int, LinkedHashSet<ScannedBarcode>> barcodes,
-  }) async {
-    // TODO(ILIYAN03): There's no option for clearing a list
-    // if (_noUser) {
-    //   return;
-    // }
-    //
-    // final QuerySnapshot<Map<String, dynamic>> productLists =
-    //     await _getProductLists(productList: productList);
-    // if (productLists.docs.isEmpty) {
-    //   return;
-    // }
-    //
-    // final String productListDocID = productLists.docs.first.id;
-    //
-    // // To remove the barcodes subcollection, all documents within it must be deleted.
-    // TODO(iliyan03): Could use WriteBatch for deleting multiple docs at once
-    // final String barcodesSubcollection =
-    //     _getBarcodesSubCollectionPath(productListDocID: productListDocID);
-    // for (final List<ScannedBarcode> i in barcodes.values) {
-    //   for (final ScannedBarcode j in i) {
-    //     await FirebaseFirestore.instance
-    //         .collection(barcodesSubcollection)
-    //         .doc(j.barcode)
-    //         .delete();
-    //   }
-    // }
-    //
-    // await FirebaseFirestore.instance
-    //     .collection(_collectionName)
-    //     .doc(productListDocID)
-    //     .delete();
-
-    return;
-  }
-
+  /// Renames [productList] to [newName] in Firebase Firestore.
   Future<void> renameProductList({
     required final ProductList productList,
     required final String newName,
@@ -173,34 +153,7 @@ class ProductListFirebaseManager {
     );
   }
 
-  Future<void> saveAllProductLists({
-    required final LocalDatabase localDB,
-  }) async {
-    if (_noUser) {
-      return;
-    }
-
-    localDB.loadingFromFirebase = true;
-    localDB.notifyListeners();
-
-    final DaoProductList daoProductList = DaoProductList(localDB);
-
-    final List<ProductList> productLists = _getAllProductLists(daoProductList);
-    for (final ProductList productList in productLists) {
-      await daoProductList.get(productList);
-
-      for (final LinkedHashSet<ScannedBarcode> barcodes
-          in productList.getList().values) {
-        for (final ScannedBarcode i in barcodes) {
-          await addBarcode(productList: productList, barcode: i);
-        }
-      }
-    }
-
-    localDB.loadingFromFirebase = false;
-    localDB.notifyListeners();
-  }
-
+  /// Handles any [action] related to [barcode] in [productList] barcodes subcollection in Firebase Firestore.
   Future<void> _manageBarcode({
     required final ProductList productList,
     required final ScannedBarcode barcode,
@@ -212,12 +165,12 @@ class ProductListFirebaseManager {
     }
 
     // iliyan03: Currently working only with history list
-    if (productList.listType.key != ProductListType.HISTORY.key) {
+    if (productList.listType != ProductListType.HISTORY) {
       return;
     }
 
     final QuerySnapshot<Map<String, dynamic>> productLists =
-        await _getProductLists(productList: productList);
+        await _getProductList(productList: productList);
 
     if (productLists.docs.isEmpty &&
         action == _FirebaseFirestoreActions.delete) {
@@ -280,8 +233,8 @@ class ProductListFirebaseManager {
     }
   }
 
-  // May only be called when a user is signed in
-  Future<QuerySnapshot<Map<String, dynamic>>> _getProductLists({
+  /// Gets [productList] doc for the signed in user. Must be used only when a user's signed in.
+  Future<QuerySnapshot<Map<String, dynamic>>> _getProductList({
     required final ProductList productList,
   }) async {
     final String productListName = _getProductListName(productList);
@@ -292,6 +245,7 @@ class ProductListFirebaseManager {
         .get();
   }
 
+  /// Adds [productList] to Firebase Firestore for user with [userID].
   Future<String> _addProductList(
     final String productListName,
     final String userID,
@@ -307,31 +261,19 @@ class ProductListFirebaseManager {
     return documentSnapshot.id;
   }
 
+  /// Returns the formatted path to the barcodes subcollection of product lists doc with ID of [productListDocID].
   String _getBarcodesSubCollectionPath({
     required final String productListDocID,
   }) =>
       '/$_collectionName/$productListDocID/$_barcodesSubCollectionName';
 
+  /// Gets [productList] list name
   String _getProductListName(final ProductList productList) =>
       productList.listType == ProductListType.USER
           ? productList.parameters
           : productList.listType.key;
 
-  List<ProductList> _getAllProductLists(DaoProductList daoProductList) {
-    final List<String> userLists = daoProductList.getUserLists();
-    final List<ProductList> productLists = <ProductList>[
-      ProductList.scanSession(),
-      ProductList.scanHistory(),
-      ProductList.history(),
-    ];
-
-    for (final String userList in userLists) {
-      productLists.add(ProductList.user(userList));
-    }
-
-    return productLists;
-  }
-
+  /// Returns the formatted [barcode] document ID.
   String _getDocID(final ScannedBarcode barcode) {
     return '${barcode.barcode}_${barcode.lastScanTime}';
   }
