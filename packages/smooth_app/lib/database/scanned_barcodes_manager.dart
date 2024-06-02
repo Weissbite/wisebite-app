@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:intl/intl.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 
@@ -7,12 +9,14 @@ int getTodayDateAsScannedBarcodeKey() =>
 int parseDateTimeAsScannedBarcodeKey(final DateTime date) =>
     int.parse(DateFormat('yyMMdd').format(date));
 
-List<String> getAllBarcodes(final Map<int, List<ScannedBarcode>> barcodes,
-    [final bool newFirst = true]) {
+List<String> getAllBarcodes(
+  final ScannedBarcodesMap barcodes, [
+  final bool newFirst = true,
+]) {
   final List<String> allBarcodes = <String>[];
-  for (final List<ScannedBarcode> i in barcodes.values) {
-    for (final ScannedBarcode j in i) {
-      allBarcodes.add(j.barcode);
+  for (final LinkedHashSet<ScannedBarcode> i in barcodes.values) {
+    for (final ScannedBarcode element in i) {
+      allBarcodes.add(element.barcode);
     }
   }
 
@@ -23,43 +27,19 @@ List<String> getAllBarcodes(final Map<int, List<ScannedBarcode>> barcodes,
   return allBarcodes;
 }
 
-int getNumberOfAllBarcodes(final Map<int, List<ScannedBarcode>> barcodes) {
+int getNumberOfAllBarcodes(final ScannedBarcodesMap barcodes) {
   int numberOfBarcodes = 0;
-  for (final List<ScannedBarcode> i in barcodes.values) {
+  for (final LinkedHashSet<ScannedBarcode> i in barcodes.values) {
     numberOfBarcodes += i.length;
   }
 
   return numberOfBarcodes;
 }
 
-// Searches for a barcode inside the given map of scanned barcodes
-// Returns true if the barcode is found inside the given map and false otherwise
-// It can manipulate the found barcode and it's list, if any found
-bool barcodeExists(
-  Map<int, List<ScannedBarcode>> barcodes,
-  final String barcode, [
-  final void Function(ScannedBarcode, List<ScannedBarcode>, int)?
-      doSomethingWithFoundValue,
-]) {
-  for (final MapEntry<int, List<ScannedBarcode>> entry in barcodes.entries) {
-    for (final ScannedBarcode j in entry.value) {
-      if (j.barcode == barcode) {
-        if (doSomethingWithFoundValue != null) {
-          doSomethingWithFoundValue(j, entry.value, entry.key);
-        }
-
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-int getScanTimeDifferenceInSeconds(
-  final int oldScanTime,
-  final int newScanTime,
-) {
+int getScanTimeDifferenceInSeconds({
+  required final int oldScanTime,
+  required final int newScanTime,
+}) {
   final DateTime oldBarcodeScanTime =
       DateTime.fromMillisecondsSinceEpoch(oldScanTime);
   final DateTime newBarcodeScanTime =

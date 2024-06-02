@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/data_models/up_to_date_interest.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
@@ -16,8 +18,8 @@ class UpToDateProductListProvider {
   /// them, because we cannot cache all product lists in memory.
   final UpToDateInterest _interest = UpToDateInterest();
 
-  final Map<String, Map<int, List<ScannedBarcode>>> _barcodes =
-      <String, Map<int, List<ScannedBarcode>>>{};
+  final Map<String, Map<int, LinkedHashSet<ScannedBarcode>>> _barcodes =
+      <String, Map<int, LinkedHashSet<ScannedBarcode>>>{};
 
   /// Shows an interest for a product list.
   ///
@@ -41,17 +43,17 @@ class UpToDateProductListProvider {
 
   void setLocalUpToDate(
     final String key,
-    final Map<int, List<ScannedBarcode>> barcodes,
+    final ScannedBarcodesMap barcodes,
   ) {
     if (!_interest.containsKey(key)) {
       return;
     }
-    _barcodes[key] =
-        Map<int, List<ScannedBarcode>>.from(barcodes); // need to copy
+    _barcodes[key] = ScannedBarcodesMap.from(barcodes); // need to copy
   }
 
   /// Returns the latest barcodes.
-  Map<int, List<ScannedBarcode>> getLocalUpToDate(
-          final ProductList productList) =>
-      _barcodes[_getKey(productList)] ?? <int, List<ScannedBarcode>>{};
+  ScannedBarcodesMap getLocalUpToDate(
+    final ProductList productList,
+  ) =>
+      _barcodes[_getKey(productList)] ?? <int, LinkedHashSet<ScannedBarcode>>{};
 }

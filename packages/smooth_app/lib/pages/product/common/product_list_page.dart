@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -168,12 +170,13 @@ class _ProductListPageState extends State<ProductListPage>
   void _fetchDaysWithProducts() {
     _daysWithProducts.clear();
 
-    final Map<int, List<ScannedBarcode>> barcodes = productList.getList();
-    for (final MapEntry<int, List<ScannedBarcode>> i in barcodes.entries) {
-      if (i.value.isNotEmpty) {
-        _daysWithProducts.add(i.key);
+    final ScannedBarcodesMap barcodes = productList.getList();
+
+    barcodes.forEach((int key, LinkedHashSet<ScannedBarcode> value) {
+      if (value.isNotEmpty) {
+        _daysWithProducts.add(key);
       }
-    }
+    });
 
     _daysWithProducts.sort();
     _daysWithProducts = _daysWithProducts.reversed.toList();
@@ -302,7 +305,7 @@ class _ProductListPageState extends State<ProductListPage>
         itemCount: _daysWithProducts.length,
         itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
           final int selectedDay = _daysWithProducts[itemIndex];
-          final List<ScannedBarcode>? selectedDayBarcodes =
+          final LinkedHashSet<ScannedBarcode>? selectedDayBarcodes =
               productList.getList()[selectedDay];
 
           return selectedDayBarcodes == null || selectedDayBarcodes.isEmpty
@@ -368,7 +371,9 @@ class _ProductListPageState extends State<ProductListPage>
                         itemCount: selectedDayBarcodes.length,
                         itemBuilder: (BuildContext context, int index) =>
                             _buildItem(
-                          selectedDayBarcodes.reversed
+                          selectedDayBarcodes
+                              .toList()
+                              .reversed
                               .toList(), // Reverse the list so that the most recently scanned barcodes are at the top
                           index,
                           localDatabase,
@@ -395,7 +400,7 @@ class _ProductListPageState extends State<ProductListPage>
     final LocalDatabase localDatabase,
     final AppLocalizations appLocalizations,
   ) {
-    final ScannedBarcode barcode = barcodes[index];
+    final ScannedBarcode barcode = barcodes.elementAt(index);
     final bool selected = _selectedBarcodes.contains(barcode);
     void onTap() => setState(
           () {

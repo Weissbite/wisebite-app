@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:smooth_app/data_models/product_list_supplier.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
@@ -19,8 +21,7 @@ class ProductQueryModel with ChangeNotifier {
 
   late LoadingStatus _loadingStatus;
   String? _loadingError;
-  Map<int, List<ScannedBarcode>> displayBarcodes =
-      <int, List<ScannedBarcode>>{};
+  ScannedBarcodesMap displayBarcodes = <int, LinkedHashSet<ScannedBarcode>>{};
 
   bool isEmpty() => displayBarcodes.isEmpty;
 
@@ -70,7 +71,7 @@ class ProductQueryModel with ChangeNotifier {
   }
 
   Future<void> _process(
-    final Map<int, List<ScannedBarcode>> barcodes,
+    final ScannedBarcodesMap barcodes,
     final bool fromScratch,
   ) async {
     if (fromScratch) {

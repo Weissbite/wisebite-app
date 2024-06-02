@@ -232,21 +232,25 @@ class ProductListUserDialogHelper {
             if (!selectedLists.contains(list) &&
                 newSelectedLists.contains(list)) {
               hasChanged = true;
-              await daoProductList.bulkSet(
-                ProductList.user(list),
-                barcodes.toList(),
-              );
+
+              /// iliyan03: Not using custom lists currently
+              // await daoProductList.bulkSet(
+              //   ProductList.user(list),
+              //   barcodes,
+              // );
             }
 
             // List got unselected
             if (selectedLists.contains(list) &&
                 !newSelectedLists.contains(list)) {
               hasChanged = true;
-              await daoProductList.bulkSet(
-                ProductList.user(list),
-                barcodes.toList(),
-                include: false,
-              );
+
+              /// iliyan03: Not using custom lists currently
+              // await daoProductList.bulkSet(
+              //   ProductList.user(list),
+              //   barcodes,
+              //   include: false,
+              // );
             }
           }
 

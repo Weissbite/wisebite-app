@@ -4,7 +4,6 @@ import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_app/cards/data_cards/score_card.dart';
 import 'package:smooth_app/cards/product_cards/product_title_card.dart';
-import 'package:smooth_app/data_models/continuous_scan_model.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/data_models/product_preferences.dart';
 import 'package:smooth_app/data_models/up_to_date_mixin.dart';
@@ -124,6 +123,7 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
           child: _buildSummaryCardContent(context),
         ),
         margin: EdgeInsets.zero,
+        scrollable: true,
       );
     }
     return LayoutBuilder(
@@ -345,9 +345,11 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
           isRemovable: widget.isRemovable,
           onRemove: (BuildContext context) async {
             HideableContainerState.of(context).hide(() async {
-              final ContinuousScanModel model =
-                  context.read<ContinuousScanModel>();
-              await model.removeBarcode(barcode);
+              // TODO(iliyan03): Should have the ScannedBarcode object as a member instead of just the barcode
+              // final ContinuousScanModel model =
+              //     context.read<ContinuousScanModel>();
+              //
+              //  await model.removeBarcode(barcode);
 
               // Vibrate twice
               SmoothHapticFeedback.confirm();

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -30,10 +31,10 @@ class ContinuousScanModel with ChangeNotifier {
 
   final Map<String, ScannedProductState> _states =
       <String, ScannedProductState>{};
-  final Map<int, List<ScannedBarcode>> _barcodes =
-      <int, List<ScannedBarcode>>{};
+  final ScannedBarcodesMap _barcodes = <int, LinkedHashSet<ScannedBarcode>>{};
   final ProductList _productList = ProductList.scanSession();
   final ProductList _history = ProductList.history();
+  final ProductList _scanHistory = ProductList.scanHistory();
 
   ScannedBarcode? _latestScannedBarcode;
   ScannedBarcode? _latestFoundBarcode;
@@ -44,7 +45,7 @@ class ContinuousScanModel with ChangeNotifier {
   ProductList get productList => _productList;
 
   /// List all barcodes scanned (even products being loaded or not found)
-  Map<int, List<ScannedBarcode>> getBarcodes() => _barcodes;
+  ScannedBarcodesMap getBarcodes() => _barcodes;
 
   /// List only barcodes where the product exists
   Iterable<String> getAvailableBarcodes() => _states
@@ -85,7 +86,8 @@ class ContinuousScanModel with ChangeNotifier {
       _states.clear();
       await refreshProductList();
 
-      _productList.barcodes.forEach((int key, List<ScannedBarcode> value) {
+      _productList.barcodes
+          .forEach((int key, LinkedHashSet<ScannedBarcode> value) {
         _barcodes[key] = value;
         for (final ScannedBarcode i in value) {
           _states[i.barcode] = ScannedProductState.CACHED;
@@ -144,8 +146,9 @@ class ContinuousScanModel with ChangeNotifier {
 
   Future<bool> _addBarcode(final ScannedBarcode barcode) async {
     final int todayAsKey = getTodayDateAsScannedBarcodeKey();
-    _barcodes[todayAsKey] ??= <ScannedBarcode>[];
-    final List<ScannedBarcode> todayScannedBarcodes = _barcodes[todayAsKey]!;
+    _barcodes[todayAsKey] ??= LinkedHashSet<ScannedBarcode>();
+    final LinkedHashSet<ScannedBarcode> todayScannedBarcodes =
+        _barcodes[todayAsKey]!;
 
     // Don't add the same barcode to the list if it was scanned less than a minute ago.
     // Sometimes when scanning, the scanner sends multiple requests for a new scan of the same product.
@@ -154,8 +157,8 @@ class ContinuousScanModel with ChangeNotifier {
         _latestScannedBarcode != null &&
         _latestScannedBarcode!.barcode == barcode.barcode &&
         getScanTimeDifferenceInSeconds(
-              _latestScannedBarcode!.lastScanTime,
-              barcode.lastScanTime,
+              oldScanTime: _latestScannedBarcode!.lastScanTime,
+              newScanTime: barcode.lastScanTime,
             ) <=
             60) {
       return true;
@@ -175,10 +178,10 @@ class ContinuousScanModel with ChangeNotifier {
 
     if (state == ScannedProductState.FOUND ||
         state == ScannedProductState.CACHED) {
-      _addProduct(barcode, state);
+      await _addProduct(barcode, state);
 
       if (state == ScannedProductState.CACHED) {
-        _updateBarcode(barcode.barcode);
+        await _updateBarcode(barcode.barcode);
       }
 
       lastConsultedBarcode = barcode;
@@ -276,9 +279,8 @@ class ContinuousScanModel with ChangeNotifier {
     if (_latestFoundBarcode != barcode) {
       _latestFoundBarcode = barcode;
 
-      /// There is no need to add the barcode to the other two lists as we are only showing the history list.
       // await _daoProductList.push(productList, _latestFoundBarcode!);
-      // await _daoProductList.push(_scanHistory, _latestFoundBarcode!);
+      await _daoProductList.push(_scanHistory, _latestFoundBarcode!);
       await _daoProductList.push(_history, _latestFoundBarcode!);
       _daoProductList.localDatabase.notifyListeners();
     }
@@ -291,7 +293,7 @@ class ContinuousScanModel with ChangeNotifier {
   }
 
   Future<void> removeBarcode(
-    final String barcode,
+    final ScannedBarcode barcode,
   ) async {
     await _daoProductList.set(
       productList,
@@ -299,17 +301,15 @@ class ContinuousScanModel with ChangeNotifier {
       false,
     );
 
-    barcodeExists(_barcodes, barcode, (
-      ScannedBarcode foundBarcode,
-      List<ScannedBarcode> foundBarcodeList,
-      _,
-    ) {
-      foundBarcodeList.remove(foundBarcode);
-    });
-    _states.remove(barcode);
+    for (final LinkedHashSet<ScannedBarcode> i in _barcodes.values) {
+      if (i.remove(barcode)) {
+        break;
+      }
+    }
 
-    if (_latestScannedBarcode != null &&
-        _latestScannedBarcode!.barcode == barcode) {
+    _states.remove(barcode.barcode);
+
+    if (_latestScannedBarcode != null && _latestScannedBarcode! == barcode) {
       _latestScannedBarcode = null;
     }
 
