@@ -119,10 +119,9 @@ class _ProductListPageState extends State<ProductListPage>
           _selectedBarcodes.clear();
         },
       );
-      return false;
-    } else {
-      return true;
     }
+
+    return false;
   }
 
   /// Shows a calendar and handles the date selection

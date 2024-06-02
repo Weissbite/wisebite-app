@@ -13,6 +13,7 @@ import 'package:smooth_app/helpers/haptic_feedback_helper.dart';
 import 'package:smooth_app/pages/scan/camera_scan_page.dart';
 import 'package:smooth_app/widgets/smooth_product_carousel.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
+import 'package:smooth_app/widgets/will_pop_scope.dart';
 
 class ScanPage extends StatefulWidget {
   const ScanPage();
@@ -56,81 +57,84 @@ class _ScanPageState extends State<ScanPage> {
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
     final TextDirection direction = Directionality.of(context);
 
-    return SmoothScaffold(
-      brightness:
-          Theme.of(context).brightness == Brightness.light && Platform.isIOS
-              ? Brightness.dark
-              : null,
-      body: Container(
-        color: Colors.white,
-        child: SafeArea(
-          child: Container(
-            color: Theme.of(context).colorScheme.background,
-            child: Center(
-              child: SizedBox(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height,
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.only(bottom: 300),
-                  child: SmoothProductCarousel(
-                    containSearchCard: true,
-                    onPageChangedTo: (int page, String? barcode) async {
-                      if (barcode == null) {
-                        // We only notify for new products
-                        return;
-                      }
+    return WillPopScope2(
+      child: SmoothScaffold(
+        brightness:
+            Theme.of(context).brightness == Brightness.light && Platform.isIOS
+                ? Brightness.dark
+                : null,
+        body: Container(
+          color: Colors.white,
+          child: SafeArea(
+            child: Container(
+              color: Theme.of(context).colorScheme.background,
+              child: Center(
+                child: SizedBox(
+                  width: double.infinity,
+                  height: MediaQuery.of(context).size.height,
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.only(bottom: 300),
+                    child: SmoothProductCarousel(
+                      containSearchCard: true,
+                      onPageChangedTo: (int page, String? barcode) async {
+                        if (barcode == null) {
+                          // We only notify for new products
+                          return;
+                        }
 
-                      // Both are Future methods, but it doesn't matter to wait here
-                      SmoothHapticFeedback.lightNotification();
+                        // Both are Future methods, but it doesn't matter to wait here
+                        SmoothHapticFeedback.lightNotification();
 
-                      if (_userPreferences.playCameraSound) {
-                        await _initSoundManagerIfNecessary();
-                        await _musicPlayer!.stop();
-                        await _musicPlayer!.play(
-                          AssetSource('audio/beep.wav'),
-                          volume: 0.5,
-                          ctx: const AudioContext(
-                            android: AudioContextAndroid(
-                              isSpeakerphoneOn: false,
-                              stayAwake: false,
-                              contentType: AndroidContentType.sonification,
-                              usageType: AndroidUsageType.notification,
-                              audioFocus:
-                                  AndroidAudioFocus.gainTransientMayDuck,
+                        if (_userPreferences.playCameraSound) {
+                          await _initSoundManagerIfNecessary();
+                          await _musicPlayer!.stop();
+                          await _musicPlayer!.play(
+                            AssetSource('audio/beep.wav'),
+                            volume: 0.5,
+                            ctx: const AudioContext(
+                              android: AudioContextAndroid(
+                                isSpeakerphoneOn: false,
+                                stayAwake: false,
+                                contentType: AndroidContentType.sonification,
+                                usageType: AndroidUsageType.notification,
+                                audioFocus:
+                                    AndroidAudioFocus.gainTransientMayDuck,
+                              ),
+                              iOS: AudioContextIOS(
+                                category: AVAudioSessionCategory.soloAmbient,
+                                options: <AVAudioSessionOptions>[
+                                  AVAudioSessionOptions.mixWithOthers,
+                                ],
+                              ),
                             ),
-                            iOS: AudioContextIOS(
-                              category: AVAudioSessionCategory.soloAmbient,
-                              options: <AVAudioSessionOptions>[
-                                AVAudioSessionOptions.mixWithOthers,
-                              ],
-                            ),
-                          ),
+                          );
+                        }
+
+                        SemanticsService.announce(
+                          appLocalizations.scan_announce_new_barcode(barcode),
+                          direction,
+                          assertiveness: Assertiveness.assertive,
                         );
-                      }
-
-                      SemanticsService.announce(
-                        appLocalizations.scan_announce_new_barcode(barcode),
-                        direction,
-                        assertiveness: Assertiveness.assertive,
-                      );
-                    },
+                      },
+                    ),
                   ),
                 ),
               ),
             ),
           ),
         ),
+        floatingActionButton: FloatingActionButton.extended(
+          icon: const Icon(CupertinoIcons.barcode),
+          label: Text(appLocalizations.scan_navbar_label),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute<Widget>(
+                    builder: (BuildContext context) => ScannerPage()));
+          },
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(CupertinoIcons.barcode),
-        label: Text(appLocalizations.scan_navbar_label),
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute<Widget>(
-                  builder: (BuildContext context) => ScannerPage()));
-        },
-      ),
+      onWillPop: () async => (false, null),
     );
   }
 
