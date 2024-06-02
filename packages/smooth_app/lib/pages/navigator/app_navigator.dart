@@ -71,7 +71,9 @@ class AppNavigator extends InheritedWidget {
   }
 
   void pop([dynamic result]) {
-    _router.router.pop(result);
+    if (_router.router.canPop()) {
+      _router.router.pop(result);
+    }
   }
 }
 

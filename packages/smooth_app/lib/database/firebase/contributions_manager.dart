@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
-import 'package:smooth_app/data_models/database_product_list_supplier.dart';
+import 'package:smooth_app/data_models/fetched_product.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/data_models/product_list_supplier.dart';
+import 'package:smooth_app/database/dao_product.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
 import 'package:smooth_app/database/local_database.dart';
-import 'package:smooth_app/database/scanned_barcodes_manager.dart';
+import 'package:smooth_app/pages/product/common/product_refresher.dart';
 import 'package:smooth_app/query/paged_product_query.dart';
 import 'package:smooth_app/query/paged_user_product_query.dart';
 import 'package:smooth_app/query/product_query.dart';
@@ -35,8 +36,49 @@ class ContributionsFirebaseManager extends ProductListSupplier {
     final PagedUserProductQuery query = productQuery as PagedUserProductQuery;
     final QuerySnapshot<Map<String, dynamic>>? contributions =
         await fetchUserContributions(type: query.type);
+
     if (contributions!.docs.isNotEmpty) {
-      contributions.docs.forEach((element) {});
+      try {
+        // final ScannedBarcodesMap barcodes =
+        //     <int, LinkedHashSet<ScannedBarcode>>{};
+        // barcodes[0] ??= LinkedHashSet<ScannedBarcode>();
+
+        final List<Product> products = [];
+        for (final QueryDocumentSnapshot<Map<String, dynamic>> contrib
+            in contributions.docs) {
+          // barcodes[0]!.add(ScannedBarcode(element.get('barcode')));
+          final FetchedProduct fetchedProduct =
+              await ProductRefresher().silentFetchAndRefresh(
+            barcode: contrib.get('barcode'),
+            localDatabase: localDatabase,
+          );
+
+          if (fetchedProduct.product != null) {
+            products.add(fetchedProduct.product!);
+          }
+        }
+
+        final ProductList productList = productQuery.getProductList();
+        if (products.isNotEmpty) {
+          productList.setAll(products);
+          productList.totalSize = products.length;
+          partialProductList.add(productList);
+          await DaoProduct(localDatabase).putAll(
+            products,
+            productQuery.language,
+          );
+        }
+
+        await DaoProductList(localDatabase).put(productList);
+        return null;
+
+        // final ProductList productList = productQuery.getProductList();
+        // productList.addAll(barcodes);
+
+        await DaoProductList(localDatabase).put(productList);
+      } catch (e) {
+        return e.toString();
+      }
     }
 
     return null;
@@ -111,77 +153,11 @@ class ContributionsFirebaseManager extends ProductListSupplier {
     required final ProductList productList,
     required final ScannedBarcode barcode,
   }) async {
-    await _manageBarcode(
+    await _manageContributions(
       productList: productList,
       barcode: barcode,
       action: _FirebaseFirestoreActions.delete,
     );
-  }
-
-  Future<void> clearProductList({
-    required final ProductList productList,
-    required final Map<int, List<ScannedBarcode>> barcodes,
-  }) async {
-    // TODO(ILIYAN03): Currently there's no functionality for clearing a product list
-    // if (_noUser) {
-    //   return;
-    // }
-    //
-    // final QuerySnapshot<Map<String, dynamic>> productLists =
-    //     await _getProductLists(productList: productList);
-    // if (productLists.docs.isEmpty) {
-    //   return;
-    // }
-    //
-    // final String productListDocID = productLists.docs.first.id;
-    //
-    // // To remove the barcodes subcollection, all documents within it must be deleted.
-    // TODO(iliyan03): Could use WriteBatch for deleting multiple docs at once
-    // final String barcodesSubcollection =
-    //     _getBarcodesSubCollectionPath(productListDocID: productListDocID);
-    // for (final List<ScannedBarcode> i in barcodes.values) {
-    //   for (final ScannedBarcode j in i) {
-    //     await FirebaseFirestore.instance
-    //         .collection(barcodesSubcollection)
-    //         .doc(j.barcode)
-    //         .delete();
-    //   }
-    // }
-    //
-    // await FirebaseFirestore.instance
-    //     .collection(_collectionName)
-    //     .doc(productListDocID)
-    //     .delete();
-
-    return;
-  }
-
-  Future<void> saveAllProductLists({
-    required final LocalDatabase localDB,
-  }) async {
-    if (_noUser) {
-      return;
-    }
-
-    localDB.loadingFromFirebase = true;
-    localDB.notifyListeners();
-
-    final DaoProductList daoProductList = DaoProductList(localDB);
-
-    final List<ProductList> productLists = _getAllProductLists(daoProductList);
-    for (final ProductList productList in productLists) {
-      await daoProductList.get(productList);
-
-      for (final List<ScannedBarcode> barcodes
-          in productList.getList().values) {
-        for (final ScannedBarcode i in barcodes) {
-          await addBarcode(productList: productList, barcode: i);
-        }
-      }
-    }
-
-    localDB.loadingFromFirebase = false;
-    localDB.notifyListeners();
   }
 
   Future<void> _manageContributions({
@@ -194,46 +170,43 @@ class ContributionsFirebaseManager extends ProductListSupplier {
       return;
     }
 
-    final DocumentSnapshot<Map<String, dynamic>>? productLists =
-        await fetchUserContributions(type: productList.listType);
+    final PagedUserProductQuery query = productQuery as PagedUserProductQuery;
+    final QuerySnapshot<Map<String, dynamic>>? contributions =
+        await fetchUserContributions(type: query.type);
 
-    if (productLists.docs.isEmpty &&
+    if (contributions!.docs.isEmpty &&
         action == _FirebaseFirestoreActions.delete) {
       return;
     }
 
     switch (action) {
       case _FirebaseFirestoreActions.add:
-        {
-          final String productListDocID = productLists.docs.isEmpty
-              ? await _addProductList(
-                  _getProductListName(productList),
-                  _userId,
-                )
-              : productLists.docs.first.id;
+        final String productListDocID = contributions.docs.isEmpty
+            ? await _addProductList(
+                _getProductListName(productList),
+                _userId,
+              )
+            : contributions.docs.first.id;
 
-          final String barcodesSubcollectionPath =
-              _getBarcodesSubCollectionPath(productListDocID: productListDocID);
+        final String barcodesSubcollectionPath =
+            _getBarcodesSubCollectionPath();
 
-          final FirestoreService<ScannedBarcode> service =
-              FirestoreService<ScannedBarcode>(
-            collectionPath: barcodesSubcollectionPath,
-            fromFirestore: ScannedBarcode('').fromFirestore,
-          );
+        final FirestoreService<ScannedBarcode> service =
+            FirestoreService<ScannedBarcode>(
+          collectionPath: barcodesSubcollectionPath,
+          fromFirestore: ScannedBarcode('').fromFirestore,
+        );
 
-          await service.setDocument(
-            data: barcode,
-            merge: true,
-          );
-        }
+        await service.setDocument(
+          data: barcode,
+          merge: true,
+        );
         break;
 
       case _FirebaseFirestoreActions.delete:
         {
           final String barcodesSubcollectionPath =
-              _getBarcodesSubCollectionPath(
-            productListDocID: productLists.docs.first.id,
-          );
+              _getBarcodesSubCollectionPath();
 
           final QuerySnapshot<Map<String, dynamic>> querySnapshot =
               await FirebaseFirestore.instance
@@ -262,8 +235,8 @@ class ContributionsFirebaseManager extends ProductListSupplier {
           }
 
           await FirebaseFirestore.instance
-              .collection(_collectionName)
-              .doc(productLists.docs.first.id)
+              .collection(_getBarcodesSubCollectionPath())
+              .doc(barcode.barcode)
               .update(<String, String>{'name': newName});
         }
         break;
@@ -295,10 +268,11 @@ class ContributionsFirebaseManager extends ProductListSupplier {
     return documentSnapshot.id;
   }
 
-  String _getBarcodesSubCollectionPath({
-    required final String productListDocID,
-  }) =>
-      '/$_collectionName/$productListDocID/$_barcodesSubCollectionName';
+  String _getBarcodesSubCollectionPath() {
+    final PagedUserProductQuery query = productQuery as PagedUserProductQuery;
+    final UserSearchType searchType = query.type;
+    return '/$_collectionName/$_userId/$searchType';
+  }
 
   String _getProductListName(final ProductList productList) =>
       productList.listType == ProductListType.USER

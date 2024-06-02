@@ -23,7 +23,6 @@ class QueryProductListSupplier extends ProductListSupplier {
         productList.setAll(searchResult.products!);
         productList.totalSize = searchResult.count ?? 0;
         partialProductList.add(productList);
-        // TODO(yavor): Add products from ContributionsManager to local database.
         await DaoProduct(localDatabase).putAll(
           searchResult.products!,
           productQuery.language,

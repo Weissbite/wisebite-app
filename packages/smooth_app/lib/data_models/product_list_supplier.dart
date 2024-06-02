@@ -1,8 +1,8 @@
 import 'package:smooth_app/data_models/database_product_list_supplier.dart';
 import 'package:smooth_app/data_models/partial_product_list.dart';
 import 'package:smooth_app/data_models/product_list.dart';
-import 'package:smooth_app/data_models/query_product_list_supplier.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
+import 'package:smooth_app/database/firebase/contributions_manager.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/query/paged_product_query.dart';
 
@@ -57,7 +57,8 @@ abstract class ProductListSupplier {
       productQuery.getProductList(),
     );
     return timestamp == null
-        ? QueryProductListSupplier(productQuery, localDatabase)
+        ? ContributionsFirebaseManager(productQuery, localDatabase)
+        // QueryProductListSupplier(productQuery, localDatabase)
         : DatabaseProductListSupplier(productQuery, localDatabase, timestamp);
   }
 }

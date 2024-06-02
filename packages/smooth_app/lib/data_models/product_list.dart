@@ -202,6 +202,10 @@ class ProductList {
     _barcodes.addAll(barcodes);
   }
 
+  void addAll(final ScannedBarcodesMap barcodes) {
+    _barcodes.addAll(barcodes);
+  }
+
   ScannedBarcodesMap getList() {
     final ScannedBarcodesMap result = <int, LinkedHashSet<ScannedBarcode>>{};
     result.addAll(_barcodes);
