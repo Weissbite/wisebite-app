@@ -18,8 +18,7 @@ class ProductQueryPageHelper {
     bool searchResult = true,
     EditProductQueryCallback? editQueryCallback,
   }) async {
-    final ProductListSupplier supplier =
-        await ProductListSupplier.getBestSupplier(
+    final ProductListSupplier supplier = await ProductListSupplier.getBestSupplier(
       productQuery,
       localDatabase,
     );

@@ -33,8 +33,8 @@ class UserManagementProvider with ChangeNotifier {
   Future<off.LoginResult> login() async {
     // TODO(yavor): Delete internal account once self-hosting OpenFoodFacts Database.
     const User user = User(
-      userId: '%OPENFOODFACTS_USERNAME%',
-      password: '%OPENFOODFACTS_PASSWORD%',
+      userId: 'wisebite',
+      password: 'Zdravei123Chao456',
     );
     final off.LoginResult loginResult =
         await off.LoginResult.getLoginResult(user);

@@ -170,8 +170,8 @@ class _ProductListPageState extends State<ProductListPage>
   void _fetchDaysWithProducts() {
     _daysWithProducts.clear();
 
+    // TODO(yavor): Similar to user queries when fetching CONTRIBUTOR/INFORMER, we may be able to use pagination here.
     final ScannedBarcodesMap barcodes = productList.getList();
-
     barcodes.forEach((int key, LinkedHashSet<ScannedBarcode> value) {
       if (value.isNotEmpty) {
         _daysWithProducts.add(key);

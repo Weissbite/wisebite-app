@@ -169,6 +169,7 @@ class ProductRefresher {
         ),
         uriHelper: ProductQuery.uriProductHelper,
       );
+      // TODO(yavor): update product in Firebase here
       if (result.product != null) {
         await DaoProduct(localDatabase).put(result.product!, language);
         localDatabase.upToDate.setLatestDownloadedProduct(result.product!);

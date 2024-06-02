@@ -28,6 +28,14 @@ class ProductListFirebaseManager {
   Future<void> synchronizeWithLocal({
     required final LocalDatabase localDB,
   }) async {
+    // START Debug
+    final QuerySnapshot<Map<String, dynamic>> contributions =
+        await FirebaseFirestore.instance
+            .collection("contributions")
+            .doc("sqVUmIpPfwjT5EZcM4qP")
+            .collection("HTTP_USER_CONTRIBUTOR")
+            .get();
+    // END Debug
     if (_noUser) {
       return;
     }

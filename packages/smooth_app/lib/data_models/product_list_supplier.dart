@@ -43,6 +43,11 @@ abstract class ProductListSupplier {
     productQuery.toTopPage();
   }
 
+  /// TODO(yavor): Perhaps, we need to limit to Local Database depending on query
+  /// ...(keep in mind that Search for a product uses that supplier (keywords=<search string>) as well so filter on productQuery.type=={CONTRIBUTOR, INFORMER})
+  /// ...(or filter data to keep only what we have in Firebase)
+  /// ...because the data here is paginated and when we load from Firebase it's likely going to be all at once.
+  /// TODO(yavor): Add ContributionsManager as a supplier.
   /// Returns the fastest data supplier: database if possible, or server query
   static Future<ProductListSupplier> getBestSupplier(
     final PagedProductQuery productQuery,
