@@ -90,9 +90,7 @@ class BackgroundTaskDetails extends BackgroundTaskBarcode {
   }
 
   @override
-  (String, AlignmentGeometry)? getFloatingMessage(
-          final AppLocalizations appLocalizations) =>
-      (
+  (String, AlignmentGeometry)? getFloatingMessage(final AppLocalizations appLocalizations) => (
         appLocalizations.product_task_background_schedule,
         AlignmentDirectional.bottomCenter,
       );
@@ -111,12 +109,10 @@ class BackgroundTaskDetails extends BackgroundTaskBarcode {
         stamp: getStamp(minimalistProduct.barcode!, stamp.tag),
       );
 
-  static String getStamp(final String barcode, final String stamp) =>
-      '$barcode;detail;$stamp';
+  static String getStamp(final String barcode, final String stamp) => '$barcode;detail;$stamp';
 
   Product _getProduct() {
-    final Product result =
-        Product.fromJson(json.decode(inputMap) as Map<String, dynamic>);
+    final Product result = Product.fromJson(json.decode(inputMap) as Map<String, dynamic>);
     // for good multilingual management
     result.lang = getLanguage();
     return result;
@@ -127,12 +123,12 @@ class BackgroundTaskDetails extends BackgroundTaskBarcode {
   /// Uploads the product changes.
   @override
   Future<void> upload() async {
+    // TODO(yavor): update product in Firebase here
     final Product product = _getProduct();
     if (product.packagings != null || product.packagingsComplete != null) {
       // For the moment, some fields can only be saved in V3,
       // and V3 can only save those fields.
-      final ProductResultV3 result =
-          await OpenFoodAPIClient.temporarySaveProductV3(
+      final ProductResultV3 result = await OpenFoodAPIClient.temporarySaveProductV3(
         getUser(),
         product.barcode!,
         packagings: product.packagings,
@@ -141,8 +137,7 @@ class BackgroundTaskDetails extends BackgroundTaskBarcode {
         country: getCountry(),
         uriHelper: uriProductHelper,
       );
-      if (result.status != ProductResultV3.statusSuccess &&
-          result.status != ProductResultV3.statusWarning) {
+      if (result.status != ProductResultV3.statusSuccess && result.status != ProductResultV3.statusWarning) {
         bool isInvalidUser = false;
         if (result.errors != null) {
           for (final ProductResultFieldAnswer answer in result.errors!) {

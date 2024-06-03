@@ -42,10 +42,7 @@ class ScannedBarcode extends FirestoreModel<ScannedBarcode> {
   final String _barcode;
 
   @override
-  ScannedBarcode fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> data,
-    SnapshotOptions? options,
-  ) {
+  ScannedBarcode fromFirestore(DocumentSnapshot<Map<String, dynamic>> data, SnapshotOptions? options) {
     final Map<String, dynamic>? barcode = data.data();
     return ScannedBarcode(
       barcode!['barcode'],
@@ -67,15 +64,14 @@ class ScannedBarcode extends FirestoreModel<ScannedBarcode> {
       return true;
     }
 
-    return other is ScannedBarcode &&
-        other.barcode == _barcode &&
-        other.lastScanTime == _lastScanTime;
+    return other is ScannedBarcode && other.barcode == _barcode && other.lastScanTime == _lastScanTime;
   }
 
   @override
   int get hashCode => Object.hash(_barcode, _lastScanTime);
 
   String get barcode => _barcode;
+
   int get lastScanTime => _lastScanTime;
 }
 
@@ -156,8 +152,7 @@ class _BarcodeListAdapter extends TypeAdapter<_BarcodeList> {
   static Map<int, List<ScannedBarcode>> _getConverted(
     final ScannedBarcodesMap barcodes,
   ) {
-    final Map<int, List<ScannedBarcode>> converted =
-        <int, List<ScannedBarcode>>{};
+    final Map<int, List<ScannedBarcode>> converted = <int, List<ScannedBarcode>>{};
     if (barcodes.isEmpty) {
       return converted;
     }
@@ -208,16 +203,14 @@ class DaoProductList extends AbstractDao {
     return result;
   }
 
-  Future<int?> getTimestamp(final ProductList productList) async =>
-      (await _get(productList))?.timestamp;
+  Future<int?> getTimestamp(final ProductList productList) async => (await _get(productList))?.timestamp;
 
   // Why the "base64" part? Because of #753!
   // "HiveError: String keys need to be ASCII Strings with a max length of 255"
   // Encoding the parameter part in base64 makes us safe regarding ASCII.
   // As it's a list of keywords, there's a fairly high probability
   // that we'll be under the 255 character length.
-  static String getKey(final ProductList productList) =>
-      '${productList.listType.key}'
+  static String getKey(final ProductList productList) => '${productList.listType.key}'
       '$_keySeparator'
       '${base64.encode(utf8.encode(productList.getParametersKey()))}';
 
@@ -255,8 +248,7 @@ class DaoProductList extends AbstractDao {
     );
   }
 
-  Future<void> put(final ProductList productList) async =>
-      _put(getKey(productList), _BarcodeList.fromProductList(productList));
+  Future<void> put(final ProductList productList) async => _put(getKey(productList), _BarcodeList.fromProductList(productList));
 
   Future<bool> delete(
     final ProductList productList, {
@@ -297,8 +289,7 @@ class DaoProductList extends AbstractDao {
   }
 
   /// Checks if a list exists in the database.
-  bool exist(final ProductList productList) =>
-      _getBox().containsKey(getKey(productList));
+  bool exist(final ProductList productList) => _getBox().containsKey(getKey(productList));
 
   /// Returns the number of barcodes quickly but without product check.
   Future<int> getLength(final ProductList productList) async {
@@ -363,10 +354,8 @@ class DaoProductList extends AbstractDao {
     return 0;
   }
 
-  Future<void> clear(final ProductList productList,
-      [final bool clearInFirebase = true]) async {
-    final _BarcodeList newList =
-        _BarcodeList.now(<int, LinkedHashSet<ScannedBarcode>>{});
+  Future<void> clear(final ProductList productList, [final bool clearInFirebase = true]) async {
+    final _BarcodeList newList = _BarcodeList.now(<int, LinkedHashSet<ScannedBarcode>>{});
     // if (clearInFirebase) {
     //   await ProductListFirebaseManager().clearProductList(
     //     productList: productList,
@@ -394,8 +383,7 @@ class DaoProductList extends AbstractDao {
 
     bool result = false;
     if (include) {
-      LinkedHashSet<ScannedBarcode>? todayScans =
-          barcodes[getTodayDateAsScannedBarcodeKey()];
+      LinkedHashSet<ScannedBarcode>? todayScans = barcodes[getTodayDateAsScannedBarcodeKey()];
       todayScans ??= LinkedHashSet<ScannedBarcode>();
 
       todayScans.add(barcode);
@@ -446,8 +434,7 @@ class DaoProductList extends AbstractDao {
 
     // TODO(iliyan03): May use a WriteBatch when adding/removing multiple products to/from firebase
     if (include) {
-      final LinkedHashSet<ScannedBarcode> todayBarcodes =
-          LinkedHashSet<ScannedBarcode>();
+      final LinkedHashSet<ScannedBarcode> todayBarcodes = LinkedHashSet<ScannedBarcode>();
       for (final ScannedBarcode i in barcodes) {
         todayBarcodes.add(i);
 
@@ -478,8 +465,7 @@ class DaoProductList extends AbstractDao {
     final String newName,
   ) async {
     final ProductList newList = ProductList.user(newName);
-    final _BarcodeList list = await _get(initialList) ??
-        _BarcodeList.now(<int, LinkedHashSet<ScannedBarcode>>{});
+    final _BarcodeList list = await _get(initialList) ?? _BarcodeList.now(<int, LinkedHashSet<ScannedBarcode>>{});
     await _put(getKey(newList), list);
     await delete(initialList, rename: true);
 
@@ -546,8 +532,7 @@ class DaoProductList extends AbstractDao {
         continue;
       }
 
-      final List<String> allListScannedBarcodes =
-          getAllBarcodes(barcodeList.barcodes);
+      final List<String> allListScannedBarcodes = getAllBarcodes(barcodeList.barcodes);
       for (final String barcode in withBarcodes) {
         if (!allListScannedBarcodes.contains(barcode)) {
           break;

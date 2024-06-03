@@ -32,21 +32,19 @@ class ProductRefresher {
     await showDialog<void>(
       context: context,
       builder: (BuildContext context) => SmoothAlertDialog(
-        body: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              SvgPicture.asset(
-                'assets/onboarding/globe.svg',
-                height: MediaQuery.of(context).size.height * .5,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: Text(
-                  appLocalizations.account_create_message,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ]),
+        body: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
+          SvgPicture.asset(
+            'assets/onboarding/globe.svg',
+            height: MediaQuery.of(context).size.height * .5,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 25),
+            child: Text(
+              appLocalizations.account_create_message,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ]),
         actionsAxis: Axis.vertical,
         positiveAction: SmoothActionButton(
           text: appLocalizations.join_us,
@@ -120,8 +118,7 @@ class ProductRefresher {
   }) async {
     final LocalDatabase localDatabase = context.read<LocalDatabase>();
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
-    final FetchedProduct? fetchAndRefreshed =
-        await LoadingDialog.run<FetchedProduct>(
+    final FetchedProduct? fetchAndRefreshed = await LoadingDialog.run<FetchedProduct>(
       future: silentFetchAndRefresh(
         localDatabase: localDatabase,
         barcode: barcode,
@@ -169,7 +166,6 @@ class ProductRefresher {
         ),
         uriHelper: ProductQuery.uriProductHelper,
       );
-      // TODO(yavor): update product in Firebase here
       if (result.product != null) {
         await DaoProduct(localDatabase).put(result.product!, language);
         localDatabase.upToDate.setLatestDownloadedProduct(result.product!);
@@ -179,8 +175,7 @@ class ProductRefresher {
       return const FetchedProduct.internetNotFound();
     } catch (e) {
       Logs.e('Refresh from server error', ex: e);
-      final ConnectivityResult connectivityResult =
-          await Connectivity().checkConnectivity();
+      final ConnectivityResult connectivityResult = await Connectivity().checkConnectivity();
       if (connectivityResult == ConnectivityResult.none) {
         return FetchedProduct.error(
           exceptionString: e.toString(),
@@ -215,8 +210,7 @@ class ProductRefresher {
         return null;
       }
       await DaoProduct(localDatabase).putAll(searchResult.products!, language);
-      localDatabase.upToDate
-          .setLatestDownloadedProducts(searchResult.products!);
+      localDatabase.upToDate.setLatestDownloadedProducts(searchResult.products!);
       localDatabase.notifyListeners();
       return searchResult.products!.length;
     } catch (e) {

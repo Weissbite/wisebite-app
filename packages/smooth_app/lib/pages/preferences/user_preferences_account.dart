@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -5,6 +6,7 @@ import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/data_models/user_management_provider.dart';
+import 'package:smooth_app/database/firebase/contributions_manager.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/buttons/smooth_simple_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
@@ -39,6 +41,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
   PreferencePageType getPreferencePageType() => PreferencePageType.ACCOUNT;
 
   String? _getWisebiteUserId() => UserManagementProvider.user?.displayName;
+
   // String? _getUserId() => OpenFoodAPIConfiguration.globalUser?.userId;
 
   @override
@@ -77,9 +80,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
   Icon? getForwardIcon() => _isUserConnected() ? super.getForwardIcon() : null;
 
   @override
-  Future<void> runHeaderAction() async => _isUserConnected(readOnly: true)
-      ? super.runHeaderAction()
-      : _goToLoginPage();
+  Future<void> runHeaderAction() async => _isUserConnected(readOnly: true) ? super.runHeaderAction() : _goToLoginPage();
 
   bool _isUserConnected({bool readOnly = false}) {
     // Ensure to be notified after a sign-in/sign-out
@@ -118,16 +119,14 @@ class UserPreferencesAccount extends AbstractUserPreferences {
     );
   }
 
-  Future<void> _goToLoginPage() async =>
-      Navigator.of(context, rootNavigator: true)
+  Future<void> _goToLoginPage() async => Navigator.of(context, rootNavigator: true)
           .push<dynamic>(
         MaterialPageRoute<dynamic>(
           builder: (BuildContext context) => const LoginPage(),
         ),
       )
           .then((_) async {
-        final bool areMetricsFilled =
-            await UserManagementProvider().areMetricFieldsFilled();
+        final bool areMetricsFilled = await UserManagementProvider().areMetricFieldsFilled();
         if (!context.mounted) {
           return;
         }
@@ -149,8 +148,7 @@ class UserPreferencesAccount extends AbstractUserPreferences {
               onPressed: () async {
                 _goToLoginPage();
 
-                final bool areMetricsFilled =
-                    await UserManagementProvider().areMetricFieldsFilled();
+                final bool areMetricsFilled = await UserManagementProvider().areMetricFieldsFilled();
                 if (!context.mounted) {
                   return;
                 }
@@ -304,12 +302,15 @@ class UserPreferencesAccount extends AbstractUserPreferences {
     );
 
     try {
-      final SearchResult result = await OpenFoodAPIClient.searchProducts(
-        user,
-        configuration,
-        uriHelper: ProductQuery.uriProductHelper,
-      );
-      return result.count;
+      //final SearchResult result = await OpenFoodAPIClient.searchProducts(
+      //  user,
+      //  configuration,
+      //  uriHelper: ProductQuery.uriProductHelper,
+      //);
+      return ContributionsFirebaseManager.fetchUserContributions(productListType: type.name)
+          .then((QuerySnapshot<Map<String, dynamic>>? out) {
+        return out?.docs.length;
+      });
     } catch (e) {
       Logs.e(
         'Could not count the number of products for $type, ${user.userId}(${wisebiteUser.displayName})',
@@ -365,17 +366,12 @@ class UserPreferencesAccount extends AbstractUserPreferences {
                 ? null
                 : FutureBuilder<int?>(
                     future: myCount,
-                    builder:
-                        (BuildContext context, AsyncSnapshot<int?> snapshot) {
+                    builder: (BuildContext context, AsyncSnapshot<int?> snapshot) {
                       if (snapshot.connectionState != ConnectionState.done) {
                         return const SizedBox(
-                            height: LARGE_SPACE,
-                            width: LARGE_SPACE,
-                            child: CircularProgressIndicator.adaptive());
+                            height: LARGE_SPACE, width: LARGE_SPACE, child: CircularProgressIndicator.adaptive());
                       }
-                      return snapshot.data == null
-                          ? EMPTY_WIDGET
-                          : Text(snapshot.data.toString());
+                      return snapshot.data == null ? EMPTY_WIDGET : Text(snapshot.data.toString());
                     },
                   ),
           ),

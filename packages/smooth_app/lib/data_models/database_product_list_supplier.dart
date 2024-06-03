@@ -1,7 +1,7 @@
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/data_models/product_list_supplier.dart';
-import 'package:smooth_app/data_models/query_product_list_supplier.dart';
 import 'package:smooth_app/database/dao_product_list.dart';
+import 'package:smooth_app/database/firebase/contributions_manager.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/query/paged_product_query.dart';
 
@@ -45,6 +45,7 @@ class DatabaseProductListSupplier extends ProductListSupplier {
   }
 
   @override
-  ProductListSupplier getRefreshSupplier() =>
-      QueryProductListSupplier(productQuery, localDatabase);
+  ProductListSupplier getRefreshSupplier() => ContributionsFirebaseManager(productQuery, localDatabase);
+
+  /// QueryProductListSupplier(productQuery, localDatabase);
 }
