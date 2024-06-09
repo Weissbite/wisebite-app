@@ -19,7 +19,8 @@ enum _FirebaseFirestoreActions {
 
 // Manages Firestore CRUD operations for collection "contributions"
 class ContributionsFirebaseManager extends ProductListSupplier {
-  ContributionsFirebaseManager(final PagedProductQuery productQuery, final LocalDatabase localDatabase)
+  ContributionsFirebaseManager(
+      final PagedProductQuery productQuery, final LocalDatabase localDatabase)
       : super(productQuery, localDatabase);
 
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -33,7 +34,8 @@ class ContributionsFirebaseManager extends ProductListSupplier {
   @override
   Future<String?> asyncLoad() async {
     final QuerySnapshot<Map<String, dynamic>>? contributions =
-        await fetchUserContributions(productListType: productQuery.getProductList().listType.key);
+        await fetchUserContributions(
+            productListType: productQuery.getProductList().listType.name);
 
     if (contributions!.docs.isNotEmpty) {
       try {
@@ -42,9 +44,11 @@ class ContributionsFirebaseManager extends ProductListSupplier {
         // barcodes[0] ??= LinkedHashSet<ScannedBarcode>();
 
         final List<Product> products = [];
-        for (final QueryDocumentSnapshot<Map<String, dynamic>> contrib in contributions.docs) {
+        for (final QueryDocumentSnapshot<Map<String, dynamic>> contrib
+            in contributions.docs) {
           // barcodes[0]!.add(ScannedBarcode(element.get('barcode')));
-          final FetchedProduct fetchedProduct = await ProductRefresher().silentFetchAndRefresh(
+          final FetchedProduct fetchedProduct =
+              await ProductRefresher().silentFetchAndRefresh(
             barcode: contrib.get('barcode'),
             localDatabase: localDatabase,
           );
@@ -128,7 +132,8 @@ class ContributionsFirebaseManager extends ProductListSupplier {
     }
 
     final QuerySnapshot<Map<String, dynamic>>? contributions =
-        await fetchUserContributions(productListType: productList.listType.key);
+        await fetchUserContributions(
+            productListType: productList.listType.name);
 
     if (contributions!.docs.isEmpty) {
       return;
@@ -144,10 +149,11 @@ class ContributionsFirebaseManager extends ProductListSupplier {
           'created': now,
           'modified': now,
           'language': offLanguage.offTag,
-          'type': productList.listType.key,
+          'type': productList.listType.name,
         };
         firestore
-            .collection(_getBarcodesSubCollectionPath(productList.listType.key))
+            .collection(
+                _getBarcodesSubCollectionPath(productList.listType.name))
             .doc(barcode.barcode)
             .set(doc)
             .onError((err, _) => Logs.e('Failed adding doc $err'));
@@ -159,7 +165,8 @@ class ContributionsFirebaseManager extends ProductListSupplier {
           'modified': now,
         };
         firestore
-            .collection(_getBarcodesSubCollectionPath(productList.listType.key))
+            .collection(
+                _getBarcodesSubCollectionPath(productList.listType.name))
             .doc(barcode.barcode)
             .set(doc)
             .onError((err, _) => Logs.e('Failed adding doc $err'));
@@ -180,7 +187,8 @@ class ContributionsFirebaseManager extends ProductListSupplier {
         .get();
   }
 
-  Future<String> _addProductList(final String productListName, final String userId) async {
+  Future<String> _addProductList(
+      final String productListName, final String userId) async {
     final Map<String, String> data = <String, String>{
       'name': productListName,
       'userId': userId,
@@ -197,7 +205,9 @@ class ContributionsFirebaseManager extends ProductListSupplier {
   }
 
   String _getProductListName(final ProductList productList) =>
-      productList.listType == ProductListType.USER ? productList.parameters : productList.listType.key;
+      productList.listType == ProductListType.USER
+          ? productList.parameters
+          : productList.listType.name;
 
   List<ProductList> _getAllProductLists(DaoProductList daoProductList) {
     final List<String> userLists = daoProductList.getUserLists();
