@@ -243,6 +243,7 @@ class _ProductQueryPageState extends State<ProductQueryPage>
                   _downloadNextPage();
                 }
 
+                // TODO(yavor): Fix infinite loading - constantly trying to fetch from Firebase.
                 if (index >= barcodesCount) {
                   // When scrolling below the last loaded item (index > barcodesCount)
                   // We first show a [SmoothProductCardTemplate]

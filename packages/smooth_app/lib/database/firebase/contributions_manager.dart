@@ -59,6 +59,7 @@ class ContributionsFirebaseManager extends ProductListSupplier {
         }
 
         final ProductList productList = productQuery.getProductList();
+        partialProductList.clear();
         if (products.isNotEmpty) {
           productList.setAll(products);
           productList.totalSize = products.length;
