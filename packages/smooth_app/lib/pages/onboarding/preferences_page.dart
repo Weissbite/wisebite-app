@@ -102,13 +102,16 @@ class _HelperState extends State<_Helper> {
           start: LARGE_SPACE,
           end: LARGE_SPACE,
         ),
-        child: SummaryCard(
-          widget.product,
-          productPreferences,
-          isFullVersion: true,
-          isRemovable: false,
-          isSettingVisible: false,
-          isProductEditable: false,
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: SummaryCard(
+            widget.product,
+            productPreferences,
+            isFullVersion: true,
+            isRemovable: false,
+            isSettingVisible: false,
+            isProductEditable: false,
+          ),
         ),
       ),
     ];
