@@ -1,19 +1,14 @@
-// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
-// import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
-import 'package:smooth_app/data_models/login_result.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
-// import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/data_models/user_management_provider.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/buttons/service_sign_in_button.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/dialogs/smooth_alert_dialog.dart';
-import 'package:smooth_app/helpers/analytics_helper.dart';
 import 'package:smooth_app/helpers/app_helper.dart';
 import 'package:smooth_app/helpers/launch_url_helper.dart';
 import 'package:smooth_app/helpers/user_feedback_helper.dart';
@@ -29,54 +24,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
-  // ignore: unused_field
   bool _runningQuery = false;
-  LoginResult? _loginResult;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController userIdController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  // I'll leave this function for when we add email password login.
-  // ignore: unused_element
-  Future<void> _login(BuildContext context) async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    // final UserManagementProvider userManagementProvider =
-    //     context.read<UserManagementProvider>();
-
-    setState(() {
-      _runningQuery = true;
-      _loginResult = null;
-    });
-
-    // _loginResult = await userManagementProvider.login(
-    //   User(
-    //     userId: userIdController.text,
-    //     password: passwordController.text,
-    //   ),
-    // );
-
-    if (_loginResult!.type == LoginResultType.successful) {
-      AnalyticsHelper.trackEvent(AnalyticsEvent.loginAction);
-      if (!mounted) {
-        return;
-      }
-
-      // TODO(yavor): Pop-up dialog for review.
-      // await showInAppReviewIfNecessary(context);
-
-      // if (!mounted) {
-      //   return;
-      // }
-      Navigator.pop(context);
-    } else {
-      setState(() => _runningQuery = false);
-    }
-  }
 
   @override
   String get actionName => 'Opened login_page';
@@ -140,269 +93,72 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                       const SizedBox(
                         height: LARGE_SPACE * 4,
                       ),
-                      ServiceSignInButton(
-                        onPressed: () async {
-                          // TODO(yavor): check if successful login
-                          // final UserCredential? userCreds =
-                          await UserManagementProvider().signIn(
-                              provider: SignInProvider.Google,
-                              context: context,
-                              askUserSavingNewProducts: true,
-                              localDb: context.read<LocalDatabase>());
+                      Column(
+                        children: _runningQuery
+                            ? <Widget>[
+                                const CircularProgressIndicator.adaptive(),
+                                const SizedBox(
+                                  height: LARGE_SPACE,
+                                ),
+                                Text('Signing In',
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        theme.textTheme.displayLarge?.copyWith(
+                                      fontSize: VERY_LARGE_SPACE,
+                                      fontWeight: FontWeight.w700,
+                                    )),
+                              ]
+                            : <Widget>[
+                                ServiceSignInButton(
+                                  onPressed: () async {
+                                    setState(() => _runningQuery = true);
 
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                          }
-                        },
-                        backgroundColor: Colors.white,
-                        iconPath: 'assets/icons/google.svg',
-                        text: appLocalizations.sign_in_with_google,
-                        fontColor: Colors.black,
-                      ),
-                      const SizedBox(
-                        height: LARGE_SPACE,
-                      ),
-                      ServiceSignInButton(
-                        onPressed: () async {
-                          await UserManagementProvider().signIn(
-                              provider: SignInProvider.Facebook,
-                              context: context,
-                              askUserSavingNewProducts: true,
-                              localDb: context.read<LocalDatabase>());
+                                    await UserManagementProvider().signIn(
+                                        provider: SignInProvider.Google,
+                                        context: context,
+                                        askUserSavingNewProducts: true,
+                                        localDb: context.read<LocalDatabase>());
 
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                          }
-                        },
-                        backgroundColor:
-                            const Color.fromARGB(255, 24, 119, 242),
-                        iconPath: 'assets/icons/facebook.svg',
-                        text: appLocalizations.sign_in_with_facebook,
-                        fontColor: Colors.white,
-                      ),
-                      // const SizedBox(
-                      //   height: LARGE_SPACE,
-                      // ),
-                      // ServiceSignInButton(
-                      //   onPressed: () async {
-                      //     await UserManagementProvider().signIn(
-                      //       provider: SignInProvider.Apple,
-                      //       context: context,
-                      //       askUserSavingProductLists: true,
-                      //     );
-                      //
-                      //     if(context.mounted){
-                      //       Navigator.pop(context);
-                      //     }
-                      //   },
-                      //   backgroundColor: Colors.white,
-                      //   iconPath: 'assets/icons/apple.svg',
-                      //   text: 'Sign In with Apple',
-                      //   fontColor: Colors.black,
-                      // ),
+                                    if (context.mounted &&
+                                        UserManagementProvider.user != null) {
+                                      Navigator.pop(context);
+                                    } else {
+                                      setState(() => _runningQuery = false);
+                                    }
+                                  },
+                                  backgroundColor: Colors.white,
+                                  iconPath: 'assets/icons/google.svg',
+                                  text: appLocalizations.sign_in_with_google,
+                                  fontColor: Colors.black,
+                                ),
+                                const SizedBox(
+                                  height: LARGE_SPACE,
+                                ),
+                                ServiceSignInButton(
+                                  onPressed: () async {
+                                    setState(() => _runningQuery = true);
 
-                      // We don't currently support email password login, so no need of this code.
-                      /*const SizedBox(
-                        height: LARGE_SPACE * 3,
-                      ),
+                                    await UserManagementProvider().signIn(
+                                        provider: SignInProvider.Facebook,
+                                        context: context,
+                                        askUserSavingNewProducts: true,
+                                        localDb: context.read<LocalDatabase>());
 
-                      if (_loginResult != null &&
-                          _loginResult!.type != LoginResultType.successful)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            bottom: 10.0 + LARGE_SPACE * 2,
-                          ),
-                          child: SmoothCard(
-                            padding: const EdgeInsets.all(10.0),
-                            color: const Color(0xFFEB0004),
-                            child: Text(
-                              _loginResult!.getErrorMessage(appLocalizations),
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontSize: 18.0,
-                                color: const Color(0xFF000000),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      //Login
-                      SmoothTextFormField(
-                        type: TextFieldTypes.PLAIN_TEXT,
-                        textInputType: TextInputType.emailAddress,
-                        controller: userIdController,
-                        hintText: appLocalizations.username_or_email,
-                        prefixIcon: const Icon(Icons.person),
-                        enabled: !_runningQuery,
-                        // Moves focus to the next field
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const <String>[
-                          AutofillHints.username,
-                          AutofillHints.email,
-                        ],
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return appLocalizations
-                                .login_page_username_or_email;
-                          }
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(
-                        height: LARGE_SPACE * 2,
-                      ),
-
-                      //Password
-                      SmoothTextFormField(
-                        type: TextFieldTypes.PASSWORD,
-                        textInputType: TextInputType.text,
-                        controller: passwordController,
-                        hintText: appLocalizations.password,
-                        prefixIcon: const Icon(Icons.vpn_key),
-                        enabled: !_runningQuery,
-                        textInputAction: TextInputAction.send,
-                        // Hides the keyboard
-                        autofillHints: const <String>[
-                          AutofillHints.password,
-                        ],
-                        validator: (String? value) {
-                          if (value == null || value.isEmpty) {
-                            return appLocalizations
-                                .login_page_password_error_empty;
-                          }
-                          return null;
-                        },
-                        onFieldSubmitted: (String value) {
-                          if (value.isNotEmpty) {
-                            _login(context);
-                          }
-                        },
-                      ),
-
-                      const SizedBox(
-                        height: LARGE_SPACE * 2,
-                      ),
-
-                      //Sign in button
-                      if (_runningQuery)
-                        const CircularProgressIndicator.adaptive()
-                      else
-                        ElevatedButton(
-                          onPressed: () => _login(context),
-                          style: ButtonStyle(
-                            minimumSize: MaterialStateProperty.all<Size>(
-                              Size(size.width * 0.5,
-                                  theme.buttonTheme.height + 10),
-                            ),
-                            shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(
-                              const RoundedRectangleBorder(
-                                borderRadius: CIRCULAR_BORDER_RADIUS,
-                              ),
-                            ),
-                          ),
-                          child: Text(
-                            appLocalizations.sign_in,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onPrimary,
-                            ),
-                          ),
-                        ),
-
-                      const SizedBox(
-                        height: LARGE_SPACE * 2,
-                      ),
-
-                      //Forgot password
-                      TextButton(
-                        style: ButtonStyle(
-                          padding: MaterialStateProperty.all<EdgeInsets>(
-                            const EdgeInsets.symmetric(
-                              vertical: 10.0,
-                              horizontal: VERY_LARGE_SPACE,
-                            ),
-                          ),
-                          shape:
-                              MaterialStateProperty.all<RoundedRectangleBorder>(
-                            const RoundedRectangleBorder(
-                              borderRadius: CIRCULAR_BORDER_RADIUS,
-                            ),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (BuildContext context) =>
-                                  const ForgotPasswordPage(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          appLocalizations.forgot_password,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontSize: 18.0,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(
-                        height: LARGE_SPACE * 2,
-                      ),
-
-                      //Open register page
-                      SizedBox(
-                        height: size.height * 0.06,
-                        child: OutlinedButton(
-                          onPressed: () async {
-                            // TODO(monsieurtanuki): we probably don't need the returned value and could check the "logged in?" question differently
-                            // TODO(monsieurtanuki): careful, waiting for pop'ed value
-                            final bool? registered = await Navigator.push<bool>(
-                              context,
-                              MaterialPageRoute<bool>(
-                                builder: (BuildContext context) =>
-                                    const SignUpPage(),
-                              ),
-                            );
-                            if (registered == true) {
-                              if (!mounted) {
-                                return;
-                              }
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          style: ButtonStyle(
-                            side: MaterialStateProperty.all<BorderSide>(
-                              BorderSide(
-                                  color: theme.colorScheme.primary, width: 2.0),
-                            ),
-                            minimumSize: MaterialStateProperty.all<Size>(
-                              Size(size.width * 0.5, theme.buttonTheme.height),
-                            ),
-                            shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(
-                              const RoundedRectangleBorder(
-                                borderRadius: CIRCULAR_BORDER_RADIUS,
-                              ),
-                            ),
-                          ),
-                          child: Padding(
-                            padding:
-                                const EdgeInsetsDirectional.only(bottom: 2.0),
-                            child: Text(
-                              appLocalizations.create_account,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontSize: VERY_LARGE_SPACE,
-                                fontWeight: FontWeight.w500,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),*/
+                                    if (context.mounted &&
+                                        UserManagementProvider.user != null) {
+                                      Navigator.pop(context);
+                                    } else {
+                                      setState(() => _runningQuery = false);
+                                    }
+                                  },
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 24, 119, 242),
+                                  iconPath: 'assets/icons/facebook.svg',
+                                  text: appLocalizations.sign_in_with_facebook,
+                                  fontColor: Colors.white,
+                                ),
+                              ],
+                      )
                     ],
                   ),
                 ),
