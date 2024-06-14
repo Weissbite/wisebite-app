@@ -100,7 +100,7 @@ class _LoginPageState extends State<LoginPage> with TraceableClientMixin {
                                 const SizedBox(
                                   height: LARGE_SPACE,
                                 ),
-                                Text('Signing In',
+                                Text(appLocalizations.signing_in,
                                     textAlign: TextAlign.center,
                                     style:
                                         theme.textTheme.displayLarge?.copyWith(

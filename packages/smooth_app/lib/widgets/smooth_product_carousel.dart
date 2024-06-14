@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:scanner_shared/scanner_shared.dart' hide EMPTY_WIDGET;
 import 'package:smooth_app/cards/product_cards/smooth_product_base_card.dart';
 import 'package:smooth_app/cards/product_cards/smooth_product_card_error.dart';
 import 'package:smooth_app/cards/product_cards/smooth_product_card_loading.dart';
@@ -146,7 +145,7 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
           carouselController: ExternalCarouselManager.watch(context).controller,
           options: CarouselOptions(
             enlargeCenterPage: false,
-            viewportFraction: _computeViewPortFraction(),
+            viewportFraction: 0.85,
             height: constraints.maxHeight,
             enableInfiniteScroll: false,
             onPageChanged: (int index, CarouselPageChangedReason reason) {
@@ -213,15 +212,6 @@ class _SmoothProductCarouselState extends State<SmoothProductCarousel> {
         );
     }
   }
-
-  double _computeViewPortFraction() {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    return (screenWidth -
-            (SmoothBarcodeScannerVisor.CORNER_PADDING * 0.5) -
-            (SmoothBarcodeScannerVisor.STROKE_WIDTH * 0.5) +
-            (HORIZONTAL_SPACE_BETWEEN_CARDS * 8)) /
-        screenWidth;
-  }
 }
 
 class SearchCard extends StatelessWidget {
@@ -237,14 +227,10 @@ class SearchCard extends StatelessWidget {
 
     return SmoothProductBaseCard(
       backgroundColorOpacity: OPACITY,
-      margin: const EdgeInsets.symmetric(
-        vertical: VERY_SMALL_SPACE,
-      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          const Expanded(child: _SearchCardContent()),
           SvgPicture.asset(
             Theme.of(context).brightness == Brightness.light
                 ? 'assets/app/release_icon_light_transparent_no_border.svg'
@@ -266,6 +252,7 @@ class SearchCard extends StatelessWidget {
               maxLines: 1,
             ),
           ),
+          const Expanded(child: _SearchCardContent()),
         ],
       ),
     );
@@ -319,17 +306,6 @@ class _SearchCardContentState extends State<_SearchCardContent>
         maxLines: 5,
         child: Column(
           children: <Widget>[
-            SearchField(
-              onFocus: () => _openSearchPage(context),
-              readOnly: true,
-              showClearButton: false,
-              backgroundColor: darkMode
-                  ? Colors.white10
-                  : const Color.fromARGB(255, 240, 240, 240)
-                      .withOpacity(SearchCard.OPACITY),
-              foregroundColor: themeData.colorScheme.onSurface
-                  .withOpacity(SearchCard.OPACITY),
-            ),
             if (_content != _SearchCardContentType.REVIEW_APP)
               Expanded(
                 child: switch (_content) {
@@ -346,6 +322,17 @@ class _SearchCardContentState extends State<_SearchCardContent>
                     ),
                 },
               ),
+            SearchField(
+              onFocus: () => _openSearchPage(context),
+              readOnly: true,
+              showClearButton: false,
+              backgroundColor: darkMode
+                  ? Colors.white10
+                  : const Color.fromARGB(255, 240, 240, 240)
+                      .withOpacity(SearchCard.OPACITY),
+              foregroundColor: themeData.colorScheme.onSurface
+                  .withOpacity(SearchCard.OPACITY),
+            ),
           ],
         ),
       ),
