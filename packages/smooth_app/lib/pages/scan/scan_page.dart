@@ -71,52 +71,49 @@ class _ScanPageState extends State<ScanPage> {
               child: Center(
                 child: SizedBox(
                   width: double.infinity,
-                  height: MediaQuery.of(context).size.height,
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.only(bottom: 300),
-                    child: SmoothProductCarousel(
-                      containSearchCard: true,
-                      onPageChangedTo: (int page, String? barcode) async {
-                        if (barcode == null) {
-                          // We only notify for new products
-                          return;
-                        }
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: SmoothProductCarousel(
+                    containSearchCard: true,
+                    onPageChangedTo: (int page, String? barcode) async {
+                      if (barcode == null) {
+                        // We only notify for new products
+                        return;
+                      }
 
-                        // Both are Future methods, but it doesn't matter to wait here
-                        SmoothHapticFeedback.lightNotification();
+                      // Both are Future methods, but it doesn't matter to wait here
+                      SmoothHapticFeedback.lightNotification();
 
-                        if (_userPreferences.playCameraSound) {
-                          await _initSoundManagerIfNecessary();
-                          await _musicPlayer!.stop();
-                          await _musicPlayer!.play(
-                            AssetSource('audio/beep.wav'),
-                            volume: 0.5,
-                            ctx: const AudioContext(
-                              android: AudioContextAndroid(
-                                isSpeakerphoneOn: false,
-                                stayAwake: false,
-                                contentType: AndroidContentType.sonification,
-                                usageType: AndroidUsageType.notification,
-                                audioFocus:
-                                    AndroidAudioFocus.gainTransientMayDuck,
-                              ),
-                              iOS: AudioContextIOS(
-                                category: AVAudioSessionCategory.soloAmbient,
-                                options: <AVAudioSessionOptions>[
-                                  AVAudioSessionOptions.mixWithOthers,
-                                ],
-                              ),
+                      if (_userPreferences.playCameraSound) {
+                        await _initSoundManagerIfNecessary();
+                        await _musicPlayer!.stop();
+                        await _musicPlayer!.play(
+                          AssetSource('audio/beep.wav'),
+                          volume: 0.5,
+                          ctx: const AudioContext(
+                            android: AudioContextAndroid(
+                              isSpeakerphoneOn: false,
+                              stayAwake: false,
+                              contentType: AndroidContentType.sonification,
+                              usageType: AndroidUsageType.notification,
+                              audioFocus:
+                                  AndroidAudioFocus.gainTransientMayDuck,
                             ),
-                          );
-                        }
-
-                        SemanticsService.announce(
-                          appLocalizations.scan_announce_new_barcode(barcode),
-                          direction,
-                          assertiveness: Assertiveness.assertive,
+                            iOS: AudioContextIOS(
+                              category: AVAudioSessionCategory.soloAmbient,
+                              options: <AVAudioSessionOptions>[
+                                AVAudioSessionOptions.mixWithOthers,
+                              ],
+                            ),
+                          ),
                         );
-                      },
-                    ),
+                      }
+
+                      SemanticsService.announce(
+                        appLocalizations.scan_announce_new_barcode(barcode),
+                        direction,
+                        assertiveness: Assertiveness.assertive,
+                      );
+                    },
                   ),
                 ),
               ),
