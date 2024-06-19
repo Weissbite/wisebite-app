@@ -51,9 +51,7 @@ abstract class ProductListSupplier {
     final int? timestamp = await DaoProductList(localDatabase).getTimestamp(
       productQuery.getProductList(),
     );
-    return timestamp == null
-        ? ContributionsFirebaseManager(productQuery, localDatabase)
-        // QueryProductListSupplier(productQuery, localDatabase)
-        : DatabaseProductListSupplier(productQuery, localDatabase, timestamp);
+
+    return ContributionsFirebaseManager(productQuery, localDatabase);
   }
 }
