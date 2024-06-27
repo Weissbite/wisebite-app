@@ -128,6 +128,8 @@ Future<bool> _init1() async {
   DartPingIOS.register();
   await SmoothServices().init(GlobalVars.appStore);
   await setupAppNetworkConfig();
+  // TODO(iliyan03): Uncomment this, giving it the real private key
+  //  await setAppIdentifier('some private key');
   // TODO(yavor): Used for email/password login.
   // await UserManagementProvider.mountCredentials();
   _userPreferences = await UserPreferences.getUserPreferences();
