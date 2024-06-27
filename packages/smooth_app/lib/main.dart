@@ -25,6 +25,7 @@ import 'package:smooth_app/database/dao_string.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/firebase_options.dart';
 import 'package:smooth_app/helpers/analytics_helper.dart';
+import 'package:smooth_app/helpers/app_identifier.dart';
 import 'package:smooth_app/helpers/camera_helper.dart';
 import 'package:smooth_app/helpers/entry_points_helper.dart';
 import 'package:smooth_app/helpers/global_vars.dart';
@@ -128,6 +129,7 @@ Future<bool> _init1() async {
   DartPingIOS.register();
   await SmoothServices().init(GlobalVars.appStore);
   await setupAppNetworkConfig();
+//  await setAppIdentifier('some private key');
   // TODO(yavor): Used for email/password login.
   // await UserManagementProvider.mountCredentials();
   _userPreferences = await UserPreferences.getUserPreferences();
