@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -155,6 +156,10 @@ Future<bool> _init1() async {
 
   await CameraHelper.init();
   await ProductQuery.setUuid(_localDatabase);
+
+  // Init Google AdMob
+  MobileAds.instance.initialize();
+
   _init1done = true;
   return true;
 }

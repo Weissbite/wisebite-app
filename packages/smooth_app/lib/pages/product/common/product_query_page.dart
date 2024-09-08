@@ -26,6 +26,7 @@ import 'package:smooth_app/pages/product/common/product_list_item_simple.dart';
 import 'package:smooth_app/pages/product/common/product_query_page_helper.dart';
 import 'package:smooth_app/query/paged_product_query.dart';
 import 'package:smooth_app/resources/app_animations.dart';
+import 'package:smooth_app/widgets/google_admob_native_ad.dart';
 import 'package:smooth_app/widgets/ranking_floating_action_button.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
@@ -230,7 +231,12 @@ class _ProductQueryPageState extends State<ProductQueryPage>
               itemBuilder: (BuildContext context, int index) {
                 if (index == 0) {
                   // on top, a message
-                  return _getTopMessagesCard();
+                  return Column(
+                    children: <Widget>[
+                      NativeAdWidget(),
+                      _getTopMessagesCard(),
+                    ],
+                  );
                 }
                 index--;
 

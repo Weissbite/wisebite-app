@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,6 +29,7 @@ import 'package:smooth_app/pages/product/common/product_list_item_popup_items.da
 import 'package:smooth_app/pages/product/common/product_list_item_simple.dart';
 import 'package:smooth_app/pages/product/common/product_refresher.dart';
 import 'package:smooth_app/query/product_query.dart';
+import 'package:smooth_app/widgets/google_admob_native_ad.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
 import 'package:smooth_app/widgets/will_pop_scope.dart';
@@ -305,7 +307,12 @@ class _ProductListPageState extends State<ProductListPage>
         itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
           final int selectedDay = _daysWithProducts[itemIndex];
           final LinkedHashSet<ScannedBarcode>? selectedDayBarcodes =
-              productList.getList()[selectedDay];
+          productList.getList()[selectedDay];
+
+          int adIndex = 0;
+          if(selectedDayBarcodes != null && selectedDayBarcodes.isNotEmpty){
+            adIndex = Random().nextInt(selectedDayBarcodes.length);
+          }
 
           return selectedDayBarcodes == null || selectedDayBarcodes.isEmpty
               ? LayoutBuilder(
@@ -367,17 +374,22 @@ class _ProductListPageState extends State<ProductListPage>
                             appLocalizations,
                           ),
                       child: ListView.builder(
-                        itemCount: selectedDayBarcodes.length,
-                        itemBuilder: (BuildContext context, int index) =>
-                            _buildItem(
-                          selectedDayBarcodes
-                              .toList()
-                              .reversed
-                              .toList(), // Reverse the list so that the most recently scanned barcodes are at the top
-                          index,
-                          localDatabase,
-                          appLocalizations,
-                        ),
+                        itemCount: selectedDayBarcodes.length + 1,
+                        itemBuilder: (BuildContext context, int index) {
+                          if(index == adIndex) {
+                            return NativeAdWidget();
+                          }
+
+                          return _buildItem(
+                            selectedDayBarcodes
+                                .toList()
+                                .reversed
+                                .toList(), // Reverse the list so that the most recently scanned barcodes are at the top
+                            index > adIndex ? --index : index,
+                            localDatabase,
+                            appLocalizations,
+                          );
+                        },
                       )),
                 );
         },

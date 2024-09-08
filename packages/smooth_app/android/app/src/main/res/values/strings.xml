@@ -3,4 +3,5 @@
     <string name="app_name">OpenFoodFacts</string>
     <string name="facebook_app_id">1479259182940465</string> // For this we should make a Facebook Developer account and project
     <string name="facebook_client_token">36b50ab8667a34f9118748f9f0bb4ee5</string>
+    <string name="google_admob_app_id">%GOOGLE_ADMOB_APP_ID%</string>
 </resources>
